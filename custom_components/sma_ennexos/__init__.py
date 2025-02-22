@@ -35,6 +35,8 @@ PLATFORMS: list[Platform] = [
 # https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Integration entry setup."""
+    hass.data.setdefault(DOMAIN, {})
+
     # initialize SMA client
     LOGGER.info(
         "initializing SMA data manager integration for host %s", entry.data[CONF_HOST]
