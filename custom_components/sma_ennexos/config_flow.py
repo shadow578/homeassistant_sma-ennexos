@@ -10,7 +10,7 @@ import voluptuous as vol
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
-    FlowResult,
+    ConfigFlowResult,
     OptionsFlow,
 )
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -57,7 +57,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self,
         user_input: dict[str, Any] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Collect hostname and credentials."""
         _errors = {}
         if user_input is not None:
@@ -136,7 +136,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     def async_get_options_flow(config_entry: ConfigEntry):
         """Get options flow handler."""
-        return SMAOptionsFlow(config_entry)
+        return SMAOptionsFlow()
 
     async def _fetch_plant_name(
         self, host: str, username: str, password: str, use_ssl: bool, verify_ssl: bool
@@ -198,13 +198,12 @@ class SMAOptionsFlow(OptionsFlow):
 
     VERSION = 1
 
-    def __init__(self, config_entry: ConfigEntry):
+    def __init__(self):
         """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Manage enabled sensor channels."""
         if user_input is not None:
             return self.async_create_entry(

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -31,7 +31,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
 ]
 
-
+# https://developers.home-assistant.io/docs/config_entries_index/#setting-up-an-entry
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Integration entry setup."""
     hass.data.setdefault(DOMAIN, {})
@@ -62,6 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
     coordinator = SMAUpdateCoordinator(
         hass=hass,
+        config_entry=entry,
         client=client,
         channel_fqids=entry.options.get(OPT_SENSOR_CHANNELS, []),
         update_interval_seconds=entry.options.get(
@@ -75,8 +76,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         all_components=all_components,
     )
 
-    # fetch initial data so we have data when entities initialize
-    await coordinator.async_config_entry_first_refresh()
+    if entry.state == ConfigEntryState.SETUP_IN_PROGRESS:
+        # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
+        await coordinator.async_config_entry_first_refresh()
+    else:
+        # To fix deprecation warning (???)
+        # Detected that custom integration 'xmltv_epg' uses `async_config_entry_first_refresh`, which is only supported when entry state is ConfigEntryState.SETUP_IN_PROGRESS, but it is in state ConfigEntryState.LOADED
+        await coordinator.async_refresh()
 
     # setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

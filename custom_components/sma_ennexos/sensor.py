@@ -11,7 +11,6 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
-    POWER_VOLT_AMPERE_REACTIVE,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
@@ -19,6 +18,7 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTemperature,
     UnitOfTime,
+    UnitOfReactivePower,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -250,7 +250,7 @@ def channel_to_device_class_and_unit(channel_id: str, channel_unit: str) -> tupl
     if channel_unit == UNIT_HERTZ:
         return (SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ)
     if channel_unit == UNIT_VOLT_AMPERE_REACTIVE:
-        return (None, POWER_VOLT_AMPERE_REACTIVE)
+        return (None, UnitOfReactivePower.VOLT_AMPERE_REACTIVE)
     if channel_unit == UNIT_SECOND:
         return (None, UnitOfTime.SECONDS)
     if channel_unit == UNIT_PERCENT:

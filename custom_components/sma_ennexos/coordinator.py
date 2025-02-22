@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
@@ -28,6 +29,8 @@ from .util import channel_fqid_to_parts, channel_parts_to_fqid
 class SMAUpdateCoordinator(DataUpdateCoordinator):
     """data update coordinator for SMA client."""
 
+    config_entry: ConfigEntry
+
     client: SMAApiClient
     query: list[LiveMeasurementQueryItem]
     data: list[ChannelValues]
@@ -35,6 +38,7 @@ class SMAUpdateCoordinator(DataUpdateCoordinator):
     def __init__(
         self,
         hass: HomeAssistant,
+        config_entry: ConfigEntry,
         client: SMAApiClient,
         channel_fqids: list[str],
         update_interval_seconds: int = 60,
@@ -67,6 +71,7 @@ class SMAUpdateCoordinator(DataUpdateCoordinator):
         # init
         super().__init__(
             hass=hass,
+            config_entry=config_entry,
             logger=LOGGER,
             name=DOMAIN,
             update_interval=timedelta(seconds=update_interval_seconds),
