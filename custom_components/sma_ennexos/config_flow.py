@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Any, TypedDict
+from typing import Any
 from urllib.parse import urlparse
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
+from attr import dataclass
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -193,7 +194,8 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
         return parsed_url.netloc
 
 
-class OptionsFlowAvailableChannels(TypedDict):
+@dataclass
+class OptionsFlowAvailableChannels:
     """Available channels for selection."""
 
     component_name: str | None
@@ -222,9 +224,9 @@ class SMAOptionsFlow(OptionsFlow):
         available_channels = await self.__fetch_available_channels()
         available_channels_opt = {}
         for channel in available_channels:
-            fqid = channel_parts_to_fqid(channel["component_id"], channel["channel_id"])
+            fqid = channel_parts_to_fqid(channel.component_id, channel.channel_id)
             available_channels_opt[fqid] = (
-                f"{channel['channel_id']} @ {channel['component_name']}"
+                f"{channel.channel_id} @ {channel.component_name}"
             )
 
         # show options form
@@ -322,8 +324,8 @@ class SMAOptionsFlow(OptionsFlow):
         # return a dict for each live measurement
         LOGGER.debug("found %s available channels before filtering", len(all_live_data))
         result = [
-            {
-                "component_name": next(
+            OptionsFlowAvailableChannels(
+                component_name=next(
                     (
                         component.name
                         for component in all_components
@@ -331,9 +333,9 @@ class SMAOptionsFlow(OptionsFlow):
                     ),
                     None,
                 ),
-                "component_id": ld.component_id,
-                "channel_id": ld.channel_id,
-            }
+                component_id=ld.component_id,
+                channel_id=ld.channel_id,
+            )
             for ld in all_live_data
             # ignore all entries that have no value in the latest measurement
             if ld.latest_value().value is not None

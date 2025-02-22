@@ -6,6 +6,7 @@ import contextlib
 from datetime import timedelta
 from itertools import chain
 from logging import Logger
+from typing import Any
 from urllib.parse import quote
 
 import aiohttp
@@ -100,7 +101,7 @@ class SMAApiClient(SMABaseClient):
 
     async def __get_new_token(self, username: str, password: str) -> AuthTokenInfo:
         """Get a new access token using username and password."""
-        token_response = await self.make_request(
+        token_response = await self._make_request(
             method="POST",
             endpoint="token",
             data={
@@ -117,7 +118,7 @@ class SMAApiClient(SMABaseClient):
         )
 
         # update session id
-        self.update_session_id(token_response)
+        self._update_session_id(token_response)
         if self._session_id is None:
             raise SMAApiClientError("No session id received")
 
@@ -127,7 +128,7 @@ class SMAApiClient(SMABaseClient):
 
     async def __refresh_token(self, refresh_token: str) -> AuthTokenInfo:
         """Get a new access token using a refresh token."""
-        token_response = await self.make_request(
+        token_response = await self._make_request(
             method="POST",
             endpoint="token",
             data={
@@ -154,7 +155,7 @@ class SMAApiClient(SMABaseClient):
 
         # logout request, ignore errors
         with contextlib.suppress(Exception):
-            await self.make_request(
+            await self._make_request(
                 method="DELETE",
                 endpoint=f"refreshtoken?refreshToken={quote(self.auth_data.refresh_token)}",
             )
@@ -173,7 +174,7 @@ class SMAApiClient(SMABaseClient):
             if self._logger:
                 self._logger.debug(f"getting navigation data for parent={parent_id}")
 
-            navigation_response = await self.make_request(
+            navigation_response = await self._make_request(
                 method="GET",
                 endpoint="navigation"
                 + (f"?parentId={quote(parent_id)}" if parent_id else ""),
@@ -196,7 +197,7 @@ class SMAApiClient(SMABaseClient):
                     f"getting extra info for component={component.component_id}"
                 )
 
-            device_info_response = await self.make_request(
+            device_info_response = await self._make_request(
                 method="GET",
                 endpoint=f"widgets/deviceinfo?deviceId={component.component_id}",
                 headers={
@@ -246,7 +247,7 @@ class SMAApiClient(SMABaseClient):
         """Get live data for all channels of the requested components."""
         payload = [{"componentId": id} for id in component_ids]
 
-        measurements_response = await self.make_request(
+        measurements_response = await self._make_request(
             method="POST",
             endpoint="measurements/live",
             data=payload,
@@ -266,7 +267,7 @@ class SMAApiClient(SMABaseClient):
     ) -> list[ChannelValues]:
         """Get live data for the requested channels."""
         payload = [item.to_dict() for item in query]
-        measurements_response = await self.make_request(
+        measurements_response = await self._make_request(
             method="POST",
             endpoint="measurements/live",
             data=payload,
@@ -295,16 +296,16 @@ class SMAApiClient(SMABaseClient):
         # flatten list of lists
         return list(chain.from_iterable(cvs))
 
-    async def make_request(
+    async def _make_request(
         self,
         method: str,
         endpoint: str,
-        data: dict | None = None,
+        data: Any | None = None,
         headers: dict | None = None,
         as_json: bool = True,
     ) -> aiohttp.ClientResponse:
         """Make a request to an API endpoint, handling re-auth and retries."""
-        make_request_impl = super().make_request
+        make_request_impl = super()._make_request
 
         async def _make_request_w(
             tries: int = 0, did_reauth: bool = False

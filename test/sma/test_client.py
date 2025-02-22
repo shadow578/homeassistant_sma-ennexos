@@ -1,5 +1,6 @@
 """unit test for SMA client implementation."""
 
+from typing import Any
 from unittest import mock
 from urllib.parse import quote
 
@@ -120,7 +121,7 @@ async def test_client_auth():
     )
 
     # patch make_request
-    with mock.patch.object(sma, "make_request", wraps=make_request_mock):
+    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
         # login should get a new token
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
         assert did_get_token is True
@@ -295,7 +296,7 @@ async def test_client_get_all_components():
     )
 
     # patch make_request
-    with mock.patch.object(sma, "make_request", wraps=make_request_mock):
+    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get all components
@@ -417,7 +418,7 @@ async def test_client_get_all_live_measurements():
     )
 
     # patch make_request
-    with mock.patch.object(sma, "make_request", wraps=make_request_mock):
+    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get all live measurements
@@ -451,7 +452,7 @@ async def test_client_get_live_measurements():
     async def make_request_mock(
         method: str,
         endpoint: str,
-        data: dict | None = None,
+        data: Any | None = None,
         headers: dict | None = None,
         as_json: bool = True,
     ):
@@ -524,7 +525,7 @@ async def test_client_get_live_measurements():
     )
 
     # patch make_request
-    with mock.patch.object(sma, "make_request", wraps=make_request_mock):
+    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get live measurement
@@ -644,7 +645,7 @@ async def test_client_get_live_measurements_array():
     )
 
     # patch make_request
-    with mock.patch.object(sma, "make_request", wraps=make_request_mock):
+    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get live measurement

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import socket
 from logging import Logger
+from typing import Any
 
 import aiohttp
 import async_timeout
@@ -43,11 +44,11 @@ class SMABaseClient:
         self.__request_timeout = request_timeout
         self._logger = logger
 
-    async def make_request(
+    async def _make_request(
         self,
         method: str,
         endpoint: str,
-        data: dict | None = None,
+        data: Any | None = None,
         headers: dict | None = None,
         as_json: bool = True,
     ) -> aiohttp.ClientResponse:
@@ -99,7 +100,7 @@ class SMABaseClient:
         except Exception as exception:  # pylint: disable=broad-except
             raise SMAApiClientError(f"error fetching {url}") from exception
 
-    def update_session_id(self, response: aiohttp.ClientResponse) -> None:
+    def _update_session_id(self, response: aiohttp.ClientResponse) -> None:
         """Update the session id."""
         session_cookie = response.cookies.get("JSESSIONID")
         if session_cookie is None:
