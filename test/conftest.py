@@ -1,5 +1,6 @@
 """Configure pytest for all tests."""
 
+from collections.abc import Callable
 from unittest import mock
 from unittest.mock import patch
 
@@ -63,6 +64,13 @@ class MockSmaClientHandle:
     # return value for get_all_live_measurements and get_live_measurements
     measurements: list[ChannelValues] = []
 
+    # additional hooks
+    on_login: Callable | None = None
+    on_logout: Callable | None = None
+    on_get_all_components: Callable | None = None
+    on_get_all_live_measurements: Callable | None = None
+    on_get_live_measurements: Callable | None = None
+
 
 @pytest.fixture()
 def mock_sma_client():
@@ -72,25 +80,35 @@ def mock_sma_client():
 
     async def login():
         nonlocal hnd
+        if hnd.on_login:
+            hnd.on_login()
         hnd.cnt_login += 1
         return LOGIN_RESULT_ALREADY_LOGGED_IN
 
     async def logout():
         nonlocal hnd
+        if hnd.on_logout:
+            hnd.on_logout()
         hnd.cnt_logout += 1
 
     async def get_all_components():
         nonlocal hnd
+        if hnd.on_get_all_components:
+            hnd.on_get_all_components()
         hnd.cnt_get_all_components += 1
         return hnd.components
 
     async def get_all_live_measurements(component_ids):
         nonlocal hnd
+        if hnd.on_get_all_live_measurements:
+            hnd.on_get_all_live_measurements()
         hnd.cnt_get_all_live_measurements += 1
         return hnd.measurements
 
     async def get_live_measurements(query):
         nonlocal hnd
+        if hnd.on_get_live_measurements:
+            hnd.on_get_live_measurements()
         hnd.cnt_get_live_measurements += 1
         return hnd.measurements
 

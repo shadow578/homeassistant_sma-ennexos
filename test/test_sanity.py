@@ -17,7 +17,7 @@ from custom_components.sma_ennexos.sma.model import (
 
 
 @pytest.mark.asyncio
-async def test_sma_client_mock_fixture(mock_sma_client):
+async def test_sma_client_mock_fixture_counters_and_data(mock_sma_client):
     """Quick sanity-check the mock_sma_client fixture works as expected."""
 
     sma = SMAApiClient(
@@ -91,3 +91,25 @@ async def test_sma_client_mock_fixture(mock_sma_client):
 
     assert len(measurements) == 1
     assert measurements[0].channel_id == "channel1"
+
+
+@pytest.mark.asyncio
+async def test_sma_client_mock_fixture_hooks(mock_sma_client):
+    """Quick sanity-check the mock_sma_client fixture works as expected."""
+
+    sma = SMAApiClient(
+        host="sma.local",
+        username="user",
+        password="password",
+        session=mock.MagicMock(),
+        use_ssl=False,
+    )
+
+    # errors raised in hook function should be propagated
+    def on_login():
+        raise ValueError("testing hook error")
+
+    mock_sma_client.on_login = on_login
+
+    with pytest.raises(ValueError):
+        await sma.login()
