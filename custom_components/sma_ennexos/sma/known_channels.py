@@ -139,7 +139,7 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Metering.PCCMs.PlntPF": KnownChannelEntry(
         name="Grid interconnection displacement power factor",
         device_kind=DEVICE_KIND_GRID,
-        unit=UNIT_PERCENT,  # ?
+        unit=UNIT_PERCENT,  # TODO Measurement.Metering.PCCMs.PlntPF unit is not validated
     ),
     "Measurement.Metering.PCCMs.PlntPhV.phsA": KnownChannelEntry(
         name="Grid interconnection voltage L1",
@@ -280,7 +280,7 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Metering.GridMs.TotPF": KnownChannelEntry(
         name="Grid displacement power factor",
         device_kind=DEVICE_KIND_GRID,
-        unit=UNIT_PERCENT,  # ?
+        unit=UNIT_PERCENT,  # TODO Measurement.Metering.GridMs.TotPF unit is not validated
     ),
     "Measurement.Metering.GridMs.TotVA": KnownChannelEntry(
         name="Grid apparent power",

@@ -145,9 +145,8 @@ async def test_client_auth():
         assert did_delete_token is False
 
         # logout
-        # TODO: logout test does not work...
-        # await sma.logout()
-        # assert did_delete_token is True
+        await sma.logout()
+        assert did_delete_token is True
 
 
 @pytest.mark.asyncio

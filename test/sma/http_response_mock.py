@@ -1,7 +1,5 @@
 """utility to mock http responses by aiohttp."""
 
-# TODO: replace this with respx library
-
 from typing import Any
 
 
