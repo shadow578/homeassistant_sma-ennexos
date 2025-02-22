@@ -1,6 +1,6 @@
 """unit tests for model.LiveMeasurementQueryItem."""
 
-from ..model import LiveMeasurementQueryItem
+from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
 
 def test_to_dict():
     """Test that LiveMeasurementQueryItem.to_dict() returns the correct dict."""

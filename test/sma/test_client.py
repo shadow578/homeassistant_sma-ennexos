@@ -3,8 +3,13 @@ from unittest import mock
 import pytest
 from urllib.parse import quote
 
-from ..client import LOGIN_RESULT_ALREADY_LOGGED_IN, LOGIN_RESULT_NEW_TOKEN, LOGIN_RESULT_TOKEN_REFRESHED, SMAApiClient
-from ..model import LiveMeasurementQueryItem
+from custom_components.sma_ennexos.sma.client import (
+    LOGIN_RESULT_ALREADY_LOGGED_IN,
+    LOGIN_RESULT_NEW_TOKEN,
+    LOGIN_RESULT_TOKEN_REFRESHED,
+    SMAApiClient,
+)
+from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
 
 from .http_response_mock import ClientResponseMock
 

@@ -1,5 +1,11 @@
 """Tests for the SMA Data Manager known_channels module."""
-from ..known_channels import DEVICE_KIND_GRID, DEVICE_KIND_PV, UNIT_VOLT, UNIT_WATT, get_known_channel
+from custom_components.sma_ennexos.sma.known_channels import (
+    DEVICE_KIND_GRID,
+    DEVICE_KIND_PV,
+    UNIT_VOLT,
+    UNIT_WATT,
+    get_known_channel,
+)
 
 
 def test_known_channel_normal():

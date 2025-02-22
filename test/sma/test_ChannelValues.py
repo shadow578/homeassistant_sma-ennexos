@@ -1,7 +1,7 @@
 """unit tests for model.ChannelValues."""
 
 import pytest
-from ..model import ChannelValues, SMAApiParsingError
+from custom_components.sma_ennexos.sma.model import ChannelValues, SMAApiParsingError
 
 
 def test_from_dict_valid_dict():

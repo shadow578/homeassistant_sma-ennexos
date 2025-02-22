@@ -1,7 +1,7 @@
 """unit tests for model.ComponentInfo."""
 
 import pytest
-from ..model import ComponentInfo, SMAApiParsingError
+from custom_components.sma_ennexos.sma.model import ComponentInfo, SMAApiParsingError
 
 
 def test_from_dict_valid_dict():

@@ -1,7 +1,7 @@
 """unit tests for model.AuthTokenInfo."""
 
 import pytest
-from ..model import AuthTokenInfo, SMAApiParsingError
+from custom_components.sma_ennexos.sma.model import AuthTokenInfo, SMAApiParsingError
 
 def test_from_dict_valid_dict():
     """Test that AuthTokenInfo.from_dict() parses a valid dict correctly."""

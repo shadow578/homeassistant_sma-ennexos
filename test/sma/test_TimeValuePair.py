@@ -1,7 +1,7 @@
 """unit tests for model.TimeValuePair."""
 
 import pytest
-from ..model import TimeValuePair, SMAApiParsingError
+from custom_components.sma_ennexos.sma.model import TimeValuePair, SMAApiParsingError
 
 def test_from_dict_valid_dict():
     """Test that TimeValuePair.from_dict() parses a valid dict correctly."""
