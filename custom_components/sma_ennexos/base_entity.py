@@ -40,11 +40,6 @@ class SMAEntity(CoordinatorEntity):
             )
         )
 
-        # create entity id from device id and channel id
-        self._attr_unique_id = str(
-            uuid.uuid5(uuid.NAMESPACE_X500, f"{device_id}{channel_id}")
-        )
-
         # prepare name, serial, and firmware version
         device_name = component_info.name if component_info else f"[{component_id}]"
         device_serial = (
@@ -68,10 +63,9 @@ class SMAEntity(CoordinatorEntity):
         )
 
         LOGGER.debug(
-            "created entity '%s' (%s) for channel %s of device '%s' (%s)",
+            "created entity '%s' (%s) for channel '%s' of device '%s'",
+            self.entity_id,
             self.name,
-            self.unique_id,
             channel_id,
-            device_id,
             device_id,
         )

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -48,7 +50,7 @@ from .sma.known_channels import (
     get_known_channel,
 )
 from .sma.model import ComponentInfo
-from .util import SMAEntryData, channel_parts_to_fqid
+from .util import SMAEntryData, channel_parts_to_entity_id, channel_parts_to_fqid
 
 
 async def async_setup_entry(
@@ -113,6 +115,10 @@ class SMASensor(SMAEntity, SensorEntity):
         """Initialize SMA sensor."""
         self.component_id = component_id
         self.channel_id = channel_id
+
+        # create entity id from device id and channel id
+        self.entity_id = channel_parts_to_entity_id(component_id, channel_id, "sensor")
+        self._attr_unique_id = str(uuid.uuid5(uuid.NAMESPACE_X500, self.entity_id))
 
         # super handles setting id and device_info for us
         super().__init__(
@@ -215,7 +221,7 @@ class SMASensor(SMAEntity, SensorEntity):
         # set entity description
         self.entity_description = SensorEntityDescription(
             key=fqid,
-            name=fqid,  # name,
+            name=name,
             icon=icon,
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,

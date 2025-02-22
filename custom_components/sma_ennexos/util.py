@@ -45,3 +45,39 @@ def channel_fqid_to_parts(fqid: str) -> tuple[str, str]:
         raise ValueError(f"Invalid channel fqid: {fqid}")
 
     return (split[1], split[0])
+
+
+def channel_parts_to_entity_id(component_id: str, channel_id: str, kind: str) -> str:
+    """Convert a channel_id and component_id to an entity id.
+
+    :param component_id: The component_id of the channel.
+    :param channel_id: The channel_id of the channel.
+    :param kind: The kind of entity. e.g. sensor, binary_sensor, etc.
+    :return: entity id
+    """
+
+    # transform array index to be just a suffix
+    if channel_id.endswith("]"):
+        channel_id = channel_id.replace("[", "_").replace("]", "")
+
+    # concat component and channel id
+    s = f"{component_id}_{channel_id}"
+
+    # lower case
+    s = s.lower()
+
+    # replace "delimiting characters" and spaces with underscores
+    for c in " -.:":
+        s = s.replace(c, "_")
+
+    # remove all non-alphanumeric characters except underscores
+    s = "".join(c if c.isalnum() or c == "_" else "" for c in s)
+
+    # trim underscores from start and end
+    s = s.strip("_")
+
+    # remove all occurrences of multiple underscores
+    while "__" in s:
+        s = s.replace("__", "_")
+
+    return f"{kind}.{s}"
