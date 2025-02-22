@@ -1,8 +1,13 @@
 """Configure pytest for all tests."""
 
+from unittest import mock
 from unittest.mock import patch
 
 import pytest
+from attr import dataclass
+
+from custom_components.sma_ennexos.sma.client import LOGIN_RESULT_ALREADY_LOGGED_IN
+from custom_components.sma_ennexos.sma.model import ChannelValues, ComponentInfo
 
 pytest_plugins = "pytest_homeassistant_custom_component"
 
@@ -32,3 +37,81 @@ def bypass_integration_setup():
         ) as mock,
     ):
         yield mock
+
+
+@dataclass
+class MockSmaClientHandle:
+    """Call counts for mock_sma_client."""
+
+    cnt_login: int = 0
+    cnt_logout: int = 0
+    cnt_get_all_components: int = 0
+    cnt_get_all_live_measurements: int = 0
+    cnt_get_live_measurements: int = 0
+
+    def reset_counts(self):
+        """Reset all call counts to zero."""
+        self.cnt_login = 0
+        self.cnt_logout = 0
+        self.cnt_get_all_components = 0
+        self.cnt_get_all_live_measurements = 0
+        self.cnt_get_live_measurements = 0
+
+    # return value for get_all_components
+    components: list[ComponentInfo] = []
+
+    # return value for get_all_live_measurements and get_live_measurements
+    measurements: list[ChannelValues] = []
+
+
+@pytest.fixture()
+def mock_sma_client():
+    """Fixture to mock SMA ennexOS api client function calls."""
+
+    hnd = MockSmaClientHandle()
+
+    async def login():
+        nonlocal hnd
+        hnd.cnt_login += 1
+        return LOGIN_RESULT_ALREADY_LOGGED_IN
+
+    async def logout():
+        nonlocal hnd
+        hnd.cnt_logout += 1
+
+    async def get_all_components():
+        nonlocal hnd
+        hnd.cnt_get_all_components += 1
+        return hnd.components
+
+    async def get_all_live_measurements(component_ids):
+        nonlocal hnd
+        hnd.cnt_get_all_live_measurements += 1
+        return hnd.measurements
+
+    async def get_live_measurements(query):
+        nonlocal hnd
+        hnd.cnt_get_live_measurements += 1
+        return hnd.measurements
+
+    with (
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.login", wraps=login
+        ),
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.logout", wraps=logout
+        ),
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.get_all_components",
+            wraps=get_all_components,
+        ),
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.get_all_live_measurements",
+            wraps=get_all_live_measurements,
+        ),
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.get_live_measurements",
+            wraps=get_live_measurements,
+        ),
+    ):
+        yield hnd
