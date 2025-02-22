@@ -95,7 +95,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of integration entry."""
     LOGGER.info("unloading SMA data manager integration")
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+        entry_data = hass.data[DOMAIN].pop(entry.entry_id)
+        if entry_data is not None and isinstance(entry_data, SMAEntryData):
+            await entry_data.coordinator.client.logout()
+
     return unloaded
 
 
