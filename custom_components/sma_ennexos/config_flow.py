@@ -50,6 +50,10 @@ from .sma.model import (
 from .util import channel_parts_to_fqid
 
 
+class NoPlantComponentFoundError(Exception):
+    """Raised when no plant component is found."""
+
+
 class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
     """config flow for SMA."""
 
@@ -82,6 +86,10 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
                 # connection error
                 LOGGER.error(exception)
                 _errors["base"] = "connection"
+            except NoPlantComponentFoundError as exception:
+                # no plant component found, misbehaving api
+                LOGGER.error(exception)
+                _errors["base"] = "unknown"  # TODO add a specific error message in UI
             except SMAApiClientError as exception:
                 # unknown error
                 LOGGER.exception(exception)
@@ -178,7 +186,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
             None,
         )
         if plant_component is None:
-            raise ValueError("No plant component found")
+            raise NoPlantComponentFoundError("No plant component found")
 
         return plant_component.name
 
