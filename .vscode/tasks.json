@@ -20,6 +20,12 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Unit Tests with Coverage (Once)",
+            "type": "shell",
+            "command": "scripts/test --coverage",
+            "problemMatcher": []
+        },
+        {
             "label": "Run Unit Tests (Watch)",
             "type": "shell",
             "command": "scripts/test --watch",

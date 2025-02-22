@@ -6,7 +6,7 @@ import homeassistant.const as hass_const
 LOGGER: Logger = getLogger(__package__)
 #LOGGER.setLevel(level="DEBUG")
 
-DOMAIN = "sma_data_manager"
+DOMAIN = "sma_ennexos"
 
 # device constants
 DEVICE_MANUFACTURER = "SMA"

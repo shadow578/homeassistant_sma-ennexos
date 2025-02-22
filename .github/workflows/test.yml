@@ -9,21 +9,26 @@ on:
       - "main"
 
 jobs:
-  ruff:
-    name: "PyTest"
+  test:
+    name: "Test"
     runs-on: "ubuntu-latest"
     steps:
         - name: "Checkout the repository"
-          uses: "actions/checkout@v4.1.1"
+          uses: "actions/checkout@v4.2.2"
 
         - name: "Set up Python"
-          uses: actions/setup-python@v5.0.0
+          uses: actions/setup-python@v5.4.0
           with:
-            python-version: "3.10"
+            python-version: "3.13"
             cache: "pip"
 
         - name: "Install requirements"
           run: python3 -m pip install -r requirements.txt
 
         - name: "Run"
-          run: python3 -m pytest
+          run: python3 -m pytest --cov=./ --cov-report=xml --cov-fail-under=80 -v
+
+        - name: Upload coverage reports to Codecov
+          uses: codecov/codecov-action@v5.3.1
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
