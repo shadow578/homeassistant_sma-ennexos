@@ -33,7 +33,7 @@ def channel_parts_to_fqid(component_id: str, channel_id: str) -> str:
     return f"{channel_id}@{component_id}"
 
 
-def channel_fqid_to_parts(fqid: str) -> (str, str):
+def channel_fqid_to_parts(fqid: str) -> tuple[str, str]:
     """Convert a channel fqid (channel@component) to its component_id and channel_id parts.
 
     :param fqid: The channel fqid to convert (channel@component).

@@ -61,10 +61,10 @@ class KnownChannelEntry(TypedDict):
     """Entry in the __KNOWN_CHANNELS dict."""
 
     name: str
-    unit: str
     device_kind: str
+    unit: str
     cumulative_mode: str | None
-    enum_values: dict[int, str]
+    enum_values: dict[int, str] | None
 
 
 __KNOWN_CHANNELS: dict[

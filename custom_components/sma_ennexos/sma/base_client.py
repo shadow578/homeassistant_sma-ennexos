@@ -17,30 +17,16 @@ from .model import (
 )
 
 
-class DummyLogger:
-    """dummy logger in case no logger is provided."""
-
-    def __getattr__(self, name):
-        """Stub all methods."""
-        return lambda *args, **kwargs: None
-
-
 class SMABaseClient:
-    """base class for sma data manager client, handles core functionality."""
+    """base class for sma ennexOS client, handles core functionality."""
 
     _auth_data: AuthTokenInfo | None = None
-
     _session_id: str | None = None
-
-    _session: aiohttp.ClientSession
-
-    _host: str
-
-    _base_url: str
-
-    _request_timeout: int
-
-    _logger: Logger
+    __session: aiohttp.ClientSession
+    __host: str
+    __base_url: str
+    __request_timeout: int
+    _logger: Logger | None
 
     def __init__(
         self,
@@ -51,12 +37,11 @@ class SMABaseClient:
         logger: Logger | None = None,
     ) -> None:
         """Initialize the client."""
-        self._host = host
-        self._base_url = f"http{'s' if use_ssl else ''}://{self._host}/api/v1"
-        self._session = session
-        self._request_timeout = request_timeout
-
-        self._logger = logger if logger is not None else DummyLogger()
+        self.__host = host
+        self.__base_url = f"http{'s' if use_ssl else ''}://{self.__host}/api/v1"
+        self.__session = session
+        self.__request_timeout = request_timeout
+        self._logger = logger
 
     async def make_request(
         self,
@@ -69,13 +54,13 @@ class SMABaseClient:
         """Make a request to a api endpoint."""
 
         # build full request url
-        url = f"{self._base_url}/{endpoint}"
+        url = f"{self.__base_url}/{endpoint}"
 
         # make the request
         try:
             # self._logger.debug(f"requesting {url}")
-            async with async_timeout.timeout(self._request_timeout):
-                response = await self._session.request(
+            async with async_timeout.timeout(self.__request_timeout):
+                response = await self.__session.request(
                     method=method,
                     url=url,
                     headers=headers,
@@ -86,11 +71,14 @@ class SMABaseClient:
                 )
 
                 # remove any cookies set by the request, we handle them manually
-                self._session.cookie_jar.clear_domain(self._host)
+                self.__session.cookie_jar.clear_domain(self.__host)
 
                 # check for 401/403 unauthorized
                 if response.status in (401, 403):
-                    self._logger.debug(f"got {response.status} unauthorized on {url}")
+                    if self._logger:
+                        self._logger.debug(
+                            f"got {response.status} unauthorized on {url}"
+                        )
                     raise SMAApiAuthenticationError(
                         "Invalid credentials",
                     )
@@ -119,7 +107,9 @@ class SMABaseClient:
             raise SMAApiClientError("session cookie not found")
 
         self._session_id = session_cookie.value
-        self._logger.debug(f"got session id {self._session_id}")
+
+        if self._logger:
+            self._logger.debug(f"got session id {self._session_id}")
 
     @property
     def _auth_headers(self) -> dict:
@@ -127,12 +117,10 @@ class SMABaseClient:
 
         note: only valid if logged in.
         """
-        self.require_session()
-
         return {
             **self._origin_headers,
             **self._session_headers,
-            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Authorization": f"Bearer {self.auth_data.access_token}",
         }
 
     @property
@@ -149,20 +137,23 @@ class SMABaseClient:
     def _origin_headers(self) -> dict:
         """Get host origin headers."""
         return {
-            "Origin": f"{self._base_url}",
-            "Host": f"{self._host}",
+            "Origin": f"{self.__base_url}",
+            "Host": f"{self.__host}",
         }
 
-    def require_session(self) -> None:
-        """Require a active session."""
+    @property
+    def auth_data(self) -> AuthTokenInfo:
+        """Get auth_data object, or raise a exception if no auth data is available."""
         if (
-            (self._auth_data is None)
-            or (self._auth_data.access_token is None)
-            or (self._session_id is None)
+            self._auth_data is None
+            or self._auth_data.access_token is None
+            or self._session_id is None
         ):
-            raise SMAApiClientError("session not available")
+            raise SMAApiClientError("no auth data available")
+
+        return self._auth_data
 
     @property
     def host(self) -> str:
         """Get the host."""
-        return self._host
+        return self.__host

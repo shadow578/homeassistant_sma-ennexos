@@ -46,10 +46,7 @@ class SMAEntity(CoordinatorEntity):
         )
 
         # prepare name, serial, and firmware version
-        device_name = (
-            # fallback to component id
-            component_info.name if component_info else f"[{component_id}]",
-        )
+        device_name = component_info.name if component_info else f"[{component_id}]"
         device_serial = (
             None
             if component_info is None or component_info.serial_number is None

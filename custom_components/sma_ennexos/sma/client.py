@@ -28,12 +28,12 @@ LOGIN_RESULT_NEW_TOKEN = "new_token"
 
 
 class SMAApiClient(SMABaseClient):
-    """API Client for SMA Data Manager M and compatible."""
+    """API Client for SMA ennexOS devices."""
 
-    _username: str | None
-    _password: str | None
+    __username: str | None
+    __password: str | None
 
-    _request_retries: int
+    __request_retries: int
 
     def __init__(
         self,
@@ -46,7 +46,7 @@ class SMAApiClient(SMABaseClient):
         request_retries: int = 3,
         logger: Logger | None = None,
     ) -> None:
-        """SMA Data Manager M API Client."""
+        """SMA ennexOS API Client."""
         super().__init__(
             host=host,
             session=session,
@@ -55,10 +55,10 @@ class SMAApiClient(SMABaseClient):
             logger=logger,
         )
 
-        self._username = username
-        self._password = password
+        self.__username = username
+        self.__password = password
 
-        self._request_retries = request_retries
+        self.__request_retries = request_retries
 
     async def login(self) -> str:
         """Login to the api.
@@ -71,29 +71,34 @@ class SMAApiClient(SMABaseClient):
             self._auth_data is not None
             and self._auth_data.time_until_expiration > timedelta(minutes=5)
         ):
-            self._logger.debug("already logged in, skipping login")
+            if self._logger:
+                self._logger.debug("already logged in, skipping login")
             return LOGIN_RESULT_ALREADY_LOGGED_IN
 
         # if we have a session and refresh token, try refreshing the token
         if self._session_id is not None and self._auth_data is not None:
             try:
-                self._auth_data = await self._refresh_token(
+                self._auth_data = await self.__refresh_token(
                     self._auth_data.refresh_token
                 )
-                self._logger.debug("refreshed token successfully")
+                if self._logger:
+                    self._logger.debug("refreshed token successfully")
                 return LOGIN_RESULT_TOKEN_REFRESHED
             except SMAApiClientError:
                 # refresh failed, try to re-login with username and password
-                self._logger.debug("failed to refresh token, trying to re-login")
+                if self._logger:
+                    self._logger.debug("failed to refresh token, trying to re-login")
 
         # if all else fails, get a new token using username and password
-        if self._username is None or self._password is None:
+        if self.__username is None or self.__password is None:
             raise ValueError("username and password are required for login")
-        self._auth_data = await self._get_new_token(self._username, self._password)
-        self._logger.debug("got new token successfully")
+        self._auth_data = await self.__get_new_token(self.__username, self.__password)
+
+        if self._logger:
+            self._logger.debug("got new token successfully")
         return LOGIN_RESULT_NEW_TOKEN
 
-    async def _get_new_token(self, username: str, password: str) -> AuthTokenInfo:
+    async def __get_new_token(self, username: str, password: str) -> AuthTokenInfo:
         """Get a new access token using username and password."""
         token_response = await self.make_request(
             method="POST",
@@ -120,7 +125,7 @@ class SMAApiClient(SMABaseClient):
         token_data = await token_response.json()
         return AuthTokenInfo.from_dict(token_data)
 
-    async def _refresh_token(self, refresh_token: str) -> AuthTokenInfo:
+    async def __refresh_token(self, refresh_token: str) -> AuthTokenInfo:
         """Get a new access token using a refresh token."""
         token_response = await self.make_request(
             method="POST",
@@ -144,15 +149,14 @@ class SMAApiClient(SMABaseClient):
 
     async def logout(self) -> None:
         """Logout from the api."""
-        self.require_session()
-
-        self._logger.debug("logging out")
+        if self._logger:
+            self._logger.debug("logging out")
 
         # logout request, ignore errors
         with contextlib.suppress(Exception):
             await self.make_request(
                 method="DELETE",
-                endpoint=f"refreshtoken?refreshToken={quote(self._auth_data.refresh_token)}",
+                endpoint=f"refreshtoken?refreshToken={quote(self.auth_data.refresh_token)}",
             )
 
         # clear auth data
@@ -166,7 +170,8 @@ class SMAApiClient(SMABaseClient):
             parent_id: str | None = None,
         ) -> list[ComponentInfo]:
             """Get data from /navigation endpoint."""
-            self._logger.debug(f"getting navigation data for parent={parent_id}")
+            if self._logger:
+                self._logger.debug(f"getting navigation data for parent={parent_id}")
 
             navigation_response = await self.make_request(
                 method="GET",
@@ -186,9 +191,10 @@ class SMAApiClient(SMABaseClient):
 
         async def _add_extra_info(component: ComponentInfo) -> None:
             """Get extra info for a component."""
-            self._logger.debug(
-                f"getting extra info for component={component.component_id}"
-            )
+            if self._logger:
+                self._logger.debug(
+                    f"getting extra info for component={component.component_id}"
+                )
 
             device_info_response = await self.make_request(
                 method="GET",
@@ -230,7 +236,8 @@ class SMAApiClient(SMABaseClient):
             if component.component_type != "Plant":
                 await _add_extra_info(component)
 
-        self._logger.debug(f"got {len(all_components)} components")
+        if self._logger:
+            self._logger.debug(f"got {len(all_components)} components")
         return all_components
 
     async def get_all_live_measurements(
@@ -252,7 +259,7 @@ class SMAApiClient(SMABaseClient):
         )
 
         measurements = await measurements_response.json()
-        return self._parse_measurements(measurements)
+        return self.__parse_measurements(measurements)
 
     async def get_live_measurements(
         self, query: list[LiveMeasurementQueryItem]
@@ -272,9 +279,9 @@ class SMAApiClient(SMABaseClient):
         )
 
         measurements = await measurements_response.json()
-        return self._parse_measurements(measurements)
+        return self.__parse_measurements(measurements)
 
-    def _parse_measurements(self, measurements: list[dict]) -> list[ChannelValues]:
+    def __parse_measurements(self, measurements: list[dict]) -> list[ChannelValues]:
         """Convert raw measurements response to python model."""
         if not isinstance(measurements, list):
             raise SMAApiClientError("received invalid response: not a list")
@@ -303,7 +310,8 @@ class SMAApiClient(SMABaseClient):
             tries: int = 0, did_reauth: bool = False
         ) -> aiohttp.ClientResponse:
             try:
-                self._logger.debug(f"requesting {endpoint} ({tries})")
+                if self._logger:
+                    self._logger.debug(f"requesting {endpoint} ({tries})")
                 return await make_request_impl(method, endpoint, data, headers, as_json)
             except SMAApiAuthenticationError as exception:
                 # on auth error, re-login and try again
@@ -315,18 +323,20 @@ class SMAApiClient(SMABaseClient):
                     and endpoint != "token"
                     and not endpoint.startswith("refreshtoken")
                 ):
-                    self._logger.debug(
-                        "SMA auth error (%s), re-authenticating", exception
-                    )
+                    if self._logger:
+                        self._logger.debug(
+                            "SMA auth error (%s), re-authenticating", exception
+                        )
 
                     try:
                         await self.logout()
                         await self.login()
                     except SMAApiClientError as reauth_exception:
                         # re-login failed, raise original exception
-                        self._logger.debug(
-                            "re-authentication failed (%s)", reauth_exception
-                        )
+                        if self._logger:
+                            self._logger.debug(
+                                "re-authentication failed (%s)", reauth_exception
+                            )
                         raise exception from None
 
                     # re-login ok, try again
@@ -339,8 +349,9 @@ class SMAApiClient(SMABaseClient):
                 SMAApiClientError,
             ) as exception:
                 # on other API errors, retry up to the configured number of times
-                if tries <= self._request_retries:
-                    self._logger.debug("SMA API error (%s), retrying", exception)
+                if tries <= self.__request_retries:
+                    if self._logger:
+                        self._logger.debug("SMA API error (%s), retrying", exception)
                     return await _make_request_w(tries=tries + 1, did_reauth=did_reauth)
                 else:
                     raise exception

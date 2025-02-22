@@ -155,7 +155,7 @@ class ChannelValues:
         return self.values[-1]
 
     @classmethod
-    def __parse_dict(cls, data: dict) -> tuple[str, str, list]:
+    def __parse_dict(cls, data: dict) -> tuple[str, str, list[dict]]:
         """Parse channel info and values from dict.
 
         :returns: tuple of (channel_id, component_id, values)
@@ -181,6 +181,12 @@ class ChannelValues:
         if not isinstance(data["values"], list):
             raise SMAApiParsingError("field 'values' in channel values is not a list")
 
+        for v in data["values"]:
+            if not isinstance(v, dict):
+                raise SMAApiParsingError(
+                    "element in 'values' in channel values is not a dict"
+                )
+
         return (data["channelId"], data["componentId"], data["values"])
 
     @classmethod
@@ -190,24 +196,24 @@ class ChannelValues:
         # parse channel info and values from dict
         channelId, componentId, values = cls.__parse_dict(data)
 
-        # test if this is an array channel
-        array_value = values[0] if len(values) > 0 else None
-        is_array = (
-            isinstance(array_value, dict)  # array_value is a dict
-            and "time" in array_value  # value has "time" field
-            and isinstance(array_value["time"], str)  # "time" field is a string
-            and "values"
-            in array_value  # value has "values" field (instead of normal "value" field)
-            and isinstance(array_value["values"], list)
-        )  # "values" field is a list
+        # is this an array channel?
+        if (
+            len(values) >= 1  # has at least one value
+            and "time" in values[0]  # has time field
+            and isinstance(values[0]["time"], str)  # time field is a string
+            and "values" in values[0]  # has values field
+            and isinstance(values[0]["values"], list)  # values field is a list
+        ):
+            # TODO: in array channels, only the first value is used.
+            # normally, this should be fine since no other values are ever returned by the api.
+            # still, being able to handle multiple values would be more correct.
 
-        if is_array:
             # array channel:
             # trim "[]" from channel id
             channelId = channelId[:-2] if channelId.endswith("[]") else channelId
 
             # get shared time
-            time = array_value["time"]
+            time = values[0]["time"]
 
             # manually create ChannelValues for each array value
             return [

@@ -16,9 +16,9 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
+    UnitOfReactivePower,
     UnitOfTemperature,
     UnitOfTime,
-    UnitOfReactivePower,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -121,7 +121,7 @@ class SMASensor(SMAEntity, SensorEntity):
             channel_id=channel_id,
             component_info=component_info,
         )
-        self._set_description()
+        self.__set_description()
 
     @property
     def native_value(self):
@@ -141,19 +141,28 @@ class SMASensor(SMAEntity, SensorEntity):
 
         # handle enum value translation to string
         if self.enum_values is not None:
-            # fallback to raw value if no enum value found
-            value = self.enum_values.get(value, f"[{value}]")
+            # enum values are always ints
+            # fallback to raw value if no enum value found or invalid
+            if isinstance(value, int):
+                value = self.enum_values.get(value, f"[{value}]")
+            else:
+                LOGGER.warning(
+                    "enum_values set, but value is not an int: %s (%s)",
+                    value,
+                    type(value),
+                )
+                value = f"[{value}]"
 
         # return value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
         return value
 
-    def _set_description(self) -> None:
+    def __set_description(self) -> None:
         """Set entity description using known channels."""
         fqid = channel_parts_to_fqid(self.component_id, self.channel_id)
 
         # get entry for known channel
-        known_channel: dict = get_known_channel(self.channel_id)
+        known_channel = get_known_channel(self.channel_id)
 
         # values set by known channel unit
         name = self.channel_id
@@ -164,14 +173,15 @@ class SMASensor(SMAEntity, SensorEntity):
         if known_channel is not None:
             name = known_channel["name"]
 
-            icon = device_kind_to_icon(known_channel["device_kind"])
+            icon = __device_kind_to_icon(known_channel["device_kind"])
 
-            (device_class, unit_of_measurement) = channel_to_device_class_and_unit(
+            (device_class, unit_of_measurement) = __channel_to_device_class_and_unit(
                 self.channel_id, known_channel["unit"]
             )
 
-            state_class = cumulative_mode_to_state_class(
-                known_channel.get("cumulative_mode", CUMULATIVE_MODE_NONE)
+            cumulative_mode = known_channel["cumulative_mode"]
+            state_class = __cumulative_mode_to_state_class(
+                cumulative_mode if cumulative_mode is not None else CUMULATIVE_MODE_NONE
             )
 
             # set enum_values if known channel is UNIT_ENUM
@@ -206,7 +216,7 @@ class SMASensor(SMAEntity, SensorEntity):
         )
 
 
-def device_kind_to_icon(device_kind: str) -> str:
+def __device_kind_to_icon(device_kind: str) -> str:
     """SMA DEVICE_KIND_* to mdi icon."""
     if device_kind == DEVICE_KIND_GRID:
         return "mdi:transmission-tower"
@@ -219,9 +229,9 @@ def device_kind_to_icon(device_kind: str) -> str:
     return "mdi:flash"
 
 
-def channel_to_device_class_and_unit(channel_id: str, channel_unit: str) -> tuple(
-    str, str
-):
+def __channel_to_device_class_and_unit(
+    channel_id: str, channel_unit: str
+) -> tuple[SensorDeviceClass | None, str | None]:
     """SMA UNIT_* to device_class and unit_of_measurement.
 
     :return: (device_class, unit_of_measurement):
@@ -250,7 +260,10 @@ def channel_to_device_class_and_unit(channel_id: str, channel_unit: str) -> tupl
     if channel_unit == UNIT_HERTZ:
         return (SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ)
     if channel_unit == UNIT_VOLT_AMPERE_REACTIVE:
-        return (None, UnitOfReactivePower.VOLT_AMPERE_REACTIVE)
+        return (
+            SensorDeviceClass.REACTIVE_POWER,
+            UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
+        )
     if channel_unit == UNIT_SECOND:
         return (None, UnitOfTime.SECONDS)
     if channel_unit == UNIT_PERCENT:
@@ -262,7 +275,7 @@ def channel_to_device_class_and_unit(channel_id: str, channel_unit: str) -> tupl
     return (None, None)
 
 
-def cumulative_mode_to_state_class(cumulative_mode: str) -> str:
+def __cumulative_mode_to_state_class(cumulative_mode: str) -> str:
     """SMA CUMULATIVE_MODE_* to SensorStateClass."""
 
     # counters only ever increase

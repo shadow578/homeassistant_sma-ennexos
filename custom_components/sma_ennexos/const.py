@@ -25,7 +25,6 @@ OPT_REQUEST_TIMEOUT = "request_timeout"
 OPT_UPDATE_INTERVAL = "update_interval"
 OPT_REQUEST_RETIRES = "request_retries"
 
-
 # configuration defaults
 DEFAULT_REQUEST_TIMEOUT = 10
 DEFAULT_UPDATE_INTERVAL = 60

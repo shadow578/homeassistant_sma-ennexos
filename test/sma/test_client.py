@@ -45,7 +45,9 @@ async def test_client_auth():
                 or data["grant_type"] == "refresh_token"
             )
 
-            # check common headers:
+            # check headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"
@@ -187,6 +189,8 @@ async def test_client_get_all_components():
         # GET /api/v1/navigation (component discovery)
         if method == "GET" and endpoint.startswith("navigation"):
             # check common headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"
@@ -234,6 +238,8 @@ async def test_client_get_all_components():
         # GET /api/v1/widgets/deviceInfo (component extra info)
         if method == "GET" and endpoint.startswith("widgets/deviceinfo"):
             # check common headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"
@@ -355,6 +361,8 @@ async def test_client_get_all_live_measurements():
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
             # check common headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"
@@ -467,6 +475,8 @@ async def test_client_get_live_measurements():
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
             # check common headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"
@@ -577,6 +587,8 @@ async def test_client_get_live_measurements_array():
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
             # check common headers
+            assert headers is not None
+
             # origin headers
             assert headers["Origin"] == "http://sma.local/api/v1"
             assert headers["Host"] == "sma.local"

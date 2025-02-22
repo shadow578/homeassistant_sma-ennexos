@@ -1,5 +1,9 @@
 """utility to mock http responses by aiohttp."""
 
+# TODO: replace this with respx library
+
+from typing import Any
+
 
 class CookieMock:
     """mock cookie entry."""
@@ -32,16 +36,16 @@ class CookieJarMock:
 class ClientResponseMock:
     """mock http response."""
 
-    data: any
+    data: Any
     cookies: CookieJarMock
 
-    def __init__(self, data: any, cookies: list[tuple[str, str]] = []):
+    def __init__(self, data: Any, cookies: list[tuple[str, str]] = []):
         """Initialize mock http response."""
         self.data = data
         self.cookies = CookieJarMock(
             cookies=[(name, CookieMock(value=value)) for name, value in cookies]
         )
 
-    async def json(self) -> any:
+    async def json(self) -> Any:
         """Return mock data."""
         return self.data

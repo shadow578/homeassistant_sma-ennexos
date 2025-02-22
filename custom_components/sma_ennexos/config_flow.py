@@ -62,11 +62,11 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
         _errors = {}
         if user_input is not None:
             # if user enters the hostname with 'http(s)://' or a trailing '/', handle it
-            user_input[CONF_HOST] = self._extract_host(user_input[CONF_HOST])
+            user_input[CONF_HOST] = self.__extract_host(user_input[CONF_HOST])
 
             try:
                 # try to log in using the provided credentials
-                plant_name = await self._fetch_plant_name(
+                plant_name = await self.__fetch_plant_name(
                     host=user_input[CONF_HOST],
                     username=user_input[CONF_USERNAME],
                     password=user_input[CONF_PASSWORD],
@@ -138,7 +138,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
         """Get options flow handler."""
         return SMAOptionsFlow()
 
-    async def _fetch_plant_name(
+    async def __fetch_plant_name(
         self, host: str, username: str, password: str, use_ssl: bool, verify_ssl: bool
     ) -> str:
         """Login to SMA and get plant name."""
@@ -181,7 +181,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return plant_component.name
 
-    def _extract_host(self, url_or_host: str) -> str:
+    def __extract_host(self, url_or_host: str) -> str:
         """Extract the host from a input string which is either a url or just a host."""
 
         # if the input doesn't contain a scheme, add one
@@ -191,6 +191,14 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
         # parse the url, return only the host
         parsed_url = urlparse(url_or_host)
         return parsed_url.netloc
+
+
+class OptionsFlowAvailableChannels(TypedDict):
+    """Available channels for selection."""
+
+    component_name: str | None
+    component_id: str
+    channel_id: str
 
 
 class SMAOptionsFlow(OptionsFlow):
@@ -211,7 +219,7 @@ class SMAOptionsFlow(OptionsFlow):
             )
 
         # build multi select options
-        available_channels = await self._fetch_available_channels()
+        available_channels = await self.__fetch_available_channels()
         available_channels_opt = {}
         for channel in available_channels:
             fqid = channel_parts_to_fqid(channel["component_id"], channel["channel_id"])
@@ -276,14 +284,9 @@ class SMAOptionsFlow(OptionsFlow):
             ),
         )
 
-    async def _fetch_available_channels(
+    async def __fetch_available_channels(
         self,
-    ) -> list[
-        TypedDict(
-            "ChannelInfo",
-            {"component_name": str, "component_id": str, "channel_id": str},
-        )
-    ]:
+    ) -> list[OptionsFlowAvailableChannels]:
         """Get a list of all available channels and their ids."""
         host = self.config_entry.data[CONF_HOST]
         LOGGER.debug("attempting to fetch available channels for host=%s", host)
