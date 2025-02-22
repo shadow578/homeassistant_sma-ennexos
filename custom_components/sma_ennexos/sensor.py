@@ -171,24 +171,29 @@ class SMASensor(SMAEntity, SensorEntity):
         unit_of_measurement = None
         state_class = SensorStateClass.MEASUREMENT
         if known_channel is not None:
-            name = known_channel["name"]
+            name = known_channel.name
 
-            icon = self.__device_kind_to_icon(known_channel["device_kind"])
+            icon = self.__device_kind_to_icon(known_channel.device_kind)
 
             (device_class, unit_of_measurement) = (
                 self.__channel_to_device_class_and_unit(
-                    self.channel_id, known_channel["unit"]
+                    self.channel_id, known_channel.unit
                 )
             )
 
-            cumulative_mode = known_channel.get("cumulative_mode", None)
+            cumulative_mode = known_channel.cumulative_mode
             state_class = self.__cumulative_mode_to_state_class(
                 cumulative_mode if cumulative_mode is not None else CUMULATIVE_MODE_NONE
             )
 
             # set enum_values if known channel is UNIT_ENUM
-            if known_channel["unit"] == UNIT_ENUM:
-                self.enum_values = known_channel.get("enum_values", {})
+            if known_channel.unit == UNIT_ENUM:
+                self.enum_values = known_channel.enum_values
+                if self.enum_values is None:
+                    LOGGER.warning(
+                        "UNIT_ENUM set, but enum_values is None: %s", self.channel_id
+                    )
+                    self.enum_values = {}
 
             # device class ENUM requires state class to be None
             if device_class == SensorDeviceClass.ENUM:

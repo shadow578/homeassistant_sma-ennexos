@@ -18,8 +18,8 @@ def test_known_channel_normal():
     ch = get_known_channel("Measurement.GridMs.TotW")
 
     assert ch is not None
-    assert ch["device_kind"] == DEVICE_KIND_GRID
-    assert ch["unit"] == UNIT_WATT
+    assert ch.device_kind == DEVICE_KIND_GRID
+    assert ch.unit == UNIT_WATT
 
 
 def test_known_channel_array():
@@ -33,12 +33,12 @@ def test_known_channel_array():
     ch0 = get_known_channel("Measurement.DcMs.Vol[0]")
 
     assert ch0 is not None
-    assert ch0["device_kind"] == DEVICE_KIND_PV
-    assert ch0["unit"] == UNIT_VOLT
+    assert ch0.device_kind == DEVICE_KIND_PV
+    assert ch0.unit == UNIT_VOLT
 
     # multi-digit index
     ch123 = get_known_channel("Measurement.DcMs.Vol[123]")
 
     assert ch123 is not None
-    assert ch123["device_kind"] == DEVICE_KIND_PV
-    assert ch123["unit"] == UNIT_VOLT
+    assert ch123.device_kind == DEVICE_KIND_PV
+    assert ch123.unit == UNIT_VOLT
