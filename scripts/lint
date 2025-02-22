@@ -13,7 +13,7 @@ ruff format .
 
 echo ""
 echo "pyright:"
-pyright #--warnings
+pyright --warnings
 
 echo ""
 echo "all checks passed"
