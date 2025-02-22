@@ -1,53 +1,52 @@
 """SMA integration config and options flow."""
+
 from __future__ import annotations
+
 from typing import Any, TypedDict
 from urllib.parse import urlparse
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
 from homeassistant.config_entries import (
-    ConfigFlow,
-    OptionsFlow,
-    FlowResult,
     ConfigEntry,
+    ConfigFlow,
+    FlowResult,
+    OptionsFlow,
 )
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.selector import (
-    TextSelector,
-    TextSelectorConfig,
-    TextSelectorType,
     BooleanSelector,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
 )
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
 from .const import (
-    DOMAIN,
-    LOGGER,
     CONF_HOST,
-    CONF_USERNAME,
     CONF_PASSWORD,
     CONF_USE_SSL,
+    CONF_USERNAME,
     CONF_VERIFY_SSL,
-    OPT_SENSOR_CHANNELS,
-    OPT_REQUEST_TIMEOUT,
-    OPT_UPDATE_INTERVAL,
-    OPT_REQUEST_RETIRES,
+    DEFAULT_REQUEST_RETIRES,
     DEFAULT_REQUEST_TIMEOUT,
     DEFAULT_UPDATE_INTERVAL,
-    DEFAULT_REQUEST_RETIRES,
+    DOMAIN,
+    LOGGER,
+    OPT_REQUEST_RETIRES,
+    OPT_REQUEST_TIMEOUT,
+    OPT_SENSOR_CHANNELS,
+    OPT_UPDATE_INTERVAL,
 )
-
-from .util import channel_parts_to_fqid
-
 from .sma.client import SMAApiClient
 from .sma.model import (
     SMAApiAuthenticationError,
-    SMAApiCommunicationError,
     SMAApiClientError,
+    SMAApiCommunicationError,
 )
+from .util import channel_parts_to_fqid
 
 
 class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -217,9 +216,9 @@ class SMAOptionsFlow(OptionsFlow):
         available_channels_opt = {}
         for channel in available_channels:
             fqid = channel_parts_to_fqid(channel["component_id"], channel["channel_id"])
-            available_channels_opt[
-                fqid
-            ] = f"{channel['channel_id']} @ {channel['component_name']}"
+            available_channels_opt[fqid] = (
+                f"{channel['channel_id']} @ {channel['component_name']}"
+            )
 
         # show options form
         return self.async_show_form(

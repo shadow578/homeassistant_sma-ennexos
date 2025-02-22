@@ -1,10 +1,11 @@
 """SMA integration constants."""
+
 from logging import Logger, getLogger
 
 import homeassistant.const as hass_const
 
 LOGGER: Logger = getLogger(__package__)
-#LOGGER.setLevel(level="DEBUG")
+# LOGGER.setLevel(level="DEBUG")
 
 DOMAIN = "sma_ennexos"
 

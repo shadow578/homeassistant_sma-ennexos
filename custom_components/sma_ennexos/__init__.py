@@ -1,4 +1,5 @@
 """SMA Data Manager M integration for Home Assistant."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -7,26 +8,24 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .const import (
-    LOGGER,
-    DOMAIN,
     CONF_HOST,
-    CONF_USERNAME,
     CONF_PASSWORD,
     CONF_USE_SSL,
+    CONF_USERNAME,
     CONF_VERIFY_SSL,
-    OPT_SENSOR_CHANNELS,
-    OPT_REQUEST_TIMEOUT,
-    OPT_UPDATE_INTERVAL,
-    OPT_REQUEST_RETIRES,
-    DEFAULT_UPDATE_INTERVAL,
-    DEFAULT_REQUEST_TIMEOUT,
     DEFAULT_REQUEST_RETIRES,
+    DEFAULT_REQUEST_TIMEOUT,
+    DEFAULT_UPDATE_INTERVAL,
+    DOMAIN,
+    LOGGER,
+    OPT_REQUEST_RETIRES,
+    OPT_REQUEST_TIMEOUT,
+    OPT_SENSOR_CHANNELS,
+    OPT_UPDATE_INTERVAL,
 )
 from .coordinator import SMAUpdateCoordinator
-from .util import SMAEntryData
-
 from .sma.client import SMAApiClient
-
+from .util import SMAEntryData
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
@@ -57,7 +56,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # get component info from SMA client once
     await client.login()
     all_components = await client.get_all_components()
-    #await client.logout()
+    # await client.logout()
 
     # initialize coordinator
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities

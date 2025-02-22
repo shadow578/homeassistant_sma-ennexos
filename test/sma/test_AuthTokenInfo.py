@@ -1,7 +1,9 @@
 """unit tests for model.AuthTokenInfo."""
 
 import pytest
+
 from custom_components.sma_ennexos.sma.model import AuthTokenInfo, SMAApiParsingError
+
 
 def test_from_dict_valid_dict():
     """Test that AuthTokenInfo.from_dict() parses a valid dict correctly."""
@@ -25,16 +27,16 @@ def test_from_dict_valid_dict():
 
     # check seconds_until_expiration is about 3600 +- 10 seconds
     # (the checks above should not take more than 10 seconds)
-    assert token.seconds_until_expiration > 3590 and token.seconds_until_expiration < 3610
+    assert (
+        token.seconds_until_expiration > 3590 and token.seconds_until_expiration < 3610
+    )
 
     # check is_expired is False
     assert token.is_expired is False
+
 
 def test_from_dict_invalid_dict():
     """Test that AuthTokenInfo.from_dict() raises an exception if the dict is invalid."""
 
     with pytest.raises(SMAApiParsingError):
         AuthTokenInfo.from_dict({})
-
-
-

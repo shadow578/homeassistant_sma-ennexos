@@ -1,4 +1,5 @@
 """SMA Api model classes."""
+
 from datetime import datetime, timedelta
 
 
@@ -191,11 +192,14 @@ class ChannelValues:
 
         # test if this is an array channel
         array_value = values[0] if len(values) > 0 else None
-        is_array = (isinstance(array_value, dict) # array_value is a dict
-                    and "time" in array_value # value has "time" field
-                    and isinstance(array_value["time"], str) # "time" field is a string
-                    and "values" in array_value # value has "values" field (instead of normal "value" field)
-                    and isinstance(array_value["values"], list)) # "values" field is a list
+        is_array = (
+            isinstance(array_value, dict)  # array_value is a dict
+            and "time" in array_value  # value has "time" field
+            and isinstance(array_value["time"], str)  # "time" field is a string
+            and "values"
+            in array_value  # value has "values" field (instead of normal "value" field)
+            and isinstance(array_value["values"], list)
+        )  # "values" field is a list
 
         if is_array:
             # array channel:
@@ -210,12 +214,9 @@ class ChannelValues:
                 cls(
                     channel_id=f"{channelId}[{i}]",
                     component_id=componentId,
-                    values=[
-                        TimeValuePair(time=time, value=value)
-                    ]
+                    values=[TimeValuePair(time=time, value=value)],
                 )
-                for i, value
-                in enumerate(values[0]["values"])
+                for i, value in enumerate(values[0]["values"])
             ]
         else:
             # single-value channel:
@@ -230,6 +231,7 @@ class ChannelValues:
                     values=values,
                 )
             ]
+
 
 class ComponentInfo:
     """information about a component (e.g. a device)."""

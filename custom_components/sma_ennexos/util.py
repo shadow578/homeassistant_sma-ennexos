@@ -1,9 +1,11 @@
 """integration utilities."""
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from .coordinator import SMAUpdateCoordinator
     from .sma.model import ComponentInfo
+
 
 class SMAEntryData:
     """data stored in domain entry of hass.data."""

@@ -1,4 +1,5 @@
 """Tests for the SMA Data Manager known_channels module."""
+
 from custom_components.sma_ennexos.sma.known_channels import (
     DEVICE_KIND_GRID,
     DEVICE_KIND_PV,
@@ -19,6 +20,7 @@ def test_known_channel_normal():
     assert ch is not None
     assert ch["device_kind"] == DEVICE_KIND_GRID
     assert ch["unit"] == UNIT_WATT
+
 
 def test_known_channel_array():
     """Test if a array known channel is returned correctly.

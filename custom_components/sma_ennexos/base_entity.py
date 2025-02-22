@@ -1,17 +1,18 @@
 """base SMA entity class."""
+
 from __future__ import annotations
+
 import uuid
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    LOGGER,
-    DOMAIN,
     DEVICE_MANUFACTURER,
+    DOMAIN,
+    LOGGER,
 )
 from .coordinator import SMAUpdateCoordinator
-
 from .sma.model import ComponentInfo
 
 
@@ -47,9 +48,7 @@ class SMAEntity(CoordinatorEntity):
         # prepare name, serial, and firmware version
         device_name = (
             # fallback to component id
-            component_info.name
-            if component_info
-            else f"[{component_id}]",
+            component_info.name if component_info else f"[{component_id}]",
         )
         device_serial = (
             None

@@ -1,7 +1,9 @@
 """unit test for SMA client implementation."""
+
 from unittest import mock
-import pytest
 from urllib.parse import quote
+
+import pytest
 
 from custom_components.sma_ennexos.sma.client import (
     LOGIN_RESULT_ALREADY_LOGGED_IN,
@@ -22,7 +24,14 @@ async def test_client_auth():
     did_get_token = False
     did_refresh_token = False
     did_delete_token = False
-    async def make_request_mock(method: str, endpoint: str, data: dict|None = None, headers: dict|None = None, as_json: bool = True):
+
+    async def make_request_mock(
+        method: str,
+        endpoint: str,
+        data: dict | None = None,
+        headers: dict | None = None,
+        as_json: bool = True,
+    ):
         """Mock for make_request."""
         nonlocal did_get_token
         nonlocal did_refresh_token
@@ -31,7 +40,10 @@ async def test_client_auth():
         # POST /api/v1/token (login, NEW and REFRESH)
         if method == "POST" and endpoint == "token":
             assert data is not None
-            assert data["grant_type"] == "password" or data["grant_type"] == "refresh_token"
+            assert (
+                data["grant_type"] == "password"
+                or data["grant_type"] == "refresh_token"
+            )
 
             # check common headers:
             # origin headers
@@ -41,7 +53,6 @@ async def test_client_auth():
             # content type headers
             assert headers["Content-Type"] == "application/x-www-form-urlencoded"
             assert headers["Accept"] == "application/json"
-
 
             if data["grant_type"] == "password":
                 # check data
@@ -58,11 +69,11 @@ async def test_client_auth():
                         "access_token": "acc-token-1",
                         "refresh_token": "ref-token-1",
                         "token_type": "Bearer",
-                        "expires_in": 30, # ultra short-lived to test token refresh
+                        "expires_in": 30,  # ultra short-lived to test token refresh
                     },
                     cookies=[
                         ("JSESSIONID", "session-id"),
-                    ]
+                    ],
                 )
             elif data["grant_type"] == "refresh_token":
                 # token refresh requires session cookie
@@ -81,11 +92,11 @@ async def test_client_auth():
                         "access_token": "acc-token-2",
                         "refresh_token": "ref-token-2",
                         "token_type": "Bearer",
-                        "expires_in": 3600, # long-lived
+                        "expires_in": 3600,  # long-lived
                     },
                     cookies=[
                         ("JSESSIONID", "session-id"),
-                    ]
+                    ],
                 )
 
         # DELETE /api/v1/token (logout)
@@ -93,10 +104,7 @@ async def test_client_auth():
             assert endpoint == f"refreshtoken?refreshToken={quote('ref-token-2')}"
             did_delete_token = True
 
-            return ClientResponseMock(
-                data={},
-                cookies=[]
-            )
+            return ClientResponseMock(data={}, cookies=[])
 
         raise Exception(f"unexpected endpoint: {endpoint}")
 
@@ -135,9 +143,8 @@ async def test_client_auth():
 
         # logout
         # TODO: logout test does not work...
-        #await sma.logout()
-        #assert did_delete_token is True
-
+        # await sma.logout()
+        # assert did_delete_token is True
 
 
 @pytest.mark.asyncio
@@ -149,7 +156,14 @@ async def test_client_get_all_components():
     did_get_children = False
     did_get_inv1_info = False
     did_get_inv2_info = False
-    async def make_request_mock(method: str, endpoint: str, data: dict|None = None, headers: dict|None = None, as_json: bool = True):
+
+    async def make_request_mock(
+        method: str,
+        endpoint: str,
+        data: dict | None = None,
+        headers: dict | None = None,
+        as_json: bool = True,
+    ):
         """Mock for make_request."""
         nonlocal did_get_root
         nonlocal did_get_children
@@ -163,13 +177,12 @@ async def test_client_get_all_components():
                     "access_token": "acc-token-1",
                     "refresh_token": "ref-token-1",
                     "token_type": "Bearer",
-                    "expires_in": 30, # ultra short-lived to test token refresh
+                    "expires_in": 30,  # ultra short-lived to test token refresh
                 },
                 cookies=[
                     ("JSESSIONID", "session-id"),
-                ]
+                ],
             )
-
 
         # GET /api/v1/navigation (component discovery)
         if method == "GET" and endpoint.startswith("navigation"):
@@ -245,7 +258,7 @@ async def test_client_get_all_components():
                                 "infoWidgetType": "FirmwareVersion",
                                 "value": "inv1-firmware",
                             }
-                        ]
+                        ],
                     }
                 )
 
@@ -260,7 +273,7 @@ async def test_client_get_all_components():
                                 "infoWidgetType": "FirmwareVersion",
                                 "value": "inv2-firmware",
                             }
-                        ]
+                        ],
                     }
                 )
 
@@ -286,7 +299,6 @@ async def test_client_get_all_components():
         assert did_get_inv1_info is True
         assert did_get_inv2_info is True
 
-
         assert len(all_components) == 3
 
         # Plant
@@ -309,14 +321,20 @@ async def test_client_get_all_components():
         assert all_components[2].firmware_version == "inv2-firmware"
 
 
-
 @pytest.mark.asyncio
 async def test_client_get_all_live_measurements():
     """Test SMAApiClient.get_all_live_measurements."""
 
     # mock for make_request
     did_get_measurements = False
-    async def make_request_mock(method: str, endpoint: str, data: dict|None = None, headers: dict|None = None, as_json: bool = True):
+
+    async def make_request_mock(
+        method: str,
+        endpoint: str,
+        data: dict | None = None,
+        headers: dict | None = None,
+        as_json: bool = True,
+    ):
         """Mock for make_request."""
         nonlocal did_get_measurements
 
@@ -327,13 +345,12 @@ async def test_client_get_all_live_measurements():
                     "access_token": "acc-token-1",
                     "refresh_token": "ref-token-1",
                     "token_type": "Bearer",
-                    "expires_in": 30, # ultra short-lived to test token refresh
+                    "expires_in": 30,  # ultra short-lived to test token refresh
                 },
                 cookies=[
                     ("JSESSIONID", "session-id"),
-                ]
+                ],
             )
-
 
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
@@ -370,22 +387,12 @@ async def test_client_get_all_live_measurements():
                     {
                         "channelId": "chastt",
                         "componentId": "inv0",
-                        "values": [
-                            {
-                                "time": "2024-02-01T11:30:00Z",
-                                "value": 10
-                            }
-                        ]
+                        "values": [{"time": "2024-02-01T11:30:00Z", "value": 10}],
                     },
                     {
                         "channelId": "chastt",
                         "componentId": "inv1",
-                        "values": [
-                            {
-                                "time": "2024-02-01T11:30:00Z",
-                                "value": 25
-                            }
-                        ]
+                        "values": [{"time": "2024-02-01T11:30:00Z", "value": 25}],
                     },
                 ]
             )
@@ -426,14 +433,20 @@ async def test_client_get_all_live_measurements():
         assert measurements[1].values[0].value == 25
 
 
-
 @pytest.mark.asyncio
 async def test_client_get_live_measurements():
     """Test SMAApiClient.get_live_measurements for regular (non-array) channels."""
 
     # mock for make_request
     did_get_measurement = False
-    async def make_request_mock(method: str, endpoint: str, data: dict|None = None, headers: dict|None = None, as_json: bool = True):
+
+    async def make_request_mock(
+        method: str,
+        endpoint: str,
+        data: dict | None = None,
+        headers: dict | None = None,
+        as_json: bool = True,
+    ):
         """Mock for make_request."""
         nonlocal did_get_measurement
 
@@ -444,13 +457,12 @@ async def test_client_get_live_measurements():
                     "access_token": "acc-token-1",
                     "refresh_token": "ref-token-1",
                     "token_type": "Bearer",
-                    "expires_in": 30, # ultra short-lived to test token refresh
+                    "expires_in": 30,  # ultra short-lived to test token refresh
                 },
                 cookies=[
                     ("JSESSIONID", "session-id"),
-                ]
+                ],
             )
-
 
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
@@ -485,12 +497,7 @@ async def test_client_get_live_measurements():
                     {
                         "channelId": "chastt",
                         "componentId": "inv0",
-                        "values": [
-                            {
-                                "time": "2024-02-01T11:30:00Z",
-                                "value": 10
-                            }
-                        ]
+                        "values": [{"time": "2024-02-01T11:30:00Z", "value": 10}],
                     },
                 ]
             )
@@ -511,12 +518,14 @@ async def test_client_get_live_measurements():
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get live measurement
-        measurements = await sma.get_live_measurements([
-            LiveMeasurementQueryItem(
-                component_id="inv0",
-                channel_id="chastt",
-            )
-        ])
+        measurements = await sma.get_live_measurements(
+            [
+                LiveMeasurementQueryItem(
+                    component_id="inv0",
+                    channel_id="chastt",
+                )
+            ]
+        )
         assert did_get_measurement is True
 
         assert len(measurements) == 1
@@ -526,7 +535,6 @@ async def test_client_get_live_measurements():
         assert measurements[0].channel_id == "chastt"
         assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
         assert measurements[0].values[0].value == 10
-
 
 
 @pytest.mark.asyncio
@@ -541,7 +549,14 @@ async def test_client_get_live_measurements_array():
 
     # mock for make_request
     did_get_measurement = False
-    async def make_request_mock(method: str, endpoint: str, data: dict|None = None, headers: dict|None = None, as_json: bool = True):
+
+    async def make_request_mock(
+        method: str,
+        endpoint: str,
+        data: dict | None = None,
+        headers: dict | None = None,
+        as_json: bool = True,
+    ):
         """Mock for make_request."""
         nonlocal did_get_measurement
 
@@ -552,13 +567,12 @@ async def test_client_get_live_measurements_array():
                     "access_token": "acc-token-1",
                     "refresh_token": "ref-token-1",
                     "token_type": "Bearer",
-                    "expires_in": 30, # ultra short-lived to test token refresh
+                    "expires_in": 30,  # ultra short-lived to test token refresh
                 },
                 cookies=[
                     ("JSESSIONID", "session-id"),
-                ]
+                ],
             )
-
 
         # POST /api/v1/measurements/live
         if method == "POST" and endpoint == "measurements/live":
@@ -597,11 +611,11 @@ async def test_client_get_live_measurements_array():
                             {
                                 "time": "2024-02-01T11:30:00Z",
                                 "values": [
-                                    10, # arrtst[0]
-                                    20, # arrtst[1]
-                                ]
+                                    10,  # arrtst[0]
+                                    20,  # arrtst[1]
+                                ],
                             }
-                        ]
+                        ],
                     },
                 ]
             )
@@ -622,12 +636,14 @@ async def test_client_get_live_measurements_array():
         assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
         # get live measurement
-        measurements = await sma.get_live_measurements([
-            LiveMeasurementQueryItem(
-                component_id="inv0",
-                channel_id="arrtst[]",
-            )
-        ])
+        measurements = await sma.get_live_measurements(
+            [
+                LiveMeasurementQueryItem(
+                    component_id="inv0",
+                    channel_id="arrtst[]",
+                )
+            ]
+        )
         assert did_get_measurement is True
 
         assert len(measurements) == 2
@@ -643,4 +659,3 @@ async def test_client_get_live_measurements_array():
         assert measurements[1].channel_id == "arrtst[1]"
         assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
         assert measurements[1].values[0].value == 20
-

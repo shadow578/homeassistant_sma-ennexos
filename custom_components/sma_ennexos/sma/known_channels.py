@@ -1,4 +1,5 @@
 """SMA known channels."""
+
 from typing import TypedDict
 
 UNIT_PLAIN_NUMBER: str = "PLAIN_NUMBER"
@@ -55,6 +56,7 @@ __COMMON_ENUM_VALUES = {
     457: "Waiting for grid voltage",
 }
 
+
 class KnownChannelEntry(TypedDict):
     """Entry in the __KNOWN_CHANNELS dict."""
 
@@ -63,6 +65,7 @@ class KnownChannelEntry(TypedDict):
     device_kind: str
     cumulative_mode: str | None
     enum_values: dict[int, str]
+
 
 __KNOWN_CHANNELS: dict[
     str,
@@ -247,7 +250,7 @@ __KNOWN_CHANNELS: dict[
         "name": "device health status",
         "device_kind": DEVICE_KIND_OTHER,
         "unit": UNIT_ENUM,
-        "enum_values": __COMMON_ENUM_VALUES, # TODO: Measurement.Operation.Health enum_values may be partially incorrect, only [55, 307, 455] are validated
+        "enum_values": __COMMON_ENUM_VALUES,  # TODO: Measurement.Operation.Health enum_values may be partially incorrect, only [55, 307, 455] are validated
     },
     "Measurement.Operation.WMaxInLimNom": {
         "name": "maximum active power setpoint (grid supply)",
@@ -642,9 +645,10 @@ __KNOWN_CHANNELS: dict[
         "name": "multi-function relay status",
         "device_kind": DEVICE_KIND_OTHER,
         "unit": UNIT_ENUM,
-        "enum_values": __COMMON_ENUM_VALUES, # TODO: Measurement.MltFncSw.SttMstr enum_values may be partially incorrect, only [303] are validated
-    }
+        "enum_values": __COMMON_ENUM_VALUES,  # TODO: Measurement.MltFncSw.SttMstr enum_values may be partially incorrect, only [303] are validated
+    },
 }
+
 
 def get_known_channel(channel_id: str) -> KnownChannelEntry | None:
     """Get known channel by channel_id.

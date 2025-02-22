@@ -1,55 +1,54 @@
 """Sensor platform for SMA."""
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
-    SensorDeviceClass,
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.const import (
-    UnitOfElectricPotential,
+    PERCENTAGE,
+    POWER_VOLT_AMPERE_REACTIVE,
     UnitOfElectricCurrent,
-    UnitOfPower,
+    UnitOfElectricPotential,
     UnitOfEnergy,
     UnitOfFrequency,
+    UnitOfPower,
     UnitOfTemperature,
     UnitOfTime,
-    POWER_VOLT_AMPERE_REACTIVE,
-    PERCENTAGE,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .coordinator import SMAUpdateCoordinator
 from .base_entity import SMAEntity
-from .util import channel_parts_to_fqid, SMAEntryData
 from .const import DOMAIN, LOGGER
-
-from .sma.model import ComponentInfo
-
+from .coordinator import SMAUpdateCoordinator
 from .sma.known_channels import (
-    get_known_channel,
-    UNIT_VOLT,
+    CUMULATIVE_MODE_COUNTER,
+    CUMULATIVE_MODE_MAXIMUM,
+    CUMULATIVE_MODE_MINIMUM,
+    CUMULATIVE_MODE_NONE,
+    CUMULATIVE_MODE_TOTAL,
+    DEVICE_KIND_BATTERY,
+    DEVICE_KIND_GRID,
+    DEVICE_KIND_PV,
     UNIT_AMPERE,
+    UNIT_CELSIUS,
+    UNIT_ENUM,
+    UNIT_HERTZ,
+    UNIT_PERCENT,
+    UNIT_SECOND,
+    UNIT_VOLT,
+    UNIT_VOLT_AMPERE_REACTIVE,
     UNIT_WATT,
     UNIT_WATT_HOUR,
-    UNIT_CELSIUS,
-    UNIT_HERTZ,
-    UNIT_VOLT_AMPERE_REACTIVE,
-    UNIT_SECOND,
-    UNIT_PERCENT,
-    UNIT_ENUM,
-    DEVICE_KIND_GRID,
-    DEVICE_KIND_BATTERY,
-    DEVICE_KIND_PV,
-    CUMULATIVE_MODE_NONE,
-    CUMULATIVE_MODE_COUNTER,
-    CUMULATIVE_MODE_TOTAL,
-    CUMULATIVE_MODE_MINIMUM,
-    CUMULATIVE_MODE_MAXIMUM,
+    get_known_channel,
 )
+from .sma.model import ComponentInfo
+from .util import SMAEntryData, channel_parts_to_fqid
 
 
 async def async_setup_entry(
@@ -220,9 +219,9 @@ def device_kind_to_icon(device_kind: str) -> str:
     return "mdi:flash"
 
 
-def channel_to_device_class_and_unit(
-    channel_id: str, channel_unit: str
-) -> tuple(str, str):
+def channel_to_device_class_and_unit(channel_id: str, channel_unit: str) -> tuple(
+    str, str
+):
     """SMA UNIT_* to device_class and unit_of_measurement.
 
     :return: (device_class, unit_of_measurement):

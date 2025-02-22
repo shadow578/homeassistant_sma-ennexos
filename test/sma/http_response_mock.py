@@ -2,13 +2,14 @@
 
 
 class CookieMock:
-        """mock cookie entry."""
+    """mock cookie entry."""
 
-        value: str
+    value: str
 
-        def __init__(self, value: str):
-            """Initialize mock cookie entry."""
-            self.value = value
+    def __init__(self, value: str):
+        """Initialize mock cookie entry."""
+        self.value = value
+
 
 class CookieJarMock:
     """mock cookie jar."""
@@ -27,6 +28,7 @@ class CookieJarMock:
 
         raise KeyError(f"cookie {name} not found")
 
+
 class ClientResponseMock:
     """mock http response."""
 
@@ -43,4 +45,3 @@ class ClientResponseMock:
     async def json(self) -> any:
         """Return mock data."""
         return self.data
-

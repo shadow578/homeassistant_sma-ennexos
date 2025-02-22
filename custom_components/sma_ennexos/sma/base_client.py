@@ -1,18 +1,19 @@
 """SMA api base client."""
 
 from __future__ import annotations
-from logging import Logger
 
 import asyncio
 import socket
+from logging import Logger
+
 import aiohttp
 import async_timeout
 
 from .model import (
     AuthTokenInfo,
     SMAApiAuthenticationError,
-    SMAApiCommunicationError,
     SMAApiClientError,
+    SMAApiCommunicationError,
 )
 
 

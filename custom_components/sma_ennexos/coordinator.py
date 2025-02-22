@@ -1,27 +1,27 @@
 """DataUpdateCoordinator for SMA integration."""
+
 from __future__ import annotations
 
 from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .const import DOMAIN, LOGGER
-from .util import channel_fqid_to_parts, channel_parts_to_fqid
-
 from .sma.client import SMAApiClient
 from .sma.model import (
-    LiveMeasurementQueryItem,
     ChannelValues,
+    LiveMeasurementQueryItem,
     SMAApiAuthenticationError,
+    SMAApiClientError,
     SMAApiCommunicationError,
     SMAApiParsingError,
-    SMAApiClientError,
 )
+from .util import channel_fqid_to_parts, channel_parts_to_fqid
 
 
 # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
@@ -79,7 +79,7 @@ class SMAUpdateCoordinator(DataUpdateCoordinator):
 
             await self.client.login()
             measurements = await self.client.get_live_measurements(query=self.query)
-            #await self.client.logout()
+            # await self.client.logout()
 
             return measurements
         except SMAApiAuthenticationError as exception:
