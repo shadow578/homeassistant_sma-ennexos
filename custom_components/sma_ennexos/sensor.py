@@ -164,6 +164,7 @@ class SMASensor(SMAEntity, SensorEntity):
         device_class = None
         unit_of_measurement = None
         state_class = SensorStateClass.MEASUREMENT
+        suggested_display_precision = None
         if known_channel is not None:
             name = known_channel.name
 
@@ -177,6 +178,10 @@ class SMASensor(SMAEntity, SensorEntity):
 
             state_class = self.__cumulative_mode_to_state_class(
                 known_channel.cumulative_mode
+            )
+
+            suggested_display_precision = self.__unit_to_display_precision(
+                known_channel.unit
             )
 
             # set enum_values if known channel is UNIT_ENUM
@@ -194,13 +199,14 @@ class SMASensor(SMAEntity, SensorEntity):
 
             LOGGER.debug(
                 "configure %s using known channel:"
-                "name=%s; icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s",
+                "name=%s; icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
                 fqid,
                 name,
                 icon,
                 device_class,
                 unit_of_measurement,
                 state_class,
+                suggested_display_precision,
             )
         else:
             LOGGER.debug("configure %s as generic sensor", fqid)
@@ -214,12 +220,13 @@ class SMASensor(SMAEntity, SensorEntity):
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,
             state_class=state_class,
+            suggested_display_precision=suggested_display_precision,
         )
 
         # required for using translation_key
         self._attr_has_entity_name = True
 
-    def __device_kind_to_icon(self, device_kind: str) -> str:
+    def __device_kind_to_icon(self, device_kind: SMADeviceKind) -> str:
         """SMADeviceKind to mdi icon."""
         if device_kind == SMADeviceKind.GRID:
             return "mdi:transmission-tower"
@@ -232,7 +239,7 @@ class SMASensor(SMAEntity, SensorEntity):
         return "mdi:flash"
 
     def __channel_to_device_class_and_unit(
-        self, channel_id: str, channel_unit: str
+        self, channel_id: str, channel_unit: SMAUnit
     ) -> tuple[SensorDeviceClass | None, str | None]:
         """SMAUnit to device_class and unit_of_measurement.
 
@@ -266,7 +273,7 @@ class SMASensor(SMAEntity, SensorEntity):
                 SensorDeviceClass.REACTIVE_POWER,
                 UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
             )
-        if channel_unit == SMAUnit.SECOND:
+        if channel_unit == SMAUnit.SECONDS:
             return (None, UnitOfTime.SECONDS)
         if channel_unit == SMAUnit.PERCENT:
             return (None, PERCENTAGE)
@@ -276,7 +283,9 @@ class SMASensor(SMAEntity, SensorEntity):
         # fallback to PLAIN_NUMBER
         return (None, None)
 
-    def __cumulative_mode_to_state_class(self, cumulative_mode: str | None) -> str:
+    def __cumulative_mode_to_state_class(
+        self, cumulative_mode: SMACumulativeMode | None
+    ) -> str:
         """SMACumulativeMode to SensorStateClass."""
 
         # counters only ever increase
@@ -294,3 +303,29 @@ class SMASensor(SMAEntity, SensorEntity):
             return SensorStateClass.TOTAL
 
         return SensorStateClass.MEASUREMENT
+
+    def __unit_to_display_precision(self, unit: SMAUnit) -> int | None:
+        """SMAUnit to display precision."""
+
+        if (
+            unit == SMAUnit.VOLT
+            or unit == SMAUnit.AMPERE
+            or unit == SMAUnit.WATT
+            or unit == SMAUnit.WATT_HOUR
+            or unit == SMAUnit.HERTZ
+            or unit == SMAUnit.VOLT_AMPERE_REACTIVE
+            or unit == SMAUnit.SECONDS
+        ):
+            # display no decimal places
+            return 0
+
+        if unit == SMAUnit.CELSIUS:
+            # display one decimal place
+            return 1
+
+        if unit == SMAUnit.PERCENT:
+            # display two decimal places
+            return 2
+
+        # PLAIN_NUMBER or ENUM
+        return None

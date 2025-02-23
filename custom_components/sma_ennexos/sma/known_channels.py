@@ -19,7 +19,7 @@ class SMAUnit(str, Enum):
     CELSIUS = "celsius"
     HERTZ = "hertz"
     VOLT_AMPERE_REACTIVE = "volt_ampere_reactive"
-    SECOND = "second"
+    SECONDS = "seconds"
     PERCENT = "percent"
 
     # SMA enum, value keys defined in KnownChannel enum_values dict
@@ -85,13 +85,13 @@ class KnownChannelEntry:
     name: str
 
     # kind of device this channel belongs to
-    device_kind: str
+    device_kind: SMADeviceKind
 
     # unit of the channel value
-    unit: str
+    unit: SMAUnit
 
     # optional cumulative mode
-    cumulative_mode: str | None = None
+    cumulative_mode: SMACumulativeMode | None = None
 
     # optional list of enum values, only with unit=SMAUnit.ENUM
     enum_values: dict[int, str] | None = None
@@ -449,7 +449,7 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Bat.Diag.StatTm": KnownChannelEntry(
         name="battery operating time",
         device_kind=SMADeviceKind.BATTERY,
-        unit=SMAUnit.SECOND,
+        unit=SMAUnit.SECONDS,
     ),
     "Measurement.Bat.Diag.TmpValMax": KnownChannelEntry(
         name="maximum battery temperature",
