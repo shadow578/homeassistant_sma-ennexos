@@ -63,9 +63,9 @@ class SMAEntity(CoordinatorEntity):
         )
 
         LOGGER.debug(
-            "created entity '%s' (%s) for channel '%s' of device '%s'",
+            "created entity '%s' for channel '%s' of device '%s' (%s)",
             self.entity_id,
-            self.name,
             channel_id,
             device_id,
+            device_name
         )

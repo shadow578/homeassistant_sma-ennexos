@@ -19,6 +19,7 @@ DEVICE_KIND_BATTERY: str = "BATTERY"
 DEVICE_KIND_PV: str = "PV"
 DEVICE_KIND_OTHER: str = "OTHER"
 
+# TODO remove, use python None instead
 CUMULATIVE_MODE_NONE: str = "NONE"  # no cummulative, one-time measurement
 CUMULATIVE_MODE_COUNTER: str = (
     "COUNTER"  # increasing counter value, e.g. error count, operating time
