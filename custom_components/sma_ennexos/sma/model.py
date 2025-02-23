@@ -96,13 +96,15 @@ class AuthTokenInfo:
         )
 
 
+SMAValue = str | int | float
+
 class TimeValuePair:
     """a single value at a single point in time."""
 
     time: str
-    value: str | int | float | None
+    value: SMAValue | None
 
-    def __init__(self, time: str, value: str | int | float | None) -> None:
+    def __init__(self, time: str, value: SMAValue | None) -> None:
         """Initialize time value pair."""
         self.time = time
         self.value = value
@@ -121,9 +123,9 @@ class TimeValuePair:
 
         # value is optional
         if "value" in data:
-            if not isinstance(data["value"], str | int | float):
+            if not isinstance(data["value"], SMAValue):
                 raise SMAApiParsingError(
-                    "field 'value' in time value pair is not a string, int or float"
+                    "field 'value' in time value pair is not a SMAValue"
                 )
         else:
             data["value"] = None

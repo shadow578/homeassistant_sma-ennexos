@@ -2,6 +2,8 @@
 
 from attr import dataclass
 
+from custom_components.sma_ennexos.sma.model import SMAValue
+
 UNIT_PLAIN_NUMBER: str = "PLAIN_NUMBER"
 UNIT_VOLT: str = "VOLT"
 UNIT_AMPERE: str = "AMPERE"
@@ -60,11 +62,23 @@ __COMMON_ENUM_VALUES = {
 class KnownChannelEntry:
     """Entry in the __KNOWN_CHANNELS dict."""
 
+    # human readable name for this channel
     name: str
+
+    # kind of device this channel belongs to
     device_kind: str
+
+    # unit of the channel value
     unit: str
+
+    # optional cumulative mode
     cumulative_mode: str | None = None
+
+    # optional list of enum values, only with unit=UNIT_ENUM
     enum_values: dict[int, str] | None = None
+
+    # optional value when the channel is not available
+    value_when_none: SMAValue | None = None
 
 
 __KNOWN_CHANNELS: dict[
@@ -82,10 +96,13 @@ __KNOWN_CHANNELS: dict[
         unit=UNIT_VOLT_AMPERE_REACTIVE,
     ),
     "Measurement.GridMs.TotW": KnownChannelEntry(
-        name="Grid Power", device_kind=DEVICE_KIND_GRID, unit=UNIT_WATT
+        name="Grid Power",
+        device_kind=DEVICE_KIND_GRID,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.GridMs.TotW.Pv": KnownChannelEntry(
-        name="PV Power", device_kind=DEVICE_KIND_PV, unit=UNIT_WATT
+        name="PV Power", device_kind=DEVICE_KIND_PV, unit=UNIT_WATT, value_when_none=0
     ),
     "Measurement.Inverter.CurWCtlNom": KnownChannelEntry(
         name="Active Power Limit", device_kind=DEVICE_KIND_PV, unit=UNIT_PERCENT
@@ -94,10 +111,16 @@ __KNOWN_CHANNELS: dict[
         name="Available Inverter Power", device_kind=DEVICE_KIND_PV, unit=UNIT_WATT
     ),
     "Measurement.Metering.GridMs.TotWIn.Bat": KnownChannelEntry(
-        name="Power drawn by Battery", device_kind=DEVICE_KIND_BATTERY, unit=UNIT_WATT
+        name="Power drawn by Battery",
+        device_kind=DEVICE_KIND_BATTERY,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.Metering.GridMs.TotWOut.Bat": KnownChannelEntry(
-        name="Power fed into Battery", device_kind=DEVICE_KIND_BATTERY, unit=UNIT_WATT
+        name="Power fed into Battery",
+        device_kind=DEVICE_KIND_BATTERY,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.Metering.GridMs.TotWhIn.Bat": KnownChannelEntry(
         name="total power drawn by Battery",
@@ -292,10 +315,16 @@ __KNOWN_CHANNELS: dict[
         unit=UNIT_VOLT_AMPERE_REACTIVE,
     ),
     "Measurement.Metering.GridMs.TotWIn": KnownChannelEntry(
-        name="Grid power drawn", device_kind=DEVICE_KIND_GRID, unit=UNIT_WATT
+        name="Grid power drawn",
+        device_kind=DEVICE_KIND_GRID,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.Metering.GridMs.TotWOut": KnownChannelEntry(
-        name="Grid power fed-in", device_kind=DEVICE_KIND_GRID, unit=UNIT_WATT
+        name="Grid power fed-in",
+        device_kind=DEVICE_KIND_GRID,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.Metering.GridMs.TotWhIn": KnownChannelEntry(
         name="Total power drawn from grid",
@@ -477,7 +506,10 @@ __KNOWN_CHANNELS: dict[
         unit=UNIT_VOLT_AMPERE_REACTIVE,
     ),
     "Measurement.ExtGridMs.TotW": KnownChannelEntry(
-        name="external grid power output", device_kind=DEVICE_KIND_GRID, unit=UNIT_WATT
+        name="external grid power output",
+        device_kind=DEVICE_KIND_GRID,
+        unit=UNIT_WATT,
+        value_when_none=0,
     ),
     "Measurement.ExtGridMs.TotWhIn": KnownChannelEntry(
         name="total power drawn from external grid",
