@@ -277,6 +277,7 @@ async def test_device_entries(
             component_id="component2",
             component_type="type2",
             name="Component 2 Name",
+            model_name="Model Name",
             serial_number="123456",
             firmware_version="1.2.3",
         ),
@@ -355,5 +356,6 @@ async def test_device_entries(
 
     assert device.name == "Component 2 Name"
     assert device.manufacturer == DEVICE_MANUFACTURER
-    assert device.model == "123456"
+    assert device.model == "Model Name"
+    assert device.serial_number == "123456"
     assert device.sw_version == "1.2.3"

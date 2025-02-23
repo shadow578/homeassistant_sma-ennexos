@@ -249,6 +249,7 @@ class ComponentInfo:
     component_type: str
     name: str
 
+    model_name: str | None
     serial_number: str | None
     firmware_version: str | None
 
@@ -257,6 +258,7 @@ class ComponentInfo:
         component_id: str,
         component_type: str,
         name: str,
+        model_name: str | None = None,
         serial_number: str | None = None,
         firmware_version: str | None = None,
     ) -> None:
@@ -264,6 +266,7 @@ class ComponentInfo:
         self.component_id = component_id
         self.component_type = component_type
         self.name = name
+        self.model_name = model_name
         self.serial_number = serial_number
         self.firmware_version = firmware_version
 
@@ -271,6 +274,10 @@ class ComponentInfo:
         """Add optional extra data to this component info."""
         # extra data (all are optional)
         if isinstance(extra_data, dict):
+            # model name
+            if "name" in extra_data and isinstance(extra_data["name"], str):
+                self.model_name = extra_data["name"]
+
             # serial number
             # (extra_data.serial)
             if "serial" in extra_data and isinstance(extra_data["serial"], str):

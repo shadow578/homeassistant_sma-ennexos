@@ -42,6 +42,12 @@ class SMAEntity(CoordinatorEntity):
 
         # prepare name, serial, and firmware version
         device_name = component_info.name if component_info else f"[{component_id}]"
+
+        device_model_name = (
+            None
+            if component_info is None or component_info.model_name is None
+            else component_info.model_name
+        )
         device_serial = (
             None
             if component_info is None or component_info.serial_number is None
@@ -58,7 +64,8 @@ class SMAEntity(CoordinatorEntity):
             identifiers={(DOMAIN, device_id)},
             name=device_name,
             manufacturer=DEVICE_MANUFACTURER,
-            model=device_serial,
+            model=device_model_name,
+            serial_number=device_serial,
             sw_version=device_firmware_version,
         )
 

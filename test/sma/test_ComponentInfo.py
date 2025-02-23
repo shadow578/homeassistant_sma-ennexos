@@ -51,6 +51,7 @@ def test_add_extra():
     component_info.add_extra(
         {
             "serial": "TheSerial",
+            "name": "Model Name",
             "deviceInfoFeatures": [
                 {"infoWidgetType": "FirmwareVersion", "value": "TheFirmwareVersion"}
             ],
@@ -62,4 +63,5 @@ def test_add_extra():
     assert component_info.component_type == "TheComponentType"
     assert component_info.name == "The Name"
     assert component_info.serial_number == "TheSerial"
+    assert component_info.model_name == "Model Name"
     assert component_info.firmware_version == "TheFirmwareVersion"
