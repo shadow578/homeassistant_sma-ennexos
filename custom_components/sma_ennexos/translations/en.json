@@ -30,5 +30,342 @@
                 }
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "measurement_gridms_totvar": {
+                "name": "Grid Reactive Power"
+            },
+            "measurement_gridms_totvar_pv": {
+                "name": "PV Reactive Power"
+            },
+            "measurement_gridms_totw": {
+                "name": "Grid Power"
+            },
+            "measurement_gridms_totw_pv": {
+                "name": "PV Power"
+            },
+            "measurement_inverter_curwctlnom": {
+                "name": "Active Power Limit"
+            },
+            "measurement_inverter_waval": {
+                "name": "Available Inverter Power"
+            },
+            "measurement_metering_gridms_totwin_bat": {
+                "name": "Power drawn by Battery"
+            },
+            "measurement_metering_gridms_totwout_bat": {
+                "name": "Power fed into Battery"
+            },
+            "measurement_metering_gridms_totwhin_bat": {
+                "name": "Total Power drawn by Battery"
+            },
+            "measurement_metering_gridms_totwhout_bat": {
+                "name": "Total Power fed into Battery"
+            },
+            "measurement_metering_pccms_plnta_phsa": {
+                "name": "Grid Interconnection Current L1"
+            },
+            "measurement_metering_pccms_plnta_phsb": {
+                "name": "Grid Interconnection Current L2"
+            },
+            "measurement_metering_pccms_plnta_phsc": {
+                "name": "Grid Interconnection Current L3"
+            },
+            "measurement_metering_pccms_plntcsmpw": {
+                "name": "Power drawn from Grid"
+            },
+            "measurement_metering_pccms_plntcsmpwh": {
+                "name": "Total Power drawn from Grid"
+            },
+            "measurement_metering_pccms_plntpf": {
+                "name": "Grid Interconnection displacement Power factor"
+            },
+            "measurement_metering_pccms_plntphv_phsa": {
+                "name": "Grid Interconnection Voltage L1"
+            },
+            "measurement_metering_pccms_plntphv_phsb": {
+                "name": "Grid Interconnection Voltage L2"
+            },
+            "measurement_metering_pccms_plntphv_phsc": {
+                "name": "Grid Interconnection Voltage L3"
+            },
+            "measurement_metering_pccms_plntvar": {
+                "name": "Grid Interconnection reactive Power"
+            },
+            "measurement_metering_pccms_plntvar_phsa": {
+                "name": "Grid Interconnection reactive Power L1"
+            },
+            "measurement_metering_pccms_plntvar_phsb": {
+                "name": "Grid Interconnection reactive Power L2"
+            },
+            "measurement_metering_pccms_plntvar_phsc": {
+                "name": "Grid Interconnection reactive Power L3"
+            },
+            "measurement_metering_pccms_plntw": {
+                "name": "Grid Interconnection Power feed-in"
+            },
+            "measurement_metering_pccms_plntw_phsa": {
+                "name": "Grid Interconnection Power feed-in L1"
+            },
+            "measurement_metering_pccms_plntw_phsb": {
+                "name": "Grid Interconnection Power feed-in L2"
+            },
+            "measurement_metering_pccms_plntw_phsc": {
+                "name": "Grid Interconnection Power feed-in L3"
+            },
+            "measurement_metering_pccms_plntwh": {
+                "name": "Grid Interconnection total Power feed-in"
+            },
+            "measurement_metering_totwhout_pv": {
+                "name": "Total PV yield"
+            },
+            "measurement_operation_curavailplnt": {
+                "name": "Generation Plant availability"
+            },
+            "measurement_operation_curavailvarovext": {
+                "name": "Available overexcited reactive Power"
+            },
+            "measurement_operation_curavailvarovextnom": {
+                "name": "Available overexcited reactive Power"
+            },
+            "measurement_operation_curavailvarunext": {
+                "name": "Available underexcited reactive Power"
+            },
+            "measurement_operation_curavailvarunextnom": {
+                "name": "Available underexcited reactive Power"
+            },
+            "measurement_operation_health": {
+                "name": "Device Health Status"
+            },
+            "measurement_operation_wmaxinlimnom": {
+                "name": "Maximum Active Power setpoint (Grid Supply)"
+            },
+            "measurement_operation_wmaxlimnom": {
+                "name": "Maximum Active Power setpoint specification"
+            },
+            "measurement_operation_wmininlimnom": {
+                "name": "Minimum Active Power setpoint (Grid Supply)"
+            },
+            "measurement_operation_wminlimnom": {
+                "name": "Minimum Active Power setpoint Specification"
+            },
+            "measurement_metering_gridms_a_phsa": {
+                "name": "Grid Current L1"
+            },
+            "measurement_metering_gridms_a_phsb": {
+                "name": "Grid Current L2"
+            },
+            "measurement_metering_gridms_a_phsc": {
+                "name": "Grid Current L3"
+            },
+            "measurement_metering_gridms_phv_phsa": {
+                "name": "Grid Voltage L1"
+            },
+            "measurement_metering_gridms_phv_phsb": {
+                "name": "Grid Voltage L2"
+            },
+            "measurement_metering_gridms_phv_phsc": {
+                "name": "Grid Voltage L3"
+            },
+            "measurement_metering_gridms_totpf": {
+                "name": "Grid displacement Power factor"
+            },
+            "measurement_metering_gridms_totva": {
+                "name": "Grid apparent Power"
+            },
+            "measurement_metering_gridms_totvar": {
+                "name": "Grid reactive Power"
+            },
+            "measurement_metering_gridms_totwin": {
+                "name": "Grid Power drawn"
+            },
+            "measurement_metering_gridms_totwout": {
+                "name": "Grid Power fed-in"
+            },
+            "measurement_metering_gridms_totwhin": {
+                "name": "Total Power drawn from Grid"
+            },
+            "measurement_metering_gridms_totwhout": {
+                "name": "Total Power fed into Grid"
+            },
+            "measurement_metering_gridms_va_phsa": {
+                "name": "Grid apparent Power L1"
+            },
+            "measurement_metering_gridms_va_phsb": {
+                "name": "Grid apparent Power L2"
+            },
+            "measurement_metering_gridms_va_phsc": {
+                "name": "Grid apparent Power L3"
+            },
+            "measurement_metering_gridms_var_phsa": {
+                "name": "Grid reactive Power L1"
+            },
+            "measurement_metering_gridms_var_phsb": {
+                "name": "Grid reactive Power L2"
+            },
+            "measurement_metering_gridms_var_phsc": {
+                "name": "Grid reactive Power L3"
+            },
+            "measurement_metering_gridms_w_phsa": {
+                "name": "Grid Power drawn L1"
+            },
+            "measurement_metering_gridms_w_phsb": {
+                "name": "Grid Power drawn L2"
+            },
+            "measurement_metering_gridms_w_phsc": {
+                "name": "Grid Power drawn L3"
+            },
+            "measurement_bat_amp": {
+                "name": "Battery Current"
+            },
+            "measurement_bat_chastt": {
+                "name": "Battery Charge State"
+            },
+            "measurement_bat_diag_actlcapacnom": {
+                "name": "Current Battery Capacity"
+            },
+            "measurement_bat_diag_capacthrpcnt": {
+                "name": "Battery Charge Cycles"
+            },
+            "measurement_bat_diag_chaamax": {
+                "name": "Maximum Charge Current"
+            },
+            "measurement_bat_diag_cnterrovv": {
+                "name": "Battery overVoltage error count"
+            },
+            "measurement_bat_diag_cntwrnovv": {
+                "name": "Battery overVoltage warning count"
+            },
+            "measurement_bat_diag_cntwrnsoclo": {
+                "name": "Battery low SOC warning count"
+            },
+            "measurement_bat_diag_dschamax": {
+                "name": "Maximum discharge Current"
+            },
+            "measurement_bat_diag_stattm": {
+                "name": "Battery operating time"
+            },
+            "measurement_bat_diag_tmpvalmax": {
+                "name": "Maximum Battery Temperature"
+            },
+            "measurement_bat_diag_tmpvalmin": {
+                "name": "Minimum Battery Temperature"
+            },
+            "measurement_bat_diag_totahin": {
+                "name": "Total Battery charge"
+            },
+            "measurement_bat_diag_totahout": {
+                "name": "Total Battery discharge"
+            },
+            "measurement_bat_diag_volmax": {
+                "name": "Maximum Battery Voltage"
+            },
+            "measurement_bat_tmpval": {
+                "name": "Battery Temperature"
+            },
+            "measurement_bat_vol": {
+                "name": "Battery Voltage"
+            },
+            "measurement_coolsys_inverter_tmpval": {
+                "name": "Inverter Temperature"
+            },
+            "measurement_coolsys_tr_tmpval": {
+                "name": "Transformer Temperature"
+            },
+            "measurement_extgridms_a_phsa": {
+                "name": "External Grid Current L1"
+            },
+            "measurement_extgridms_a_phsb": {
+                "name": "External Grid Current L2"
+            },
+            "measurement_extgridms_a_phsc": {
+                "name": "External Grid Current L3"
+            },
+            "measurement_extgridms_hz": {
+                "name": "External Grid Frequency"
+            },
+            "measurement_extgridms_hzmax": {
+                "name": "Maximum external Grid Frequency"
+            },
+            "measurement_extgridms_hzmin": {
+                "name": "Minimum external Grid Frequency"
+            },
+            "measurement_extgridms_phv_phsa": {
+                "name": "External Grid Voltage L1"
+            },
+            "measurement_extgridms_phv_phsb": {
+                "name": "External Grid Voltage L2"
+            },
+            "measurement_extgridms_phv_phsc": {
+                "name": "External Grid Voltage L3"
+            },
+            "measurement_extgridms_tota": {
+                "name": "External Grid Current"
+            },
+            "measurement_extgridms_totvar": {
+                "name": "External Grid reactive Power"
+            },
+            "measurement_extgridms_totw": {
+                "name": "External Grid Power Output"
+            },
+            "measurement_extgridms_totwhin": {
+                "name": "Total Power drawn from external Grid"
+            },
+            "measurement_extgridms_totwhout": {
+                "name": "Total Power fed into external Grid"
+            },
+            "measurement_extgridms_var_phsa": {
+                "name": "External Grid reactive Power L1"
+            },
+            "measurement_extgridms_var_phsb": {
+                "name": "External Grid reactive Power L2"
+            },
+            "measurement_extgridms_var_phsc": {
+                "name": "External Grid reactive Power L3"
+            },
+            "measurement_extgridms_w_phsa": {
+                "name": "External Grid Power Output L1"
+            },
+            "measurement_extgridms_w_phsb": {
+                "name": "External Grid Power Output L2"
+            },
+            "measurement_extgridms_w_phsc": {
+                "name": "External Grid Power Output L3"
+            },
+            "measurement_gridms_a_phsa": {
+                "name": "Grid Current L1"
+            },
+            "measurement_gridms_a_phsb": {
+                "name": "Grid Current L2"
+            },
+            "measurement_gridms_a_phsc": {
+                "name": "Grid Current L3"
+            },
+            "measurement_gridms_hz": {
+                "name": "Grid Frequency"
+            },
+            "measurement_gridms_phv_phsa": {
+                "name": "Grid Voltage L1"
+            },
+            "measurement_gridms_phv_phsb": {
+                "name": "Grid Voltage L2"
+            },
+            "measurement_gridms_phv_phsc": {
+                "name": "Grid Voltage L3"
+            },
+            "measurement_dcms_vol": {
+                "name": "DC Voltage"
+            },
+            "measurement_dcms_amp": {
+                "name": "DC Current"
+            },
+            "measurement_dcms_watt": {
+                "name": "DC Power"
+            },
+            "measurement_mltfncsw_sttmstr": {
+                "name": "Multi-function Relay Status"
+            }
+        }
     }
 }

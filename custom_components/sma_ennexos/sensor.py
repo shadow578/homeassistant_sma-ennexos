@@ -35,7 +35,11 @@ from .sma.known_channels import (
     get_known_channel,
 )
 from .sma.model import ComponentInfo
-from .util import channel_parts_to_entity_id, channel_parts_to_fqid
+from .util import (
+    channel_parts_to_entity_id,
+    channel_parts_to_fqid,
+    channel_to_translation_key,
+)
 
 
 async def async_setup_entry(
@@ -201,15 +205,19 @@ class SMASensor(SMAEntity, SensorEntity):
         else:
             LOGGER.debug("configure %s as generic sensor", fqid)
 
-        # set entity description
+        translation_key = channel_to_translation_key(self.channel_id)
+
         self.entity_description = SensorEntityDescription(
-            key=fqid,
-            name=name,
+            key=translation_key,
+            translation_key=translation_key,
             icon=icon,
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,
             state_class=state_class,
         )
+
+        # required for using translation_key
+        self._attr_has_entity_name = True
 
     def __device_kind_to_icon(self, device_kind: str) -> str:
         """SMADeviceKind to mdi icon."""
