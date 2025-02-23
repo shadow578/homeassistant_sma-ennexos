@@ -32,7 +32,6 @@ from .sma.known_channels import (
     CUMULATIVE_MODE_COUNTER,
     CUMULATIVE_MODE_MAXIMUM,
     CUMULATIVE_MODE_MINIMUM,
-    CUMULATIVE_MODE_NONE,
     CUMULATIVE_MODE_TOTAL,
     DEVICE_KIND_BATTERY,
     DEVICE_KIND_GRID,
@@ -187,9 +186,8 @@ class SMASensor(SMAEntity, SensorEntity):
                 )
             )
 
-            cumulative_mode = known_channel.cumulative_mode
             state_class = self.__cumulative_mode_to_state_class(
-                cumulative_mode if cumulative_mode is not None else CUMULATIVE_MODE_NONE
+                known_channel.cumulative_mode
             )
 
             # set enum_values if known channel is UNIT_ENUM
@@ -285,7 +283,7 @@ class SMASensor(SMAEntity, SensorEntity):
         # fallback to PLAIN_NUMBER
         return (None, None)
 
-    def __cumulative_mode_to_state_class(self, cumulative_mode: str) -> str:
+    def __cumulative_mode_to_state_class(self, cumulative_mode: str | None) -> str:
         """SMA CUMULATIVE_MODE_* to SensorStateClass."""
 
         # counters only ever increase
@@ -302,5 +300,4 @@ class SMASensor(SMAEntity, SensorEntity):
         if cumulative_mode == CUMULATIVE_MODE_MAXIMUM:
             return SensorStateClass.TOTAL
 
-        # default to CUMULATIVE_MODE_NONE
         return SensorStateClass.MEASUREMENT

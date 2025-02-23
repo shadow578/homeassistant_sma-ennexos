@@ -67,5 +67,5 @@ class SMAEntity(CoordinatorEntity):
             self.entity_id,
             channel_id,
             device_id,
-            device_name
+            device_name,
         )

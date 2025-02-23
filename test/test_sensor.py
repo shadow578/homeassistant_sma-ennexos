@@ -156,7 +156,9 @@ async def test_sensor_known_channel_attributes(
                 CONF_VERIFY_SSL: True,
             },
             options={
-                OPT_SENSOR_CHANNELS: [channel_parts_to_fqid("mock_inverter", "Mock.Measurement.TotWhOut")]
+                OPT_SENSOR_CHANNELS: [
+                    channel_parts_to_fqid("mock_inverter", "Mock.Measurement.TotWhOut")
+                ]
             },
         )
         config_entry.add_to_hass(hass)
