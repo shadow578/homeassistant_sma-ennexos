@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.sma_ennexos.const import DOMAIN
-from custom_components.sma_ennexos.coordinator import SMAUpdateCoordinator
+from custom_components.sma_ennexos.coordinator import SMADataCoordinator
 from custom_components.sma_ennexos.sma.client import SMAApiClient
 
 
@@ -24,7 +24,7 @@ async def test_coordinator_basic(
     )
 
     # create the coordinator
-    coordinator = SMAUpdateCoordinator(
+    coordinator = SMADataCoordinator(
         hass,
         config_entry=entry,
         client=SMAApiClient(

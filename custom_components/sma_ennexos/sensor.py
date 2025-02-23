@@ -27,7 +27,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .base_entity import SMAEntity
 from .const import DOMAIN, LOGGER
-from .coordinator import SMAUpdateCoordinator
+from .coordinator import SMADataCoordinator
 from .sma.known_channels import (
     CUMULATIVE_MODE_COUNTER,
     CUMULATIVE_MODE_MAXIMUM,
@@ -49,7 +49,7 @@ from .sma.known_channels import (
     get_known_channel,
 )
 from .sma.model import ComponentInfo
-from .util import SMAEntryData, channel_parts_to_entity_id, channel_parts_to_fqid
+from .util import channel_parts_to_entity_id, channel_parts_to_fqid
 
 
 async def async_setup_entry(
@@ -58,22 +58,15 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ):
     """Sensor entities setup."""
-    entry_data: SMAEntryData = hass.data[DOMAIN][config_entry.entry_id]
-    coordinator = entry_data.coordinator
-    all_components = entry_data.all_components
-
-    # ensure that coordinator and all_components are available
-    if coordinator is None or all_components is None:
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    if not isinstance(coordinator, SMADataCoordinator):
         LOGGER.error(
-            "cannot create sensor entities for config entry %s: coordinator or all_components not available",
+            "cannot create sensor entities for config entry %s: coordinator is not SMADataCoordinator",
             config_entry.entry_id,
         )
         return
 
-    # ensure coordinator.config_entry is set
-    if coordinator.config_entry is None:
-        LOGGER.warning("coordinator.config_entry was None, setting to config_entry")
-        coordinator.config_entry = config_entry
+    all_components = await coordinator.get_all_components()
 
     # create entities based on ChannelValues in coordinator.data
     LOGGER.info("creating %s sensor entities", len(coordinator.data))
@@ -98,7 +91,7 @@ async def async_setup_entry(
 class SMASensor(SMAEntity, SensorEntity):
     """SMA Sensor class."""
 
-    coordinator: SMAUpdateCoordinator
+    coordinator: SMADataCoordinator
     component_id: str
     channel_id: str
 
@@ -106,7 +99,7 @@ class SMASensor(SMAEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: SMAUpdateCoordinator,
+        coordinator: SMADataCoordinator,
         component_id: str,
         channel_id: str,
         component_info: ComponentInfo | None = None,

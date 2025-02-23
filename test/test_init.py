@@ -14,7 +14,7 @@ from custom_components.sma_ennexos.const import (
     CONF_VERIFY_SSL,
     DOMAIN,
 )
-from custom_components.sma_ennexos.util import SMAEntryData
+from custom_components.sma_ennexos.coordinator import SMADataCoordinator
 
 
 async def test_setup_unload_and_reload_entry(anyio_backend, hass, mock_sma_client):
@@ -38,9 +38,8 @@ async def test_setup_unload_and_reload_entry(anyio_backend, hass, mock_sma_clien
         assert config_entry.entry_id in hass.data[DOMAIN]
 
         entry = hass.data[DOMAIN][config_entry.entry_id]
-        assert isinstance(entry, SMAEntryData)
-        assert entry.coordinator is not None
-        assert entry.all_components is not None
+        assert isinstance(entry, SMADataCoordinator)
+        assert entry is not None
 
     mock_sma_client.reset_counts()
 

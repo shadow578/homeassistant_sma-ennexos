@@ -1,27 +1,5 @@
 """integration utilities."""
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from .coordinator import SMAUpdateCoordinator
-    from .sma.model import ComponentInfo
-
-
-class SMAEntryData:
-    """data stored in domain entry of hass.data."""
-
-    coordinator: "SMAUpdateCoordinator"
-    all_components: list["ComponentInfo"]
-
-    def __init__(
-        self,
-        coordinator: "SMAUpdateCoordinator",
-        all_components: list["ComponentInfo"],
-    ) -> None:
-        """Initialize."""
-        self.coordinator = coordinator
-        self.all_components = all_components
-
 
 def channel_parts_to_fqid(component_id: str, channel_id: str) -> str:
     """Convert a channel_id and component_id to a channel fqid (channel@component).

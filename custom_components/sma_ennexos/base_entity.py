@@ -12,7 +12,7 @@ from .const import (
     DOMAIN,
     LOGGER,
 )
-from .coordinator import SMAUpdateCoordinator
+from .coordinator import SMADataCoordinator
 from .sma.model import ComponentInfo
 
 
@@ -21,7 +21,7 @@ class SMAEntity(CoordinatorEntity):
 
     def __init__(
         self,
-        coordinator: SMAUpdateCoordinator,
+        coordinator: SMADataCoordinator,
         component_id: str,
         channel_id: str,
         component_info: ComponentInfo | None = None,
