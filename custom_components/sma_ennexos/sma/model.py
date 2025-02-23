@@ -98,6 +98,7 @@ class AuthTokenInfo:
 
 SMAValue = str | int | float
 
+
 class TimeValuePair:
     """a single value at a single point in time."""
 

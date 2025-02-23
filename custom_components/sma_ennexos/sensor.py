@@ -29,23 +29,9 @@ from .base_entity import SMAEntity
 from .const import DOMAIN, LOGGER
 from .coordinator import SMADataCoordinator
 from .sma.known_channels import (
-    CUMULATIVE_MODE_COUNTER,
-    CUMULATIVE_MODE_MAXIMUM,
-    CUMULATIVE_MODE_MINIMUM,
-    CUMULATIVE_MODE_TOTAL,
-    DEVICE_KIND_BATTERY,
-    DEVICE_KIND_GRID,
-    DEVICE_KIND_PV,
-    UNIT_AMPERE,
-    UNIT_CELSIUS,
-    UNIT_ENUM,
-    UNIT_HERTZ,
-    UNIT_PERCENT,
-    UNIT_SECOND,
-    UNIT_VOLT,
-    UNIT_VOLT_AMPERE_REACTIVE,
-    UNIT_WATT,
-    UNIT_WATT_HOUR,
+    SMACumulativeMode,
+    SMADeviceKind,
+    SMAUnit,
     get_known_channel,
 )
 from .sma.model import ComponentInfo
@@ -184,11 +170,11 @@ class SMASensor(SMAEntity, SensorEntity):
             )
 
             # set enum_values if known channel is UNIT_ENUM
-            if known_channel.unit == UNIT_ENUM:
+            if known_channel.unit == SMAUnit.ENUM:
                 self.enum_values = known_channel.enum_values
                 if self.enum_values is None:
                     LOGGER.warning(
-                        "UNIT_ENUM set, but enum_values is None: %s", self.channel_id
+                        "unit ENUM set, but enum_values is None: %s", self.channel_id
                     )
                     self.enum_values = {}
 
@@ -220,21 +206,21 @@ class SMASensor(SMAEntity, SensorEntity):
         )
 
     def __device_kind_to_icon(self, device_kind: str) -> str:
-        """SMA DEVICE_KIND_* to mdi icon."""
-        if device_kind == DEVICE_KIND_GRID:
+        """SMADeviceKind to mdi icon."""
+        if device_kind == SMADeviceKind.GRID:
             return "mdi:transmission-tower"
-        if device_kind == DEVICE_KIND_BATTERY:
+        if device_kind == SMADeviceKind.BATTERY:
             return "mdi:battery"
-        if device_kind == DEVICE_KIND_PV:
+        if device_kind == SMADeviceKind.PV:
             return "mdi:solar-panel"
 
-        # DEVICE_KIND_OTHER
+        # SMADeviceKind.OTHER
         return "mdi:flash"
 
     def __channel_to_device_class_and_unit(
         self, channel_id: str, channel_unit: str
     ) -> tuple[SensorDeviceClass | None, str | None]:
-        """SMA UNIT_* to device_class and unit_of_measurement.
+        """SMAUnit to device_class and unit_of_measurement.
 
         :return: (device_class, unit_of_measurement):
             device_class is None for where no device_class is available
@@ -249,48 +235,48 @@ class SMASensor(SMAEntity, SensorEntity):
             return (SensorDeviceClass.DURATION, UnitOfTime.SECONDS)
 
         # handle by channel unit
-        if channel_unit == UNIT_VOLT:
+        if channel_unit == SMAUnit.VOLT:
             return (SensorDeviceClass.VOLTAGE, UnitOfElectricPotential.VOLT)
-        if channel_unit == UNIT_AMPERE:
+        if channel_unit == SMAUnit.AMPERE:
             return (SensorDeviceClass.CURRENT, UnitOfElectricCurrent.AMPERE)
-        if channel_unit == UNIT_WATT:
+        if channel_unit == SMAUnit.WATT:
             return (SensorDeviceClass.POWER, UnitOfPower.WATT)
-        if channel_unit == UNIT_WATT_HOUR:
+        if channel_unit == SMAUnit.WATT_HOUR:
             return (SensorDeviceClass.ENERGY, UnitOfEnergy.WATT_HOUR)
-        if channel_unit == UNIT_CELSIUS:
+        if channel_unit == SMAUnit.CELSIUS:
             return (SensorDeviceClass.TEMPERATURE, UnitOfTemperature.CELSIUS)
-        if channel_unit == UNIT_HERTZ:
+        if channel_unit == SMAUnit.HERTZ:
             return (SensorDeviceClass.FREQUENCY, UnitOfFrequency.HERTZ)
-        if channel_unit == UNIT_VOLT_AMPERE_REACTIVE:
+        if channel_unit == SMAUnit.VOLT_AMPERE_REACTIVE:
             return (
                 SensorDeviceClass.REACTIVE_POWER,
                 UnitOfReactivePower.VOLT_AMPERE_REACTIVE,
             )
-        if channel_unit == UNIT_SECOND:
+        if channel_unit == SMAUnit.SECOND:
             return (None, UnitOfTime.SECONDS)
-        if channel_unit == UNIT_PERCENT:
+        if channel_unit == SMAUnit.PERCENT:
             return (None, PERCENTAGE)
-        if channel_unit == UNIT_ENUM:
+        if channel_unit == SMAUnit.ENUM:
             return (SensorDeviceClass.ENUM, None)
 
         # fallback to PLAIN_NUMBER
         return (None, None)
 
     def __cumulative_mode_to_state_class(self, cumulative_mode: str | None) -> str:
-        """SMA CUMULATIVE_MODE_* to SensorStateClass."""
+        """SMACumulativeMode to SensorStateClass."""
 
         # counters only ever increase
-        if cumulative_mode == CUMULATIVE_MODE_COUNTER:
+        if cumulative_mode == SMACumulativeMode.COUNTER:
             return SensorStateClass.TOTAL_INCREASING
 
         # total only ever increases
-        if cumulative_mode == CUMULATIVE_MODE_TOTAL:
+        if cumulative_mode == SMACumulativeMode.TOTAL:
             return SensorStateClass.TOTAL_INCREASING
 
         # min / max are modeled as TOTAL, since minimum can decrease
-        if cumulative_mode == CUMULATIVE_MODE_MINIMUM:
+        if cumulative_mode == SMACumulativeMode.MINIMUM:
             return SensorStateClass.TOTAL
-        if cumulative_mode == CUMULATIVE_MODE_MAXIMUM:
+        if cumulative_mode == SMACumulativeMode.MAXIMUM:
             return SensorStateClass.TOTAL
 
         return SensorStateClass.MEASUREMENT

@@ -18,10 +18,10 @@ from custom_components.sma_ennexos.const import (
     OPT_SENSOR_CHANNELS,
 )
 from custom_components.sma_ennexos.sma.known_channels import (
-    CUMULATIVE_MODE_TOTAL,
-    DEVICE_KIND_PV,
-    UNIT_WATT_HOUR,
     KnownChannelEntry,
+    SMACumulativeMode,
+    SMADeviceKind,
+    SMAUnit,
 )
 from custom_components.sma_ennexos.sma.model import (
     ChannelValues,
@@ -119,9 +119,9 @@ async def test_sensor_known_channel_attributes(
     ) as mock_get_known_channel:
         mock_get_known_channel.return_value = KnownChannelEntry(
             name="MOCK TotWhOut",
-            device_kind=DEVICE_KIND_PV,
-            unit=UNIT_WATT_HOUR,
-            cumulative_mode=CUMULATIVE_MODE_TOTAL,
+            device_kind=SMADeviceKind.PV,
+            unit=SMAUnit.WATT_HOUR,
+            cumulative_mode=SMACumulativeMode.TOTAL,
         )
 
         mock_sma_client.components = [
