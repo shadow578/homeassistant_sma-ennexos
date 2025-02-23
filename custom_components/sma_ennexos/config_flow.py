@@ -211,6 +211,9 @@ class OptionsFlowAvailableChannels:
     channel_id: str
 
 
+OPT_ALL_SENSOR_CHANNELS = "use_all_sensor_channels"
+
+
 class SMAOptionsFlow(OptionsFlow):
     """options flow for SMA."""
 
@@ -223,11 +226,6 @@ class SMAOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage enabled sensor channels."""
-        if user_input is not None:
-            return self.async_create_entry(
-                data=user_input,
-            )
-
         # build multi select options
         available_channels = await self.__fetch_available_channels()
         available_channels_opt = {}
@@ -235,6 +233,15 @@ class SMAOptionsFlow(OptionsFlow):
             fqid = channel_parts_to_fqid(channel.component_id, channel.channel_id)
             available_channels_opt[fqid] = (
                 f"{channel.channel_id} @ {channel.component_name}"
+            )
+
+        if user_input is not None:
+            # apply use_all_channels option
+            if user_input.pop(OPT_ALL_SENSOR_CHANNELS, False):
+                user_input[OPT_SENSOR_CHANNELS] = list(available_channels_opt.keys())
+
+            return self.async_create_entry(
+                data=user_input,
             )
 
         # show options form
@@ -247,6 +254,12 @@ class SMAOptionsFlow(OptionsFlow):
                         OPT_SENSOR_CHANNELS,
                         default=self.config_entry.options.get(OPT_SENSOR_CHANNELS),
                     ): cv.multi_select(available_channels_opt),
+                    vol.Required(
+                        OPT_ALL_SENSOR_CHANNELS,
+                        default=self.config_entry.options.get(
+                            OPT_ALL_SENSOR_CHANNELS, False
+                        ),
+                    ): BooleanSelector(),
                     # refresh interval
                     vol.Required(
                         OPT_UPDATE_INTERVAL,

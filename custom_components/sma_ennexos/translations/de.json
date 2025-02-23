@@ -24,6 +24,7 @@
                 "description": "Passt das Laufzeitverhalten der SMA ennexOS Integration an. Änderungen werden ggf. erst nach einem Neuladen der Integration wirksam.",
                 "data": {
                     "sensor_channels": "Wähle alle Sensorkanäle, welche Abgerufen werden sollen.",
+                    "use_all_sensor_channels": "Alle Sensorkanäle Auswählen",
                     "update_interval": "Aktualisierungsinterval",
                     "request_timeout": "Anfragentimeout",
                     "request_retries": "Anfragenversuche (0 = keine Wiederholung)"

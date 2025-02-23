@@ -24,6 +24,7 @@
                 "description": "Change runtime settings for the SMA ennexOS integration. Changes may require a reload of the integration.",
                 "data": {
                     "sensor_channels": "Select all sensor channels you want to monitor.",
+                    "use_all_sensor_channels": "Select all available sensor channels",
                     "update_interval": "Update Interval",
                     "request_timeout": "Request Timeout",
                     "request_retries": "Request Retries (0 = no retries)"
