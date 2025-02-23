@@ -13,9 +13,10 @@
             }
         },
         "error": {
-            "auth": "Zugangsdaten sind nicht Korrekt.",
-            "connection": "Geräteverbindung konnte nicht hergestellt werden.",
-            "unknown": "Ein unbekannter Fehler ist Aufgetreten."
+            "auth_fail": "Zugangsdaten sind nicht Korrekt.",
+            "connection_error": "Geräteverbindung konnte nicht hergestellt werden.",
+            "no_plant_component": "Die Wurzelkomponente der Anlage konnte nicht gefunden werden.",
+            "unknown": "Ein unerwarteter Fehler ist Aufgetreten."
         }
     },
     "options": {

@@ -81,15 +81,15 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
             except SMAApiAuthenticationError as exception:
                 # credentials not valid
                 LOGGER.warning(exception)
-                _errors["base"] = "auth"
+                _errors["base"] = "auth_fail"
             except SMAApiCommunicationError as exception:
                 # connection error
                 LOGGER.error(exception)
-                _errors["base"] = "connection"
+                _errors["base"] = "connection_error"
             except NoPlantComponentFoundError as exception:
                 # no plant component found, misbehaving api
                 LOGGER.error(exception)
-                _errors["base"] = "unknown"  # TODO add a specific error message in UI
+                _errors["base"] = "no_plant_component"
             except SMAApiClientError as exception:
                 # unknown error
                 LOGGER.exception(exception)

@@ -130,7 +130,7 @@ async def test_config_flow_user_step_handles_invalid_auth(
     # instead, a form is returned with a error message
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-    assert result["errors"] == {"base": "auth"}  # auth error
+    assert result["errors"] == {"base": "auth_fail"}  # auth error
 
 
 async def test_config_flow_user_step_handles_no_plant(
@@ -167,7 +167,7 @@ async def test_config_flow_user_step_handles_no_plant(
     # instead, a form is returned with a error message
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-    assert result["errors"] == {"base": "unknown"}
+    assert result["errors"] == {"base": "no_plant_component"}
 
 
 async def test_options_flow_init_step_ok(

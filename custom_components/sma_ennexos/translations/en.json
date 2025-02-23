@@ -13,8 +13,9 @@
             }
         },
         "error": {
-            "auth": "Credentials are not correct.",
-            "connection": "Unable to connect to the server.",
+            "auth_fail": "Credentials are not correct.",
+            "connection_error": "Unable to connect to the server.",
+            "no_plant_component": "The root component of the Plant was not found.",
             "unknown": "Unknown error occurred."
         }
     },
