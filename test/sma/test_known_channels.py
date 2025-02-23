@@ -1,4 +1,4 @@
-"""Tests for the SMA Data Manager known_channels module."""
+"""Tests for the SMA ennexOS known_channels module."""
 
 from custom_components.sma_ennexos.sma.known_channels import (
     SMADeviceKind,

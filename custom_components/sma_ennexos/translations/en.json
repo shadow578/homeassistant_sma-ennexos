@@ -2,9 +2,9 @@
     "config": {
         "step": {
             "user": {
-                "description": "Enter the credentials for the local SMA web interface.",
+                "description": "Enter the credentials for the local SMA ennexOS web interface.",
                 "data": {
-                    "host": "Hostname of SMA Data Manager, without protocol (http:// or https://)",
+                    "host": "Hostname of SMA ennexOS device, without protocol (http:// or https://)",
                     "username": "Username",
                     "password": "Password",
                     "ssl": "Use SSL",
@@ -21,7 +21,7 @@
     "options": {
         "step": {
             "init": {
-                "description": "Change runtime settings for the SMA integration. Changes may require a reload of the integration.",
+                "description": "Change runtime settings for the SMA ennexOS integration. Changes may require a reload of the integration.",
                 "data": {
                     "sensor_channels": "Select all sensor channels you want to monitor.",
                     "update_interval": "Update Interval",

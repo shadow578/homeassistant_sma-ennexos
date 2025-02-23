@@ -16,7 +16,7 @@ _Integration to integrate with SMA ennexOS devices, like the [SMA Data Manager][
 1. Add `https://github.com/shadow578/homeassistant_sma-ennexos` as a custom repository, choose `Integration` as Category and add.
 2. In the HACS UI, search for `SMA ennexOS` and install it.
 3. Restart Home Assistant
-4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "SMA Data manager"
+4. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "SMA ennexOS"
 
 ## Manual
 
@@ -30,10 +30,10 @@ _Integration to integrate with SMA ennexOS devices, like the [SMA Data Manager][
 
 # Configuration
 
-Configuration is done using the UI. 
-You'll be prompted to enter the IP and credentials to the SMA Data Manager.
-After the initial setup, you'll have to configure the channels you want to use in the integration options. 
-To find available channels, take a look in the "Instantaneous Values" menu of the SMA Data Manager web interface.
+Configuration is done using the UI.
+You'll be prompted to enter the IP and credentials to the SMA ennexOS Device.
+After the initial setup, you'll have to configure the channels you want to use in the integration options.
+To find available channels, take a look in the "Instantaneous Values" menu of the SMA ennexOS web interface.
 
 
 # Contributions are welcome!
@@ -43,9 +43,10 @@ If you want to contribute to this please read the [Contribution guidelines](CONT
 
 # Notice
 
-This integration is not affiliated with SMA Solar Technology AG in any way. 
-The SMA and SMA Data Manager names and logos are trademarks of SMA Solar Technology AG.
+This integration is not affiliated with SMA Solar Technology AG in any way.
 Use at your own risk.
+
+The SMA, SMA ennexOS, SMA Data Manager and SMA Sunny Tripower X names and logos are trademarks of SMA Solar Technology AG.
 
 ***
 

@@ -1,4 +1,4 @@
-"""SMA Data Manager M integration for Home Assistant."""
+"""SMA ennexOS integration for Home Assistant."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of integration entry."""
-    LOGGER.info("unloading SMA data manager integration")
+    LOGGER.info("unloading SMA ennexOS integration")
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         coordinator = hass.data[DOMAIN].pop(entry.entry_id)
         if coordinator is not None and isinstance(coordinator, SMADataCoordinator):
