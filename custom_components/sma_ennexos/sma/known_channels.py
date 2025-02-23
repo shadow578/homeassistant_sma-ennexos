@@ -96,7 +96,8 @@ class KnownChannelEntry:
     # optional list of enum values, only with unit=SMAUnit.ENUM
     enum_values: dict[int, str] | None = None
 
-    # optional value when the channel is not available
+    # optional value when the channel is not available.
+    # for enum values, this is the numeric index
     value_when_none: SMAValue | None = None
 
 

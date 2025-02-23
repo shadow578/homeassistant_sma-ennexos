@@ -123,6 +123,12 @@ class SMASensor(SMAEntity, SensorEntity):
         # get latest value
         value = channel_values.latest_value().value
 
+        # check for fallback value in known_channels for None
+        if value is None:
+            known_channel = get_known_channel(self.channel_id)
+            if known_channel is not None:
+                value = known_channel.value_when_none
+
         # handle enum value translation to string
         if self.enum_values is not None:
             # enum values are always ints
