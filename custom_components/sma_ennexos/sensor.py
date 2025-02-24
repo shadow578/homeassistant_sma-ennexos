@@ -159,15 +159,12 @@ class SMASensor(SMAEntity, SensorEntity):
         known_channel = get_known_channel(self.channel_id)
 
         # values set by known channel unit
-        name = self.channel_id
         icon = None
         device_class = None
         unit_of_measurement = None
         state_class = SensorStateClass.MEASUREMENT
         suggested_display_precision = None
         if known_channel is not None:
-            name = known_channel.name
-
             icon = self.__device_kind_to_icon(known_channel.device_kind)
 
             (device_class, unit_of_measurement) = (
@@ -199,9 +196,8 @@ class SMASensor(SMAEntity, SensorEntity):
 
             LOGGER.debug(
                 "configure %s using known channel:"
-                "name=%s; icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
+                "icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
                 fqid,
-                name,
                 icon,
                 device_class,
                 unit_of_measurement,
@@ -221,7 +217,7 @@ class SMASensor(SMAEntity, SensorEntity):
         self.entity_description = SensorEntityDescription(
             key=translation_key,
             translation_key=translation_key if has_translation_key else None,
-            name=name if not has_translation_key else None,
+            name=self.channel_id if not has_translation_key else None,
             icon=icon,
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,

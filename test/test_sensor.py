@@ -118,7 +118,6 @@ async def test_sensor_known_channel_attributes(
         "custom_components.sma_ennexos.sensor.get_known_channel"
     ) as mock_get_known_channel:
         mock_get_known_channel.return_value = KnownChannelEntry(
-            name="MOCK TotWhOut",
             device_kind=SMADeviceKind.PV,
             unit=SMAUnit.WATT_HOUR,
             cumulative_mode=SMACumulativeMode.TOTAL,
@@ -195,7 +194,6 @@ async def test_sensor_none_value_fallback(
         "custom_components.sma_ennexos.sensor.get_known_channel"
     ) as mock_get_known_channel:
         mock_get_known_channel.return_value = KnownChannelEntry(
-            name="MOCK TotW.Pv",
             device_kind=SMADeviceKind.PV,
             unit=SMAUnit.WATT,
             value_when_none=0,
