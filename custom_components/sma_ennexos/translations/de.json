@@ -25,7 +25,7 @@
                 "description": "Passt das Laufzeitverhalten der SMA ennexOS Integration an. Änderungen werden ggf. erst nach einem Neuladen der Integration wirksam.",
                 "data": {
                     "sensor_channels": "Wähle alle Sensorkanäle, welche Abgerufen werden sollen.",
-                    "use_all_sensor_channels": "Alle Sensorkanäle Auswählen",
+                    "use_all_sensor_channels": "Alle Sensorkanäle auswählen",
                     "update_interval": "Aktualisierungsinterval",
                     "request_timeout": "Anfragentimeout",
                     "request_retries": "Anfragenversuche (0 = keine Wiederholung)"
@@ -117,7 +117,7 @@
                 "name": "Netzverknüfungspunkt Bezugsleistung L3"
             },
             "measurement_metering_pccms_plntwh": {
-                "name": "Netzverknüfungspunkt Gesamte Bezugsleistung"
+                "name": "Netzverknüfungspunkt Gesamter Energiebezug"
             },
             "measurement_metering_totwhout_pv": {
                 "name": "PV-Gesamtertrag"

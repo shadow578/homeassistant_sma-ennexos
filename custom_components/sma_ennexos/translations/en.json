@@ -2,7 +2,7 @@
     "config": {
         "step": {
             "user": {
-                "description": "Enter the credentials for the local SMA ennexOS web interface.",
+                "description": "Setup access to the local SMA ennexOS web interface.",
                 "data": {
                     "host": "Hostname of SMA ennexOS device, without protocol (http:// or https://)",
                     "username": "Username",
@@ -15,8 +15,8 @@
         "error": {
             "auth_fail": "Credentials are not correct.",
             "connection_error": "Unable to connect to the server.",
-            "no_plant_component": "The root component of the Plant was not found.",
-            "unknown": "Unknown error occurred."
+            "no_plant_component": "The root component of the plant was not found.",
+            "unknown": "A unexpected error occurred."
         }
     },
     "options": {
@@ -60,10 +60,10 @@
                 "name": "Power fed into Battery"
             },
             "measurement_metering_gridms_totwhin_bat": {
-                "name": "Total Power drawn by Battery"
+                "name": "Total Energy drawn by Battery"
             },
             "measurement_metering_gridms_totwhout_bat": {
-                "name": "Total Power fed into Battery"
+                "name": "Total Energy fed into Battery"
             },
             "measurement_metering_pccms_plnta_phsa": {
                 "name": "Grid Interconnection Current L1"
@@ -78,7 +78,7 @@
                 "name": "Power drawn from Grid"
             },
             "measurement_metering_pccms_plntcsmpwh": {
-                "name": "Total Power drawn from Grid"
+                "name": "Total Energy drawn from Grid"
             },
             "measurement_metering_pccms_plntpf": {
                 "name": "Grid Interconnection displacement Power factor"
@@ -117,7 +117,7 @@
                 "name": "Grid Interconnection Power feed-in L3"
             },
             "measurement_metering_pccms_plntwh": {
-                "name": "Grid Interconnection total Power feed-in"
+                "name": "Grid Interconnection total Energy feed-in"
             },
             "measurement_metering_totwhout_pv": {
                 "name": "Total PV yield"
@@ -153,70 +153,70 @@
                 "name": "Minimum Active Power setpoint Specification"
             },
             "measurement_metering_gridms_a_phsa": {
-                "name": "Grid Current L1"
+                "name": "Current L1"
             },
             "measurement_metering_gridms_a_phsb": {
-                "name": "Grid Current L2"
+                "name": "Current L2"
             },
             "measurement_metering_gridms_a_phsc": {
-                "name": "Grid Current L3"
+                "name": "Current L3"
             },
             "measurement_metering_gridms_phv_phsa": {
-                "name": "Grid Voltage L1"
+                "name": "Voltage L1"
             },
             "measurement_metering_gridms_phv_phsb": {
-                "name": "Grid Voltage L2"
+                "name": "Voltage L2"
             },
             "measurement_metering_gridms_phv_phsc": {
-                "name": "Grid Voltage L3"
+                "name": "Voltage L3"
             },
             "measurement_metering_gridms_totpf": {
-                "name": "Grid displacement Power factor"
+                "name": "Displacement Power factor"
             },
             "measurement_metering_gridms_totva": {
-                "name": "Grid apparent Power"
+                "name": "Apparent Power"
             },
             "measurement_metering_gridms_totvar": {
-                "name": "Grid reactive Power"
+                "name": "Reactive Power"
             },
             "measurement_metering_gridms_totwin": {
-                "name": "Grid Power drawn"
+                "name": "Power draw"
             },
             "measurement_metering_gridms_totwout": {
-                "name": "Grid Power fed-in"
+                "name": "Power feed-in"
             },
             "measurement_metering_gridms_totwhin": {
-                "name": "Total Power drawn from Grid"
+                "name": "Total Energy drawn from Grid"
             },
             "measurement_metering_gridms_totwhout": {
-                "name": "Total Power fed into Grid"
+                "name": "Total Energy fed into Grid"
             },
             "measurement_metering_gridms_va_phsa": {
-                "name": "Grid apparent Power L1"
+                "name": "Apparent Power L1"
             },
             "measurement_metering_gridms_va_phsb": {
-                "name": "Grid apparent Power L2"
+                "name": "Apparent Power L2"
             },
             "measurement_metering_gridms_va_phsc": {
-                "name": "Grid apparent Power L3"
+                "name": "Apparent Power L3"
             },
             "measurement_metering_gridms_var_phsa": {
-                "name": "Grid reactive Power L1"
+                "name": "Reactive Power L1"
             },
             "measurement_metering_gridms_var_phsb": {
-                "name": "Grid reactive Power L2"
+                "name": "Reactive Power L2"
             },
             "measurement_metering_gridms_var_phsc": {
-                "name": "Grid reactive Power L3"
+                "name": "Reactive Power L3"
             },
             "measurement_metering_gridms_w_phsa": {
-                "name": "Grid Power drawn L1"
+                "name": "Power draw L1"
             },
             "measurement_metering_gridms_w_phsb": {
-                "name": "Grid Power drawn L2"
+                "name": "Power draw L2"
             },
             "measurement_metering_gridms_w_phsc": {
-                "name": "Grid Power drawn L3"
+                "name": "Power draw L3"
             },
             "measurement_bat_amp": {
                 "name": "Battery Current"
@@ -234,13 +234,13 @@
                 "name": "Maximum Charge Current"
             },
             "measurement_bat_diag_cnterrovv": {
-                "name": "Battery overVoltage error count"
+                "name": "Battery overvoltage error count"
             },
             "measurement_bat_diag_cntwrnovv": {
-                "name": "Battery overVoltage warning count"
+                "name": "Battery overvoltage warning count"
             },
             "measurement_bat_diag_cntwrnsoclo": {
-                "name": "Battery low SOC warning count"
+                "name": "Battery low Charge State warning count"
             },
             "measurement_bat_diag_dschamax": {
                 "name": "Maximum discharge Current"
@@ -255,10 +255,10 @@
                 "name": "Minimum Battery Temperature"
             },
             "measurement_bat_diag_totahin": {
-                "name": "Total Battery charge"
+                "name": "Total Battery charge Current"
             },
             "measurement_bat_diag_totahout": {
-                "name": "Total Battery discharge"
+                "name": "Total Battery discharge Current"
             },
             "measurement_bat_diag_volmax": {
                 "name": "Maximum Battery Voltage"
@@ -312,10 +312,10 @@
                 "name": "External Grid Power Output"
             },
             "measurement_extgridms_totwhin": {
-                "name": "Total Power drawn from external Grid"
+                "name": "Total Energy drawn from external Grid"
             },
             "measurement_extgridms_totwhout": {
-                "name": "Total Power fed into external Grid"
+                "name": "Total Energy fed into external Grid"
             },
             "measurement_extgridms_var_phsa": {
                 "name": "External Grid reactive Power L1"
@@ -336,25 +336,25 @@
                 "name": "External Grid Power Output L3"
             },
             "measurement_gridms_a_phsa": {
-                "name": "Grid Current L1"
+                "name": "Current L1"
             },
             "measurement_gridms_a_phsb": {
-                "name": "Grid Current L2"
+                "name": "Current L2"
             },
             "measurement_gridms_a_phsc": {
-                "name": "Grid Current L3"
+                "name": "Current L3"
             },
             "measurement_gridms_hz": {
                 "name": "Grid Frequency"
             },
             "measurement_gridms_phv_phsa": {
-                "name": "Grid Voltage L1"
+                "name": "Voltage L1"
             },
             "measurement_gridms_phv_phsb": {
-                "name": "Grid Voltage L2"
+                "name": "Voltage L2"
             },
             "measurement_gridms_phv_phsc": {
-                "name": "Grid Voltage L3"
+                "name": "Voltage L3"
             },
             "measurement_dcms_vol": {
                 "name": "DC Voltage"
