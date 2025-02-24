@@ -1,4 +1,4 @@
-# SMA ennexOS
+# SMA ennexOS for Homeassistant
 
 [![GitHub Release][releases-shield]][releases]
 [![codecov](https://codecov.io/github/shadow578/homeassistant_xmltv-epg/graph/badge.svg?token=HGS6DNA4LE)](https://codecov.io/github/shadow578/homeassistant_xmltv-epg)
@@ -6,7 +6,16 @@
 ![Project Maintenance][maintenance-shield]
 
 
-_Integration to integrate with SMA ennexOS devices, like the [SMA Data Manager][sma_data_manager] and [SMA Sunny Tripower X Series](sma_sunny_tripower_x)._
+_Integration to integrate with [SMA ennexOS](sma_ennexos) devices._
+
+
+## Supported Devices
+
+This integration should work with all SMA ennexOS devices.
+These devices are known to be compatible.
+
+- [SMA Data Manager M][sma_data_manager_m]
+- [SMA Sunny Tripower X15 and X25](sma_sunny_tripower_x)
 
 
 ## Installation
@@ -26,15 +35,19 @@ _Integration to integrate with SMA ennexOS devices, like the [SMA Data Manager][
 3. Download _all_ the files from the `custom_components/sma_ennexos/` directory in this repository.
 4. Place the files you downloaded in the new directory you created.
 5. Restart Home Assistant
-6. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "Integration blueprint"
+6. In the HA UI go to "Configuration" -> "Integrations" click "+" and search for "SMA ennexOS"
 
 # Configuration
 
 Configuration is done using the UI.
 You'll be prompted to enter the IP and credentials to the SMA ennexOS Device.
 After the initial setup, you'll have to configure the channels you want to use in the integration options.
-To find available channels, take a look in the "Instantaneous Values" menu of the SMA ennexOS web interface.
+To find available channels, refer to the "Instantaneous Values" menu of the ennexOS web interface.
 
+
+> [!TIP]
+> To Improve reliability, using the installer password is recommended.
+> Using the login to the ennexOS Portal works too, but may be less stable as it requires the ennexOS device to maintain a cloud connection.
 
 # Contributions are welcome!
 
@@ -50,7 +63,8 @@ The SMA, SMA ennexOS, SMA Data Manager and SMA Sunny Tripower X names and logos 
 
 ***
 
-[sma_data_manager]: https://www.sma.de/en/products/monitoring-control/data-manager-m
+[sma_ennexos]: https://www.sma.de/produkte/apps-software/ennexos
+[sma_data_manager_m]: https://www.sma.de/en/products/monitoring-control/data-manager-m
 [sma_sunny_tripower_x]: https://www.sma.de/en/products/solarinverters/sunny-tripower-x
 [commits-shield]: https://img.shields.io/github/commit-activity/y/shadow578/homeassistant_sma_data_manager.svg?style=for-the-badge
 [commits]: https://github.com/shadow578/homeassistant_sma_data_manager/commits/main
