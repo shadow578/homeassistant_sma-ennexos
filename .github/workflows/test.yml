@@ -31,6 +31,6 @@ jobs:
           run: python3 -m pytest --cov=./ --cov-report=xml --cov-fail-under=80 -v
 
         - name: Upload coverage reports to Codecov
-          uses: codecov/codecov-action@v5.3.1
+          uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # 5.3.1
           with:
             token: ${{ secrets.CODECOV_TOKEN }}
