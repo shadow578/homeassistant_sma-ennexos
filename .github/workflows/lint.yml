@@ -12,6 +12,8 @@ jobs:
   ruff:
     name: "Ruff"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
     steps:
         - name: "Checkout the repository"
           uses: "actions/checkout@v4.2.2"
@@ -34,6 +36,8 @@ jobs:
   pyright:
     name: "Pyright"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
     steps:
       - name: "Checkout the repository"
         uses: "actions/checkout@v4.2.2"
