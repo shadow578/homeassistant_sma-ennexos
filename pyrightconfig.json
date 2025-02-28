@@ -1,0 +1,14 @@
+{
+    "include": [
+        "custom_components",
+        "test"
+    ],
+    "exclude": [],
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": true,
+    "reportUnusedImport": true,
+    "reportUnusedVariable": true,
+    "reportGeneralTypeIssues": true,
+    "pythonVersion": "3.12",
+    "typeCheckingMode": "basic",
+}

@@ -1,0 +1,373 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Richte den Zugriff auf die lokale SMA ennexOS Weboberfläche ein.",
+                "data": {
+                    "host": "Hostname des SMA ennexOS Gerätes, ohne Protokoll (http:// oder https://)",
+                    "username": "Benutzername",
+                    "password": "Passwort",
+                    "ssl": "SSL Verwenden",
+                    "verify_ssl": "SSL Zertifikat Prüfen"
+                }
+            }
+        },
+        "error": {
+            "auth_fail": "Zugangsdaten sind nicht Korrekt.",
+            "connection_error": "Geräteverbindung konnte nicht hergestellt werden.",
+            "no_plant_component": "Die Stammkomponente der Anlage konnte nicht gefunden werden.",
+            "unknown": "Ein unerwarteter Fehler ist Aufgetreten."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "description": "Passt das Laufzeitverhalten der SMA ennexOS Integration an. Änderungen werden ggf. erst nach einem Neuladen der Integration wirksam.",
+                "data": {
+                    "sensor_channels": "Wähle alle Sensorkanäle, welche Abgerufen werden sollen.",
+                    "use_all_sensor_channels": "Alle Sensorkanäle auswählen",
+                    "update_interval": "Aktualisierungsinterval",
+                    "request_timeout": "Anfragentimeout",
+                    "request_retries": "Anfragenversuche (0 = keine Wiederholung)"
+                }
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "measurement_gridms_totvar": {
+                "name": "Netzblindleistung"
+            },
+            "measurement_gridms_totvar_pv": {
+                "name": "PV-Blindleistung"
+            },
+            "measurement_gridms_totw": {
+                "name": "Netzleistung"
+            },
+            "measurement_gridms_totw_pv": {
+                "name": "PV-Leistung"
+            },
+            "measurement_inverter_curwctlnom": {
+                "name": "Aktives Leistungslimit"
+            },
+            "measurement_inverter_waval": {
+                "name": "Verfügbare Wechselrichterleistung"
+            },
+            "measurement_metering_gridms_totwin_bat": {
+                "name": "Batterie Einspeiseleistung"
+            },
+            "measurement_metering_gridms_totwout_bat": {
+                "name": "Batterie Ladeleistung"
+            },
+            "measurement_metering_gridms_totwhin_bat": {
+                "name": "Gesamte Ladeenergie der Batterie"
+            },
+            "measurement_metering_gridms_totwhout_bat": {
+                "name": "Gesamte Einspeiseenergie der Batterie"
+            },
+            "measurement_metering_pccms_plnta_phsa": {
+                "name": "Strom Netzverknüpfungspunkt L1"
+            },
+            "measurement_metering_pccms_plnta_phsb": {
+                "name": "Strom Netzverknüpfungspunkt L2"
+            },
+            "measurement_metering_pccms_plnta_phsc": {
+                "name": "Strom Netzverknüpfungspunkt L3"
+            },
+            "measurement_metering_pccms_plntcsmpw": {
+                "name": "Aus dem Netz bezogene Leistung"
+            },
+            "measurement_metering_pccms_plntcsmpwh": {
+                "name": "Gesamte aus dem Netz bezogene Energie"
+            },
+            "measurement_metering_pccms_plntpf": {
+                "name": "Netzverknüpfungspunkt Leistungsfaktor Verschiebung"
+            },
+            "measurement_metering_pccms_plntphv_phsa": {
+                "name": "Spannung Netzverknüpfungspunkt L1"
+            },
+            "measurement_metering_pccms_plntphv_phsb": {
+                "name": "Spannung Netzverknüpfungspunkt L2"
+            },
+            "measurement_metering_pccms_plntphv_phsc": {
+                "name": "Spannung Netzverknüpfungspunkt L3"
+            },
+            "measurement_metering_pccms_plntvar": {
+                "name": "Blindleistung Netzverknüpfungspunkt"
+            },
+            "measurement_metering_pccms_plntvar_phsa": {
+                "name": "Blindleistung Netzverknüpfungspunkt L1"
+            },
+            "measurement_metering_pccms_plntvar_phsb": {
+                "name": "Blindleistung Netzverknüpfungspunkt L2"
+            },
+            "measurement_metering_pccms_plntvar_phsc": {
+                "name": "Blindleistung Netzverknüpfungspunkt L3"
+            },
+            "measurement_metering_pccms_plntw": {
+                "name": "Netzverknüfungspunkt Bezugsleistung"
+            },
+            "measurement_metering_pccms_plntw_phsa": {
+                "name": "Netzverknüfungspunkt Bezugsleistung L1"
+            },
+            "measurement_metering_pccms_plntw_phsb": {
+                "name": "Netzverknüfungspunkt Bezugsleistung L2"
+            },
+            "measurement_metering_pccms_plntw_phsc": {
+                "name": "Netzverknüfungspunkt Bezugsleistung L3"
+            },
+            "measurement_metering_pccms_plntwh": {
+                "name": "Netzverknüfungspunkt Gesamter Energiebezug"
+            },
+            "measurement_metering_totwhout_pv": {
+                "name": "PV-Gesamtertrag"
+            },
+            "measurement_operation_curavailplnt": {
+                "name": "Anlagenverfügbarkeit"
+            },
+            "measurement_operation_curavailvarovext": {
+                "name": "Verfügbare Überregte Blindleistung"
+            },
+            "measurement_operation_curavailvarovextnom": {
+                "name": "Verfügbare Überregte Blindleistung"
+            },
+            "measurement_operation_curavailvarunext": {
+                "name": "Verfügbare unterregte Blindleistung"
+            },
+            "measurement_operation_curavailvarunextnom": {
+                "name": "Verfügbare unterregte Blindleistung"
+            },
+            "measurement_operation_health": {
+                "name": "Gerätezustand"
+            },
+            "measurement_operation_wmaxinlimnom": {
+                "name": "Maximaler Wirkleistungssollwert (Netzeinspeisung)"
+            },
+            "measurement_operation_wmaxlimnom": {
+                "name": "Maximaler Wirkleistungssollwert"
+            },
+            "measurement_operation_wmininlimnom": {
+                "name": "Minimaler Wirkleistungssollwert (Netzeinspeisung)"
+            },
+            "measurement_operation_wminlimnom": {
+                "name": "Minimaler Wirkleistungssollwert"
+            },
+            "measurement_metering_gridms_a_phsa": {
+                "name": "Strom L1"
+            },
+            "measurement_metering_gridms_a_phsb": {
+                "name": "Strom L2"
+            },
+            "measurement_metering_gridms_a_phsc": {
+                "name": "Strom L3"
+            },
+            "measurement_metering_gridms_phv_phsa": {
+                "name": "Spannung L1"
+            },
+            "measurement_metering_gridms_phv_phsb": {
+                "name": "Spannung L2"
+            },
+            "measurement_metering_gridms_phv_phsc": {
+                "name": "Spannung L3"
+            },
+            "measurement_metering_gridms_totpf": {
+                "name": "Verschiebung Leistungsfaktor"
+            },
+            "measurement_metering_gridms_totva": {
+                "name": "Scheinleistung"
+            },
+            "measurement_metering_gridms_totvar": {
+                "name": "Blindleistung"
+            },
+            "measurement_metering_gridms_totwin": {
+                "name": "Bezugsleistung"
+            },
+            "measurement_metering_gridms_totwout": {
+                "name": "Einspeiseleistung"
+            },
+            "measurement_metering_gridms_totwhin": {
+                "name": "Gesamtenergie Bezug"
+            },
+            "measurement_metering_gridms_totwhout": {
+                "name": "Gesamtenergie Einspeisung"
+            },
+            "measurement_metering_gridms_va_phsa": {
+                "name": "Scheinleistung L1"
+            },
+            "measurement_metering_gridms_va_phsb": {
+                "name": "Scheinleistung L2"
+            },
+            "measurement_metering_gridms_va_phsc": {
+                "name": "Scheinleistung L3"
+            },
+            "measurement_metering_gridms_var_phsa": {
+                "name": "Blindleistung L1"
+            },
+            "measurement_metering_gridms_var_phsb": {
+                "name": "Blindleistung L2"
+            },
+            "measurement_metering_gridms_var_phsc": {
+                "name": "Blindleistung L3"
+            },
+            "measurement_metering_gridms_w_phsa": {
+                "name": "Leistung L1"
+            },
+            "measurement_metering_gridms_w_phsb": {
+                "name": "Leistung L2"
+            },
+            "measurement_metering_gridms_w_phsc": {
+                "name": "Leistung L3"
+            },
+            "measurement_bat_amp": {
+                "name": "Batteriestrom"
+            },
+            "measurement_bat_chastt": {
+                "name": "Batterie Ladestand"
+            },
+            "measurement_bat_diag_actlcapacnom": {
+                "name": "Aktuelle Batteriekapazität"
+            },
+            "measurement_bat_diag_capacthrpcnt": {
+                "name": "Ladezyklen"
+            },
+            "measurement_bat_diag_chaamax": {
+                "name": "Maximaler Ladestrom"
+            },
+            "measurement_bat_diag_cnterrovv": {
+                "name": "Überspannung Fehlerzähler"
+            },
+            "measurement_bat_diag_cntwrnovv": {
+                "name": "Überspannung Warnungszähler"
+            },
+            "measurement_bat_diag_cntwrnsoclo": {
+                "name": "Niedrige Batterieladung Warungszähler"
+            },
+            "measurement_bat_diag_dschamax": {
+                "name": "Maximaler Entladestrom"
+            },
+            "measurement_bat_diag_stattm": {
+                "name": "Batterie Laufzeit"
+            },
+            "measurement_bat_diag_tmpvalmax": {
+                "name": "Maximale Batterietemperatur"
+            },
+            "measurement_bat_diag_tmpvalmin": {
+                "name": "Minimale Batterietemperatur"
+            },
+            "measurement_bat_diag_totahin": {
+                "name": "Summe Ladestrom"
+            },
+            "measurement_bat_diag_totahout": {
+                "name": "Summe Entladestrom"
+            },
+            "measurement_bat_diag_volmax": {
+                "name": "Maximale Batteriespannung"
+            },
+            "measurement_bat_tmpval": {
+                "name": "Batterietemperatur"
+            },
+            "measurement_bat_vol": {
+                "name": "Batteriespannung"
+            },
+            "measurement_coolsys_inverter_tmpval": {
+                "name": "Temperatur Wechselrichter"
+            },
+            "measurement_coolsys_tr_tmpval": {
+                "name": "Temperatur Transformator"
+            },
+            "measurement_extgridms_a_phsa": {
+                "name": "Strom Netzverbindung L1"
+            },
+            "measurement_extgridms_a_phsb": {
+                "name": "Strom Netzverbindung L2"
+            },
+            "measurement_extgridms_a_phsc": {
+                "name": "Strom Netzverbindung L3"
+            },
+            "measurement_extgridms_hz": {
+                "name": "Netzverbindung Frequenz"
+            },
+            "measurement_extgridms_hzmax": {
+                "name": "Maximale Freqenz Netzverbindung"
+            },
+            "measurement_extgridms_hzmin": {
+                "name": "Minimale Freqenz Netzverbindung"
+            },
+            "measurement_extgridms_phv_phsa": {
+                "name": "Spannung Netzverbindung L1"
+            },
+            "measurement_extgridms_phv_phsb": {
+                "name": "Spannung Netzverbindung L2"
+            },
+            "measurement_extgridms_phv_phsc": {
+                "name": "Spannung Netzverbindung L3"
+            },
+            "measurement_extgridms_tota": {
+                "name": "Strom Netzverbindung"
+            },
+            "measurement_extgridms_totvar": {
+                "name": "Blindleistung Netzverbindung"
+            },
+            "measurement_extgridms_totw": {
+                "name": "Leistung Netzverbindung"
+            },
+            "measurement_extgridms_totwhin": {
+                "name": "Gesamter Energiebezug Netzverbindung"
+            },
+            "measurement_extgridms_totwhout": {
+                "name": "Gesamte Einspeiseenergie Netzverbindung"
+            },
+            "measurement_extgridms_var_phsa": {
+                "name": "Netzverbindung Blindleistung L1"
+            },
+            "measurement_extgridms_var_phsb": {
+                "name": "Netzverbindung Blindleistung L2"
+            },
+            "measurement_extgridms_var_phsc": {
+                "name": "Netzverbindung Blindleistung L3"
+            },
+            "measurement_extgridms_w_phsa": {
+                "name": "Netzverbindung Leistung L1"
+            },
+            "measurement_extgridms_w_phsb": {
+                "name": "Netzverbindung Leistung L2"
+            },
+            "measurement_extgridms_w_phsc": {
+                "name": "Netzverbindung Leistung L3"
+            },
+            "measurement_gridms_a_phsa": {
+                "name": "Strom L1"
+            },
+            "measurement_gridms_a_phsb": {
+                "name": "Strom L2"
+            },
+            "measurement_gridms_a_phsc": {
+                "name": "Strom L3"
+            },
+            "measurement_gridms_hz": {
+                "name": "Netzfrequenz"
+            },
+            "measurement_gridms_phv_phsa": {
+                "name": "Spannung L1"
+            },
+            "measurement_gridms_phv_phsb": {
+                "name": "Spannung L2"
+            },
+            "measurement_gridms_phv_phsc": {
+                "name": "Spannung L3"
+            },
+            "measurement_dcms_vol": {
+                "name": "Spannung DC-Seite"
+            },
+            "measurement_dcms_amp": {
+                "name": "Strom DC-Seite"
+            },
+            "measurement_dcms_watt": {
+                "name": "Leistung DC-Seite"
+            },
+            "measurement_mltfncsw_sttmstr": {
+                "name": "Status des Multifunktionsrelais"
+            }
+        }
+    }
+}

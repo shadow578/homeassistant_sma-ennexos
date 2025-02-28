@@ -4,14 +4,23 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+
+run_pytest() {
+    if [ "$1" = "--coverage" ]; then
+        pytest --cov=./ --cov-report=html --cov-fail-under=80 -v
+    else
+        pytest -v
+    fi
+}
+
 if [ "$1" = "--watch" ]; then
     # watch mode
     while true; do
-    pytest -v || true
+    run_pytest $2 || true
     sleep 10
     clear
     done
 else
     # single run
-    pytest -v
+    run_pytest $1
 fi
