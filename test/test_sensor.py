@@ -41,12 +41,12 @@ async def test_sensor_basic(
         ComponentInfo(
             component_id="component1",
             component_type="type1",
-            name="Component 1 Name",
+            name="Component 1",
         ),
         ComponentInfo(
             component_id="component2",
             component_type="type2",
-            name="Component 2 Name",
+            name="Component 2",
         ),
     ]
 
@@ -98,11 +98,11 @@ async def test_sensor_basic(
     await hass.async_block_till_done()
 
     # following sensors should be present
-    state = hass.states.get("sensor.component1_channel1")
+    state = hass.states.get("sensor.component_1_channel1")
     assert state
     assert state.state == "300.0"
 
-    state = hass.states.get("sensor.component2_channel2")
+    state = hass.states.get("sensor.component_2_channel2")
     assert state
     assert state.state == "400.0"
 
@@ -269,12 +269,12 @@ async def test_device_entries(
         ComponentInfo(
             component_id="component1",
             component_type="type1",
-            name="Component 1 Name",
+            name="Component 1",
         ),
         ComponentInfo(
             component_id="component2",
             component_type="type2",
-            name="Component 2 Name",
+            name="Component 2",
             model_name="Model Name",
             serial_number="123456",
             firmware_version="1.2.3",
@@ -332,27 +332,27 @@ async def test_device_entries(
     dr = device_registry.async_get(hass)
 
     # get device entry for component1 channel1
-    entity = er.async_get("sensor.component1_channel1")
+    entity = er.async_get("sensor.component_1_channel1")
     assert entity is not None
     assert entity.device_id is not None
 
     device = dr.async_get(entity.device_id)
     assert device is not None
 
-    assert device.name == "Component 1 Name"
+    assert device.name == "Component 1"
     assert device.manufacturer == DEVICE_MANUFACTURER
     assert device.model is None  # no model
     assert device.sw_version is None  # no firmware version
 
     # get device entry for component2 channel2
-    entity = er.async_get("sensor.component2_channel2")
+    entity = er.async_get("sensor.component_2_channel2")
     assert entity is not None
     assert entity.device_id is not None
 
     device = dr.async_get(entity.device_id)
     assert device is not None
 
-    assert device.name == "Component 2 Name"
+    assert device.name == "Component 2"
     assert device.manufacturer == DEVICE_MANUFACTURER
     assert device.model == "Model Name"
     assert device.serial_number == "123456"

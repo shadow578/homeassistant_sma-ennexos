@@ -48,10 +48,10 @@ def __normalize_for_id(s: str) -> str:
     return s
 
 
-def channel_parts_to_entity_id(component_id: str, channel_id: str, kind: str) -> str:
+def channel_parts_to_entity_id(component_name: str, channel_id: str, kind: str) -> str:
     """Convert a channel_id and component_id to an entity id.
 
-    :param component_id: The component_id of the channel.
+    :param component_name: The name or id of the component.
     :param channel_id: The channel_id of the channel.
     :param kind: The kind of entity. e.g. sensor, binary_sensor, etc.
     :return: entity id
@@ -62,7 +62,7 @@ def channel_parts_to_entity_id(component_id: str, channel_id: str, kind: str) ->
         channel_id = channel_id.replace("[", "_").replace("]", "")
 
     # concat component and channel id
-    s = f"{component_id}_{channel_id}"
+    s = f"{component_name}_{channel_id}"
 
     s = __normalize_for_id(s)
     return f"{kind}.{s}"

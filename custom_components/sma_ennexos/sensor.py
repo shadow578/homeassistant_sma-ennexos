@@ -99,7 +99,11 @@ class SMASensor(SMAEntity, SensorEntity):
         self.channel_id = channel_id
 
         # create entity id from device id and channel id
-        self.entity_id = channel_parts_to_entity_id(component_id, channel_id, "sensor")
+        self.entity_id = channel_parts_to_entity_id(
+            component_info.name if component_info is not None else component_id,
+            channel_id,
+            "sensor",
+        )
         self._attr_unique_id = str(uuid.uuid5(uuid.NAMESPACE_X500, self.entity_id))
 
         # super handles setting id and device_info for us
