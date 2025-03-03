@@ -1,20 +1,18 @@
 """SMA Time/Value Pair."""
 
+from dataclasses import dataclass
+
 from .errors import SMAApiParsingError
 
 SMAValue = str | int | float
 
 
+@dataclass
 class TimeValuePair:
     """a single value at a single point in time."""
 
     time: str
     value: SMAValue | None
-
-    def __init__(self, time: str, value: SMAValue | None) -> None:
-        """Initialize time value pair."""
-        self.time = time
-        self.value = value
 
     @classmethod
     def from_dict(cls, data: dict) -> "TimeValuePair":

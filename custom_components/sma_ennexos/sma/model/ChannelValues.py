@@ -1,23 +1,18 @@
 """Measurement values of a single sensor channel."""
 
+from dataclasses import dataclass
+
 from .errors import SMAApiParsingError
 from .TimeValuePair import TimeValuePair
 
 
+@dataclass
 class ChannelValues:
     """a value of a single channel of a single component."""
 
     channel_id: str
     component_id: str
     values: list[TimeValuePair]
-
-    def __init__(
-        self, channel_id: str, component_id: str, values: list[TimeValuePair]
-    ) -> None:
-        """Initialize channel values."""
-        self.channel_id = channel_id
-        self.component_id = component_id
-        self.values = values
 
     def latest_value(self) -> TimeValuePair:
         """Get the latest value."""

@@ -1,10 +1,12 @@
 """SMA Auth token."""
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from .errors import SMAApiParsingError
 
 
+@dataclass
 class AuthToken:
     """sma auth token info."""
 
@@ -13,18 +15,7 @@ class AuthToken:
     token_type: str
     expires_in: int
 
-    granted_at: datetime
-
-    def __init__(
-        self, access_token: str, refresh_token: str, token_type: str, expires_in: int
-    ) -> None:
-        """Initialize auth token info."""
-        self.access_token = access_token
-        self.refresh_token = refresh_token
-        self.token_type = token_type
-        self.expires_in = expires_in
-
-        self.granted_at = datetime.now()
+    granted_at: datetime = datetime.now()
 
     @property
     def time_until_expiration(self) -> timedelta:

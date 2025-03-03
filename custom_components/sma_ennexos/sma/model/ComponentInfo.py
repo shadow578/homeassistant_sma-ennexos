@@ -1,8 +1,11 @@
 """SMA component / device information."""
 
+from dataclasses import dataclass
+
 from .errors import SMAApiParsingError
 
 
+@dataclass
 class ComponentInfo:
     """information about a component (e.g. a device)."""
 
@@ -10,26 +13,9 @@ class ComponentInfo:
     component_type: str
     name: str
 
-    model_name: str | None
-    serial_number: str | None
-    firmware_version: str | None
-
-    def __init__(
-        self,
-        component_id: str,
-        component_type: str,
-        name: str,
-        model_name: str | None = None,
-        serial_number: str | None = None,
-        firmware_version: str | None = None,
-    ) -> None:
-        """Initialize component info."""
-        self.component_id = component_id
-        self.component_type = component_type
-        self.name = name
-        self.model_name = model_name
-        self.serial_number = serial_number
-        self.firmware_version = firmware_version
+    model_name: str | None = None
+    serial_number: str | None = None
+    firmware_version: str | None = None
 
     def add_extra(self, extra_data: dict) -> None:
         """Add optional extra data to this component info."""
