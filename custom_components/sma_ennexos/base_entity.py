@@ -22,9 +22,8 @@ class SMAEntity(CoordinatorEntity):
     def __init__(
         self,
         coordinator: SMADataCoordinator,
-        component_id: str,
         channel_id: str,
-        component_info: ComponentInfo | None = None,
+        component_info: ComponentInfo,
     ) -> None:
         """Initialize common entity attributes.
 
@@ -36,37 +35,25 @@ class SMAEntity(CoordinatorEntity):
         device_id = str(
             uuid.uuid5(
                 uuid.NAMESPACE_X500,
-                f"{coordinator.config_entry.entry_id}{component_id}",
+                f"{coordinator.config_entry.entry_id}{component_info.component_id}",
             )
         )
 
-        # prepare name, serial, and firmware version
-        device_name = component_info.name if component_info else f"[{component_id}]"
-
-        device_model_name = (
-            None
-            if component_info is None or component_info.product_name is None
-            else component_info.product_name
-        )
-        device_serial = (
-            None
-            if component_info is None or component_info.serial_number is None
-            else component_info.serial_number
-        )
-        device_firmware_version = (
-            None
-            if component_info is None or component_info.firmware_version is None
-            else component_info.firmware_version
-        )
-
         # set device info for the entity
+        conf_url = (
+            f"https://{component_info.ip_address}/"
+            if component_info.ip_address
+            else None
+        )
+
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, device_id)},
-            name=device_name,
-            manufacturer=DEVICE_MANUFACTURER,
-            model=device_model_name,
-            serial_number=device_serial,
-            sw_version=device_firmware_version,
+            name=component_info.name,
+            manufacturer=component_info.vendor or DEVICE_MANUFACTURER,
+            model=component_info.product_name,
+            serial_number=component_info.serial_number,
+            sw_version=component_info.firmware_version,
+            configuration_url=conf_url,
         )
 
         LOGGER.debug(
@@ -74,5 +61,5 @@ class SMAEntity(CoordinatorEntity):
             self.entity_id,
             channel_id,
             device_id,
-            device_name,
+            component_info.name,
         )
