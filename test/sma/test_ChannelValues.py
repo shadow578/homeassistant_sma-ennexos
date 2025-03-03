@@ -33,8 +33,8 @@ def test_from_dict_valid_dict():
     assert channel_values[0].values[1].value == 309
 
     # check latest_value equals values[1]
-    assert channel_values[0].latest_value().time == "2024-02-01T11:30:00Z"
-    assert channel_values[0].latest_value().value == 309
+    assert channel_values[0].latest_value.time == "2024-02-01T11:30:00Z"
+    assert channel_values[0].latest_value.value == 309
 
 
 def test_from_dict_valid_dict_no_values():
@@ -57,7 +57,7 @@ def test_from_dict_valid_dict_no_values():
     assert channel_values[0].component_id == "The:Component-Id"
 
     with pytest.raises(ValueError):
-        channel_values[0].latest_value()
+        channel_values[0].latest_value
 
 
 def test_from_dict_valid_dict_array_channel():

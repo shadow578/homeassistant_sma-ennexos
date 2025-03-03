@@ -14,6 +14,7 @@ class ChannelValues:
     component_id: str
     values: list[TimeValuePair]
 
+    @property
     def latest_value(self) -> TimeValuePair:
         """Get the latest value."""
         if len(self.values) == 0:
