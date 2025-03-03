@@ -167,7 +167,7 @@ class SMAApiClient(SMABaseClient):
     async def get_all_components(self) -> list[ComponentInfo]:
         """Get a list of all available components and their ids."""
 
-        async def _get_navigation_int(
+        async def __get_navigation(
             parent_id: str | None = None,
         ) -> list[ComponentInfo]:
             """Get data from /navigation endpoint."""
@@ -190,7 +190,7 @@ class SMAApiClient(SMABaseClient):
                 raise SMAApiClientError("received invalid response: not a list")
             return [ComponentInfo.from_dict(component) for component in navigation]
 
-        async def _add_device_info(
+        async def __add_device_info(
             root_component: ComponentInfo, component: ComponentInfo
         ) -> None:
             """Get device info for a component."""
@@ -199,41 +199,53 @@ class SMAApiClient(SMABaseClient):
                     f"getting device info for component={component.component_id}"
                 )
 
-            device_info_response = await self._make_request(
-                method="GET",
-                endpoint=f"plants/{root_component.component_id}/devices/{component.component_id}",
-                headers={
-                    **self._auth_headers,
-                    "Accept": "application/json",
-                },
-            )
+            try:
+                device_info_response = await self._make_request(
+                    method="GET",
+                    endpoint=f"plants/{root_component.component_id}/devices/{component.component_id}",
+                    headers={
+                        **self._auth_headers,
+                        "Accept": "application/json",
+                    },
+                )
 
-            # try adding extra info to component
-            device_info = await device_info_response.json()
-            component.add_extra(device_info)
+                # try adding extra info to component
+                device_info = await device_info_response.json()
+                component.add_extra(device_info)
+            except Exception as e:
+                if self._logger:
+                    self._logger.debug(
+                        f"error getting device info for component={component.component_id}: {e}"
+                    )
 
-        async def _add_extra_info(component: ComponentInfo) -> None:
+        async def __add_widget_info(component: ComponentInfo) -> None:
             """Get extra info for a component."""
             if self._logger:
                 self._logger.debug(
-                    f"getting extra info for component={component.component_id}"
+                    f"getting widget info for component={component.component_id}"
                 )
 
-            device_info_response = await self._make_request(
-                method="GET",
-                endpoint=f"widgets/deviceinfo?deviceId={component.component_id}",
-                headers={
-                    **self._auth_headers,
-                    "Accept": "application/json",
-                },
-            )
+            try:
+                device_info_response = await self._make_request(
+                    method="GET",
+                    endpoint=f"widgets/deviceinfo?deviceId={component.component_id}",
+                    headers={
+                        **self._auth_headers,
+                        "Accept": "application/json",
+                    },
+                )
 
-            # try adding extra info to component
-            device_info = await device_info_response.json()
-            component.add_extra(device_info)
+                # try adding extra info to component
+                device_info = await device_info_response.json()
+                component.add_extra(device_info)
+            except Exception as e:
+                if self._logger:
+                    self._logger.debug(
+                        f"error getting widget info for component={component.component_id}: {e}"
+                    )
 
         # get root component, only consider the first one
-        root_components = await _get_navigation_int()
+        root_components = await __get_navigation()
         if len(root_components) == 0:
             raise SMAApiClientError("received invalid response: no root component")
         root_component = root_components[0]
@@ -246,9 +258,7 @@ class SMAApiClient(SMABaseClient):
             )
 
         # get all components that are children of the root component
-        all_components = await _get_navigation_int(
-            parent_id=root_component.component_id
-        )
+        all_components = await __get_navigation(parent_id=root_component.component_id)
 
         # build final list
         all_components = [root_component] + all_components
@@ -257,8 +267,8 @@ class SMAApiClient(SMABaseClient):
         # (Plant components don't have extra info)
         for component in all_components:
             if component.component_type != "Plant":
-                await _add_device_info(root_component, component)
-                await _add_extra_info(component)
+                await __add_device_info(root_component, component)
+                await __add_widget_info(component)
 
         if self._logger:
             self._logger.debug(f"got {len(all_components)} components")

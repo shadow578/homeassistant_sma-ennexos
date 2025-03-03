@@ -13,6 +13,7 @@ from custom_components.sma_ennexos.sma.client import (
     SMAApiClient,
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
+from custom_components.sma_ennexos.sma.model.errors import SMAApiCommunicationError
 
 from .http_response_mock import ClientResponseMock
 
@@ -295,9 +296,7 @@ async def test_client_get_all_components():
             # inv2
             if endpoint == "widgets/deviceinfo?deviceId=inv2":
                 did_get_inv2_widget = True
-                return ClientResponseMock(
-                    data={}  # TODO throw
-                )
+                raise SMAApiCommunicationError("inv2 widget error should be dropped")
 
             # inv3
             if endpoint == "widgets/deviceinfo?deviceId=inv3":
@@ -319,9 +318,7 @@ async def test_client_get_all_components():
             # inv4
             if endpoint == "widgets/deviceinfo?deviceId=inv4":
                 did_get_inv4_widget = True
-                return ClientResponseMock(
-                    data={}  # TODO throw
-                )
+                raise SMAApiCommunicationError("inv4 widget error should be dropped")
 
         # GET /api/v1/plants/{plantId}/devices/{componentId} (component extra info)
         if method == "GET" and endpoint.startswith("plants/"):
@@ -376,15 +373,11 @@ async def test_client_get_all_components():
                 )
             if component == "inv3":
                 did_get_inv3_extra = True
-                return ClientResponseMock(
-                    data={}  # TODO throw
-                )
+                raise SMAApiCommunicationError("inv3 extra error should be dropped")
 
             if component == "inv4":
                 did_get_inv4_extra = True
-                return ClientResponseMock(
-                    data={}  # TODO throw
-                )
+                raise SMAApiCommunicationError("inv4 extra error should be dropped")
 
         raise Exception(f"unexpected endpoint: {endpoint}")
 
