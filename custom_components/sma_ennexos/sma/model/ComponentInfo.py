@@ -33,7 +33,7 @@ class ComponentInfo:
                     self.product_name = extra_data["product"]
 
                 # from /api/v1/widgets/deviceinfo
-                if "name" in extra_data and isinstance(extra_data["name"], str):
+                elif "name" in extra_data and isinstance(extra_data["name"], str):
                     self.product_name = extra_data["name"]
 
             # product vendor
@@ -59,7 +59,7 @@ class ComponentInfo:
 
                 # from /api/v1/widgets/deviceinfo
                 # (extra_data.deviceInfoFeatures[? where infoWidgetType = "FirmwareVersion"].value)
-                if "deviceInfoFeatures" in extra_data and isinstance(
+                elif "deviceInfoFeatures" in extra_data and isinstance(
                     extra_data["deviceInfoFeatures"], list
                 ):
                     for feature in extra_data["deviceInfoFeatures"]:

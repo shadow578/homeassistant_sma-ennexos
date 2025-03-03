@@ -349,6 +349,7 @@ async def test_client_get_all_components():
                 did_get_inv1_extra = True
                 return ClientResponseMock(
                     data={
+                        "name": "extra-inv1-name",
                         "product": "extra-inv1-product",
                         "vendor": "extra-inv1-vendor",
                         "serial": "extra-inv1-serial",
@@ -362,6 +363,7 @@ async def test_client_get_all_components():
                 did_get_inv2_extra = True
                 return ClientResponseMock(
                     data={
+                        "name": "extra-inv2-name",
                         "product": "extra-inv2-product",
                         "vendor": "extra-inv2-vendor",
                         "serial": "extra-inv2-serial",
