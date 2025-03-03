@@ -190,6 +190,28 @@ class SMAApiClient(SMABaseClient):
                 raise SMAApiClientError("received invalid response: not a list")
             return [ComponentInfo.from_dict(component) for component in navigation]
 
+        async def _add_device_info(
+            root_component: ComponentInfo, component: ComponentInfo
+        ) -> None:
+            """Get device info for a component."""
+            if self._logger:
+                self._logger.debug(
+                    f"getting device info for component={component.component_id}"
+                )
+
+            device_info_response = await self._make_request(
+                method="GET",
+                endpoint=f"plants/{root_component.component_id}/devices/{component.component_id}",
+                headers={
+                    **self._auth_headers,
+                    "Accept": "application/json",
+                },
+            )
+
+            # try adding extra info to component
+            device_info = await device_info_response.json()
+            component.add_extra(device_info)
+
         async def _add_extra_info(component: ComponentInfo) -> None:
             """Get extra info for a component."""
             if self._logger:
@@ -235,11 +257,18 @@ class SMAApiClient(SMABaseClient):
         # (Plant components don't have extra info)
         for component in all_components:
             if component.component_type != "Plant":
+                await _add_device_info(root_component, component)
                 await _add_extra_info(component)
 
         if self._logger:
             self._logger.debug(f"got {len(all_components)} components")
         return all_components
+
+    def get_product_icon_url(self, component: ComponentInfo) -> str | None:
+        """Get the URL for the product icon of a component."""
+        if component.product_tag_id is None:
+            return None
+        return f"{self.base_url}/product/icon/{component.product_tag_id}/neutral/64"
 
     async def get_all_live_measurements(
         self, component_ids: list[str]

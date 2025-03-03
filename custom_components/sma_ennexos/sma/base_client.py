@@ -158,3 +158,8 @@ class SMABaseClient:
     def host(self) -> str:
         """Get the host."""
         return self.__host
+
+    @property
+    def base_url(self) -> str:
+        """Get the api base url."""
+        return self.__base_url

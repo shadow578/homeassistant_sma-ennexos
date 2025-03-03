@@ -275,7 +275,7 @@ async def test_device_entries(
             component_id="component2",
             component_type="type2",
             name="Component 2",
-            model_name="Model Name",
+            product_name="Model Name",
             serial_number="123456",
             firmware_version="1.2.3",
         ),

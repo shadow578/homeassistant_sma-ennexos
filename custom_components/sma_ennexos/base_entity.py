@@ -45,8 +45,8 @@ class SMAEntity(CoordinatorEntity):
 
         device_model_name = (
             None
-            if component_info is None or component_info.model_name is None
-            else component_info.model_name
+            if component_info is None or component_info.product_name is None
+            else component_info.product_name
         )
         device_serial = (
             None
