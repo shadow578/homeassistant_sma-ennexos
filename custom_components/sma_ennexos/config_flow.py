@@ -359,7 +359,7 @@ class SMAOptionsFlow(OptionsFlow):
             )
             for ld in all_live_data
             # ignore all entries that have no value in the latest measurement
-            if ld.latest_value().value is not None
+            if ld.latest_value.value is not None
         ]
         LOGGER.debug("found %s available channels after filtering", len(result))
         return result

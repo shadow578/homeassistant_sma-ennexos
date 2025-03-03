@@ -13,7 +13,7 @@ import aiohttp
 
 from .base_client import SMABaseClient
 from .model import (
-    AuthTokenInfo,
+    AuthToken,
     ChannelValues,
     ComponentInfo,
     LiveMeasurementQueryItem,
@@ -99,7 +99,7 @@ class SMAApiClient(SMABaseClient):
             self._logger.debug("got new token successfully")
         return LOGIN_RESULT_NEW_TOKEN
 
-    async def __get_new_token(self, username: str, password: str) -> AuthTokenInfo:
+    async def __get_new_token(self, username: str, password: str) -> AuthToken:
         """Get a new access token using username and password."""
         token_response = await self._make_request(
             method="POST",
@@ -124,9 +124,9 @@ class SMAApiClient(SMABaseClient):
 
         # set access token
         token_data = await token_response.json()
-        return AuthTokenInfo.from_dict(token_data)
+        return AuthToken.from_dict(token_data)
 
-    async def __refresh_token(self, refresh_token: str) -> AuthTokenInfo:
+    async def __refresh_token(self, refresh_token: str) -> AuthToken:
         """Get a new access token using a refresh token."""
         token_response = await self._make_request(
             method="POST",
@@ -146,7 +146,7 @@ class SMAApiClient(SMABaseClient):
 
         # set access token
         token_data = await token_response.json()
-        return AuthTokenInfo.from_dict(token_data)
+        return AuthToken.from_dict(token_data)
 
     async def logout(self) -> None:
         """Logout from the api."""

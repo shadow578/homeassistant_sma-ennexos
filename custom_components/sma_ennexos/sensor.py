@@ -129,7 +129,7 @@ class SMASensor(SMAEntity, SensorEntity):
         )
 
         # get latest value
-        value = channel_values.latest_value().value
+        value = channel_values.latest_value.value
 
         # check for fallback value in known_channels for None
         if value is None:
