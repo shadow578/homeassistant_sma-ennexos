@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from .errors import SMAApiParsingError
 
 
-class AuthTokenInfo:
+class AuthToken:
     """sma auth token info."""
 
     access_token: str
@@ -43,7 +43,7 @@ class AuthTokenInfo:
         return self.seconds_until_expiration <= 0
 
     @classmethod
-    def from_dict(cls, data: dict) -> "AuthTokenInfo":
+    def from_dict(cls, data: dict) -> "AuthToken":
         """Create from dict, verify required fields and their types."""
         if not isinstance(data, dict):
             raise SMAApiParsingError("auth token info is not a dict")

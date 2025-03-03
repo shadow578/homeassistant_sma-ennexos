@@ -1,6 +1,6 @@
 """SMA Api model."""
 
-from .AuthToken import AuthTokenInfo
+from .AuthToken import AuthToken
 from .ChannelValues import ChannelValues
 from .ComponentInfo import ComponentInfo
 from .errors import (
@@ -17,7 +17,7 @@ __all__ = [
     "SMAApiCommunicationError",
     "SMAApiAuthenticationError",
     "SMAApiParsingError",
-    "AuthTokenInfo",
+    "AuthToken",
     "ChannelValues",
     "ComponentInfo",
     "LiveMeasurementQueryItem",

@@ -1,12 +1,12 @@
-"""unit tests for model.AuthTokenInfo."""
+"""unit tests for model.AuthToken."""
 
 import pytest
 
-from custom_components.sma_ennexos.sma.model import AuthTokenInfo, SMAApiParsingError
+from custom_components.sma_ennexos.sma.model import AuthToken, SMAApiParsingError
 
 
 def test_from_dict_valid_dict():
-    """Test that AuthTokenInfo.from_dict() parses a valid dict correctly."""
+    """Test that AuthToken.from_dict() parses a valid dict correctly."""
 
     # prepare dict
     token_dict = {
@@ -17,7 +17,7 @@ def test_from_dict_valid_dict():
     }
 
     # call from_dict()
-    token = AuthTokenInfo.from_dict(token_dict)
+    token = AuthToken.from_dict(token_dict)
 
     # check result
     assert token.access_token == "abc"
@@ -36,7 +36,7 @@ def test_from_dict_valid_dict():
 
 
 def test_from_dict_invalid_dict():
-    """Test that AuthTokenInfo.from_dict() raises an exception if the dict is invalid."""
+    """Test that AuthToken.from_dict() raises an exception if the dict is invalid."""
 
     with pytest.raises(SMAApiParsingError):
-        AuthTokenInfo.from_dict({})
+        AuthToken.from_dict({})

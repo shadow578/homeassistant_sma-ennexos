@@ -11,7 +11,7 @@ import aiohttp
 import async_timeout
 
 from .model import (
-    AuthTokenInfo,
+    AuthToken,
     SMAApiAuthenticationError,
     SMAApiClientError,
     SMAApiCommunicationError,
@@ -21,7 +21,7 @@ from .model import (
 class SMABaseClient:
     """base class for sma ennexOS client, handles core functionality."""
 
-    _auth_data: AuthTokenInfo | None = None
+    _auth_data: AuthToken | None = None
     _session_id: str | None = None
     __session: aiohttp.ClientSession
     __host: str
@@ -143,7 +143,7 @@ class SMABaseClient:
         }
 
     @property
-    def auth_data(self) -> AuthTokenInfo:
+    def auth_data(self) -> AuthToken:
         """Get auth_data object, or raise a exception if no auth data is available."""
         if (
             self._auth_data is None
