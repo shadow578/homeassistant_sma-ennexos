@@ -144,6 +144,11 @@ class AioHttpMock:
         """Add a response to the mock."""
         self.__responses.append(response)
 
+    def add_responses(self, responses: list[ResponseEntry]):
+        """Add multiple responses to the mock."""
+        for r in responses:
+            self.add_response(r)
+
     def get_request(self, method: str, endpoint: str) -> RequestEntry | None:
         """Return a recorded request."""
         for request in self.__requests:
@@ -152,6 +157,11 @@ class AioHttpMock:
                 return request
 
         return None
+
+    @property
+    def request_count(self) -> int:
+        """Return the number of recorded requests."""
+        return len(self.__requests)
 
     def clear_requests(self):
         """Clear all recorded requests."""
