@@ -435,67 +435,43 @@ async def test_client_get_all_components():
 @pytest.mark.asyncio
 async def test_client_get_all_live_measurements():
     """Test SMAApiClient.get_all_live_measurements."""
+    mock = AioHttpMock("http://sma.local/api/v1")
 
-    # mock for make_request
-    did_get_measurements = False
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+    )
 
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_measurements
+    # need to login first
+    mock.add_response(
+        ResponseEntry(
+            repeat=True,
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
-        # required for login
-        if method == "POST" and endpoint == "token":
-            return ClientResponseMock(
-                data={
-                    "access_token": "acc-token-1",
-                    "refresh_token": "ref-token-1",
-                    "token_type": "Bearer",
-                    "expires_in": 30,  # ultra short-lived to test token refresh
-                },
-                cookies=[
-                    ("JSESSIONID", "session-id"),
-                ],
-            )
-
-        # POST /api/v1/measurements/live
-        if method == "POST" and endpoint == "measurements/live":
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Content-Type"] == "application/json"
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # check payload
-            assert data is not None
-            assert data == [
-                {
-                    "componentId": "inv0",
-                },
-                {
-                    "componentId": "inv1",
-                },
-            ]
-
-            # return mock response
-            did_get_measurements = True
-            return ClientResponseMock(
+    # mock responses needed for live measurements
+    mock.add_responses(
+        [
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
                 data=[
                     {
                         "channelId": "chastt",
@@ -507,43 +483,48 @@ async def test_client_get_all_live_measurements():
                         "componentId": "inv1",
                         "values": [{"time": "2024-02-01T11:30:00Z", "value": 25}],
                     },
-                ]
-            )
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
-
-    # create the client
-    sma = SMAApiClient(
-        host="sma.local",
-        username="test",
-        password="test123",
-        session=mock.MagicMock(),
-        use_ssl=False,
+                ],
+            ),
+        ]
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    mock.clear_requests()
 
-        # get all live measurements
-        measurements = await sma.get_all_live_measurements(
-            component_ids=["inv0", "inv1"]
-        )
-        assert did_get_measurements is True
+    # get all live measurements, then check if the data is present correctly
+    measurements = await sma.get_all_live_measurements(component_ids=["inv0", "inv1"])
+    assert len(measurements) == 2
 
-        assert len(measurements) == 2
+    # inv0
+    assert measurements[0].component_id == "inv0"
+    assert measurements[0].channel_id == "chastt"
+    assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[0].values[0].value == 10
 
-        # inv0
-        assert measurements[0].component_id == "inv0"
-        assert measurements[0].channel_id == "chastt"
-        assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[0].values[0].value == 10
+    # inv1
+    assert measurements[1].component_id == "inv1"
+    assert measurements[1].channel_id == "chastt"
+    assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[1].values[0].value == 25
 
-        # inv1
-        assert measurements[1].component_id == "inv1"
-        assert measurements[1].channel_id == "chastt"
-        assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[1].values[0].value == 25
+    # ensure the right requests were made
+    # live measurements request
+    request = mock.get_request(method="POST", endpoint="measurements/live")
+    assert request is not None
+
+    assert request.data == [
+        {"componentId": "inv0"},
+        {"componentId": "inv1"},
+    ]
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Cookie": "JSESSIONID=mock-session-id",
+        "Authorization": "Bearer mock-access-token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    assert request.is_json is True
+    assert request.was_handled
 
 
 @pytest.mark.asyncio
