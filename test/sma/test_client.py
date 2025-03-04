@@ -14,6 +14,7 @@ from custom_components.sma_ennexos.sma.client import (
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
 from custom_components.sma_ennexos.sma.model.errors import SMAApiCommunicationError
+from test.sma.aiohttp_mock import AioHttpMock, ResponseEntry
 
 from .http_response_mock import ClientResponseMock
 
@@ -21,133 +22,118 @@ from .http_response_mock import ClientResponseMock
 @pytest.mark.asyncio
 async def test_client_auth():
     """Test client login / logout methods."""
-
-    # mock for make_request
-    did_get_token = False
-    did_refresh_token = False
-    did_delete_token = False
-
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_token
-        nonlocal did_refresh_token
-        nonlocal did_delete_token
-
-        # POST /api/v1/token (login, NEW and REFRESH)
-        if method == "POST" and endpoint == "token":
-            assert data is not None
-            assert (
-                data["grant_type"] == "password"
-                or data["grant_type"] == "refresh_token"
-            )
-
-            # check headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-
-            # content type headers
-            assert headers["Content-Type"] == "application/x-www-form-urlencoded"
-            assert headers["Accept"] == "application/json"
-
-            if data["grant_type"] == "password":
-                # check data
-                assert data["username"] == "test"
-                assert data["password"] == "test123"
-
-                # should use form data instead of json
-                assert as_json is False
-
-                # return mock response
-                did_get_token = True
-                return ClientResponseMock(
-                    data={
-                        "access_token": "acc-token-1",
-                        "refresh_token": "ref-token-1",
-                        "token_type": "Bearer",
-                        "expires_in": 30,  # ultra short-lived to test token refresh
-                    },
-                    cookies=[
-                        ("JSESSIONID", "session-id"),
-                    ],
-                )
-            elif data["grant_type"] == "refresh_token":
-                # token refresh requires session cookie
-                assert headers["Cookie"] == "JSESSIONID=session-id"
-
-                # check data
-                assert data["refresh_token"] == "ref-token-1"
-
-                # should use form data instead of json
-                assert as_json is False
-
-                # return mock response
-                did_refresh_token = True
-                return ClientResponseMock(
-                    data={
-                        "access_token": "acc-token-2",
-                        "refresh_token": "ref-token-2",
-                        "token_type": "Bearer",
-                        "expires_in": 3600,  # long-lived
-                    },
-                    cookies=[
-                        ("JSESSIONID", "session-id"),
-                    ],
-                )
-
-        # DELETE /api/v1/token (logout)
-        if method == "DELETE":
-            assert endpoint == f"refreshtoken?refreshToken={quote('ref-token-2')}"
-            did_delete_token = True
-
-            return ClientResponseMock(data={}, cookies=[])
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
+    mock = AioHttpMock("http://sma.local/api/v1")
 
     # create the client
     sma = SMAApiClient(
         host="sma.local",
         username="test",
         password="test123",
-        session=mock.MagicMock(),
+        session=mock.session,
         use_ssl=False,
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        # login should get a new token
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
-        assert did_get_token is True
-        assert did_refresh_token is False
-        assert did_delete_token is False
+    token_data = {
+        "access_token": "mock-access-token",
+        "refresh_token": "mock-refresh-token",
+        "token_type": "Bearer",
+    }
 
-        did_get_token = False
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                **token_data,
+                "expires_in": 30,  # very short-lived token to trigger refresh
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
 
-        # token is super short-lived, so another login should refresh it
-        assert (await sma.login()) == LOGIN_RESULT_TOKEN_REFRESHED
-        assert did_get_token is False
-        assert did_refresh_token is True
-        assert did_delete_token is False
+    # login should get a new token
+    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
 
-        did_refresh_token = False
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "password",
+        "username": "test",
+        "password": "test123",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
+    assert request.is_json is False
+    assert request.was_handled
 
-        # now the token is long-lived, so another login should do nothing
-        assert (await sma.login()) == LOGIN_RESULT_ALREADY_LOGGED_IN
-        assert did_get_token is False
-        assert did_refresh_token is False
-        assert did_delete_token is False
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                **token_data,
+                "expires_in": 3600,  # no refresh needed
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
 
-        # logout
-        await sma.logout()
-        assert did_delete_token is True
+    # login now should refresh the token
+    assert (await sma.login()) == LOGIN_RESULT_TOKEN_REFRESHED
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "refresh_token",
+        "refresh_token": "mock-refresh-token",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        "Cookie": "JSESSIONID=mock-session-id",
+    }
+    assert request.is_json is False
+    assert request.was_handled
+
+    mock.clear_requests()
+
+    # now the token is long-lived, so another login should do nothing
+    assert (await sma.login()) == LOGIN_RESULT_ALREADY_LOGGED_IN
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is None
+
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="DELETE",
+            endpoint="refreshtoken?refreshToken=mock-refresh-token",
+            status_code=200,
+        )
+    )
+
+    # logout
+    await sma.logout()
+
+    request = mock.get_request(
+        method="DELETE", endpoint="refreshtoken?refreshToken=mock-refresh-token"
+    )
+    assert request is not None
+    assert request.was_handled
 
 
 @pytest.mark.asyncio
