@@ -275,9 +275,13 @@ async def test_device_entries(
             component_id="component2",
             component_type="type2",
             name="Component 2",
-            model_name="Model Name",
+            vendor="Vendor Name",
+            product_name="Model Name",
             serial_number="123456",
             firmware_version="1.2.3",
+            ip_address="127.0.0.2",
+            generator_power=2345,
+            product_tag_id=8765,
         ),
     ]
 
@@ -340,9 +344,12 @@ async def test_device_entries(
     assert device is not None
 
     assert device.name == "Component 1"
+
     assert device.manufacturer == DEVICE_MANUFACTURER
-    assert device.model is None  # no model
-    assert device.sw_version is None  # no firmware version
+    assert device.model is None
+    assert device.serial_number is None
+    assert device.sw_version is None
+    assert device.configuration_url is None
 
     # get device entry for component2 channel2
     entity = er.async_get("sensor.component_2_channel2")
@@ -353,7 +360,9 @@ async def test_device_entries(
     assert device is not None
 
     assert device.name == "Component 2"
-    assert device.manufacturer == DEVICE_MANUFACTURER
+
+    assert device.manufacturer == "Vendor Name"
     assert device.model == "Model Name"
     assert device.serial_number == "123456"
     assert device.sw_version == "1.2.3"
+    assert device.configuration_url == "https://127.0.0.2/"

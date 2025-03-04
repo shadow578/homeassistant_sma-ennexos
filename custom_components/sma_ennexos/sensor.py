@@ -64,14 +64,12 @@ async def async_setup_entry(
         [
             SMASensor(
                 coordinator=coordinator,
-                component_id=channel_value.component_id,
                 channel_id=channel_value.channel_id,
                 component_info=next(
                     comp
                     for comp in all_components
                     if comp.component_id == channel_value.component_id
-                )
-                or None,
+                ),
             )
             for channel_value in coordinator.data
         ]
@@ -90,17 +88,16 @@ class SMASensor(SMAEntity, SensorEntity):
     def __init__(
         self,
         coordinator: SMADataCoordinator,
-        component_id: str,
         channel_id: str,
-        component_info: ComponentInfo | None = None,
+        component_info: ComponentInfo,
     ) -> None:
         """Initialize SMA sensor."""
-        self.component_id = component_id
+        self.component_id = component_info.component_id
         self.channel_id = channel_id
 
         # create entity id from device id and channel id
         self.entity_id = channel_parts_to_entity_id(
-            component_info.name if component_info is not None else component_id,
+            component_info.name if component_info is not None else self.component_id,
             channel_id,
             "sensor",
         )
@@ -109,7 +106,6 @@ class SMASensor(SMAEntity, SensorEntity):
         # super handles setting id and device_info for us
         super().__init__(
             coordinator=coordinator,
-            component_id=component_id,
             channel_id=channel_id,
             component_info=component_info,
         )
