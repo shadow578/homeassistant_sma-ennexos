@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from aiohttp import ClientError, ClientSession
 from attr import dataclass
+import asyncio
 
 
 @dataclass
@@ -75,22 +76,27 @@ class ResponseEntry:
 
     callback: Callable | None = None
 
+    delay: float | None = None
+
     def match(self, endpoint: str, method: str) -> bool:
         """Return True if the response matches the endpoint and method."""
         return self.endpoint == endpoint and self.method == method
 
     @property
-    def should_remove(self) -> bool:
-        """Return True if the response should be removed."""
+    def keep(self) -> bool:
+        """Return True if the response should be kept active, False if it should be removed."""
         if isinstance(self.repeat, bool):
-            return not self.repeat
+            return self.repeat
 
-        return self.repeat <= 0
+        return self.repeat > 0
 
-    def get_response(self) -> ClientResponseMock:
+    async def get_response(self) -> ClientResponseMock:
         """Return the response object."""
         if not isinstance(self.repeat, bool):
             self.repeat -= 1
+
+        if self.delay is not None and self.delay > 0:
+            await asyncio.sleep(self.delay)
 
         if self.callback is not None:
             return self.callback()
@@ -125,8 +131,8 @@ class AioHttpMock:
     __base_url: str
     __session: MagicMock
 
-    __responses: list[ResponseEntry] = []
-    __requests: list[RequestEntry] = []
+    __responses: list[ResponseEntry]
+    __requests: list[RequestEntry]
 
     def __init__(self, base_url: str):
         """Initialize mock helper."""
@@ -134,6 +140,9 @@ class AioHttpMock:
 
         self.__session = MagicMock(spec=ClientSession)
         self.__session.request = self.__request
+
+        self.__responses = []
+        self.__requests = []
 
     @property
     def session(self):
@@ -148,6 +157,16 @@ class AioHttpMock:
         """Add multiple responses to the mock."""
         for r in responses:
             self.add_response(r)
+
+    @property
+    def response_count(self) -> int:
+        """Return the number of registered responses."""
+        self.__cleanup() # clear pending
+        return len(self.__responses)
+
+    def clear_responses(self):
+        """Clear all registered responses."""
+        self.__responses = []
 
     def get_request(self, method: str, endpoint: str) -> RequestEntry | None:
         """Return a recorded request."""
@@ -173,12 +192,12 @@ class AioHttpMock:
         """Return a mocked response."""
         endpoint = url.replace(self.__base_url, "").strip("/")
 
+        self.__cleanup()
+
         r = None
         for response in self.__responses:
             if response.match(endpoint, method):
-                r = response.get_response()
-                if response.should_remove:
-                    self.__responses.remove(response)
+                r = response
                 break
 
         self.__requests.append(
@@ -195,4 +214,10 @@ class AioHttpMock:
 
         if r is None:
             return ClientResponseMock(data={}, status=404)
-        return r
+
+
+        return await r.get_response()
+
+    def __cleanup(self):
+        """Remove all responses that have been used up."""
+        self.__responses = [r for r in self.__responses if r.keep]
