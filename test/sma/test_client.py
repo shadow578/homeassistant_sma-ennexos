@@ -820,3 +820,115 @@ async def test_client_with_intermitten_api_failures():
     }
     assert request.is_json is False
     assert request.was_handled
+
+
+@pytest.mark.asyncio
+async def test_client_reauth():
+    """Test the client correctly re-authenticates when the token expires."""
+    mock = AioHttpMock("http://sma.local/api/v1")
+
+    # create the client
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        logger=LOGGER,
+    )
+
+    # initial login
+
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        ),
+    )
+
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
+
+    # reject token, should trigger re-authentication
+    mock.clear_requests()
+    mock.clear_responses()
+    mock.add_responses(
+        [
+            # get live measurements fails with 401 unauthorized
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=401,
+            ),
+            # re-authenticate: first logout
+            ResponseEntry(
+                method="DELETE",
+                endpoint="refreshtoken?refreshToken=mock-refresh-token",
+                status_code=200,
+            ),
+            # re-authenticate: then login
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=200,
+                data={
+                    "access_token": "mock-access-token",
+                    "refresh_token": "mock-refresh-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                cookies={
+                    "JSESSIONID": "mock-session-id",
+                },
+            ),
+            # retry live measurements, this time it should succeed
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
+                data=[
+                    {
+                        "channelId": "chastt",
+                        "componentId": "inv0",
+                        "values": [{"time": "2024-02-01T11:30:00Z", "value": 10}],
+                    },
+                ],
+            ),
+        ]
+    )
+
+    measurements = await sma.get_live_measurements(
+        [
+            LiveMeasurementQueryItem(
+                component_id="inv0",
+                channel_id="chastt",
+            )
+        ]
+    )
+    assert len(measurements) == 1
+
+    # did logout?
+    request = mock.get_request(
+        method="DELETE", endpoint="refreshtoken?refreshToken=mock-refresh-token"
+    )
+    assert request is not None
+    assert request.was_handled
+
+    # did re-login?
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
