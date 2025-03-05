@@ -181,6 +181,9 @@ class SMAApiClient:
                 endpoint=f"refreshtoken?refreshToken={quote(self.__session.token.refresh_token)}",
             )
 
+        self.__session.session_id = None
+        self.__session.token = None
+
     async def get_all_components(self) -> list[ComponentInfo]:
         """Get a list of all available components and their ids."""
 

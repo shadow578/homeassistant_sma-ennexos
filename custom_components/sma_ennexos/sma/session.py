@@ -156,7 +156,7 @@ class SMAClientSession:
                         # ignore any errors during reauth
                         with contextlib.suppress(Exception):
                             if self.reauth_hook:
-                                self.reauth_hook(endpoint)
+                                await self.reauth_hook(endpoint)
 
                         last_error = SMAApiAuthenticationError("Unauthorized")
                         continue
