@@ -25,9 +25,9 @@ class CookieJarMock:
         """Initialize mock cookie jar."""
         self._cookies = cookies
 
-    def get(self, name: str) -> CookieMock:
+    def get(self, name: str, default) -> CookieMock:
         """Get cookie by name."""
-        return self._cookies[name]
+        return self._cookies.get(name, default)
 
 
 class ClientResponseMock:
