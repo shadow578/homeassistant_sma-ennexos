@@ -1,12 +1,12 @@
 """Helper for mocking aiohttp ClientSession requests."""
 
+import asyncio
 from collections.abc import Callable
 from typing import Any
 from unittest.mock import MagicMock
 
 from aiohttp import ClientError, ClientSession
 from attr import dataclass
-import asyncio
 
 
 @dataclass
@@ -161,7 +161,7 @@ class AioHttpMock:
     @property
     def response_count(self) -> int:
         """Return the number of registered responses."""
-        self.__cleanup() # clear pending
+        self.__cleanup()  # clear pending
         return len(self.__responses)
 
     def clear_responses(self):
@@ -214,7 +214,6 @@ class AioHttpMock:
 
         if r is None:
             return ClientResponseMock(data={}, status=404)
-
 
         return await r.get_response()
 

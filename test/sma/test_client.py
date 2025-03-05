@@ -720,3 +720,94 @@ async def test_client_get_live_measurements_array():
     }
     assert request.is_json is True
     assert request.was_handled
+
+
+@pytest.mark.asyncio
+async def test_client_with_intermitten_api_failures():
+    """Test the clients handles intermitten api failures correctly.
+
+    Note this test only utilizes the login method.
+    Since all methods in the client share the same network handling code, and
+    thus the same retry logic, this test should be sufficient to verify the
+    behavior of the retry logic.
+
+    If this assumption ever changes, this test should be expanded to cover
+    all the different ways the api may be called.
+    """
+    mock = AioHttpMock("http://sma.local/api/v1")
+
+    # create the client
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        request_retries=3,
+        request_timeout=1,  # low timeout to speed up tests
+    )
+
+    mock.clear_requests()
+    mock.add_responses(
+        [
+            # fails to login because of timeout,
+            # client should retry
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                delay=2,  # > request_timeout
+            ),
+            # fails to login with 500 internal server error,
+            # client should retry
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=500,
+            ),
+            # successful login
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=200,
+                data={
+                    "access_token": "mock-access-token",
+                    "refresh_token": "mock-refresh-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                cookies={
+                    "JSESSIONID": "mock-session-id",
+                },
+            ),
+        ]
+    )
+
+    # login should get a new token
+    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+
+    assert mock.response_count == 0  # all were consumed
+    assert mock.request_count == 3
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "password",
+        "username": "test",
+        "password": "test123",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
+    assert request.is_json is False
+    assert request.was_handled
