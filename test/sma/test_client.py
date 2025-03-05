@@ -3,9 +3,7 @@
 import pytest
 
 from custom_components.sma_ennexos.sma.client import (
-    LOGIN_RESULT_ALREADY_LOGGED_IN,
-    LOGIN_RESULT_NEW_TOKEN,
-    LOGIN_RESULT_TOKEN_REFRESHED,
+    LoginResult,
     SMAApiClient,
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
@@ -49,7 +47,7 @@ async def test_client_auth():
     )
 
     # login should get a new token
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     request = mock.get_request(method="POST", endpoint="token")
     assert request is not None
@@ -84,7 +82,7 @@ async def test_client_auth():
     )
 
     # login now should refresh the token
-    assert (await sma.login()) == LOGIN_RESULT_TOKEN_REFRESHED
+    assert (await sma.login()) == LoginResult.TOKEN_REFRESHED
 
     request = mock.get_request(method="POST", endpoint="token")
     assert request is not None
@@ -105,7 +103,7 @@ async def test_client_auth():
     mock.clear_requests()
 
     # now the token is long-lived, so another login should do nothing
-    assert (await sma.login()) == LOGIN_RESULT_ALREADY_LOGGED_IN
+    assert (await sma.login()) == LoginResult.ALREADY_LOGGED_IN
 
     request = mock.get_request(method="POST", endpoint="token")
     assert request is None
@@ -160,7 +158,7 @@ async def test_client_get_all_components():
             },
         )
     )
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     # mock responses needed for component discovery
     mock.add_responses(
@@ -458,7 +456,7 @@ async def test_client_get_all_live_measurements():
             },
         )
     )
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     # mock responses needed for live measurements
     mock.add_responses(
@@ -553,7 +551,7 @@ async def test_client_get_live_measurements():
             },
         )
     )
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     # mock responses needed for live measurements
     mock.add_responses(
@@ -649,7 +647,7 @@ async def test_client_get_live_measurements_array():
             },
         )
     )
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     # mock responses needed for live measurements
     mock.add_responses(
@@ -783,7 +781,7 @@ async def test_client_with_intermitten_api_failures():
     )
 
     # login should get a new token
-    assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
     assert mock.response_count == 0  # all were consumed
     assert mock.request_count == 3

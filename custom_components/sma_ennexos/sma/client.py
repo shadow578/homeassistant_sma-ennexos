@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 from datetime import timedelta
+from enum import Enum
 from itertools import chain
 from logging import Logger
 from urllib.parse import quote
@@ -20,9 +21,13 @@ from .model import (
     SMAApiClientError,
 )
 
-LOGIN_RESULT_ALREADY_LOGGED_IN = "already_logged_in"
-LOGIN_RESULT_TOKEN_REFRESHED = "token_refreshed"
-LOGIN_RESULT_NEW_TOKEN = "new_token"
+
+class LoginResult(str, Enum):
+    """Result of a login attempt."""
+
+    ALREADY_LOGGED_IN = "already_logged_in"
+    TOKEN_REFRESHED = "token_refreshed"
+    NEW_TOKEN = "new_token"
 
 
 class SMAApiClient:
@@ -76,7 +81,7 @@ class SMAApiClient:
         """Hostname of the device the client is connected to."""
         return self.__session.host
 
-    async def login(self) -> str:
+    async def login(self) -> LoginResult:
         """Login to the api.
 
         :returns: login result, one of LOGIN_RESULT_* constants
@@ -87,7 +92,7 @@ class SMAApiClient:
         if token is not None and token.time_until_expiration > timedelta(minutes=5):
             if self.__logger:
                 self.__logger.debug("already logged in, skipping login")
-            return LOGIN_RESULT_ALREADY_LOGGED_IN
+            return LoginResult.ALREADY_LOGGED_IN
 
         # if we have a session and refresh token, try refreshing the token
         if self.__session.session_id is not None and self.__session.token is not None:
@@ -97,7 +102,7 @@ class SMAApiClient:
                 )
                 if self.__logger:
                     self.__logger.debug("refreshed token successfully")
-                return LOGIN_RESULT_TOKEN_REFRESHED
+                return LoginResult.TOKEN_REFRESHED
             except SMAApiClientError:
                 # refresh failed, try to re-login with username and password
                 if self.__logger:
@@ -112,7 +117,7 @@ class SMAApiClient:
 
         if self.__logger:
             self.__logger.debug("got new token successfully")
-        return LOGIN_RESULT_NEW_TOKEN
+        return LoginResult.NEW_TOKEN
 
     async def __get_new_token(self, username: str, password: str) -> AuthToken:
         """Get a new access token using username and password."""
