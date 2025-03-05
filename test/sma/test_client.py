@@ -1,5 +1,7 @@
 """unit test for SMA client implementation."""
 
+from logging import Logger
+
 import pytest
 
 from custom_components.sma_ennexos.sma.client import (
@@ -8,6 +10,9 @@ from custom_components.sma_ennexos.sma.client import (
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
 from test.sma.aiohttp_mock import AioHttpMock, ResponseEntry
+
+LOGGER = Logger(__name__)
+LOGGER.setLevel("DEBUG")
 
 
 @pytest.mark.asyncio
@@ -22,6 +27,7 @@ async def test_client_auth():
         password="test123",
         session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
     token_data = {
@@ -138,6 +144,7 @@ async def test_client_get_all_components():
         password="test123",
         session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
     # need to login first
@@ -436,6 +443,7 @@ async def test_client_get_all_live_measurements():
         password="test123",
         session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
     # need to login first
@@ -531,6 +539,7 @@ async def test_client_get_live_measurements():
         password="test123",
         session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
     # need to login first
@@ -627,6 +636,7 @@ async def test_client_get_live_measurements_array():
         password="test123",
         session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
     # need to login first
@@ -743,6 +753,7 @@ async def test_client_with_intermitten_api_failures():
         use_ssl=False,
         request_retries=3,
         request_timeout=1,  # low timeout to speed up tests
+        logger=LOGGER,
     )
 
     mock.clear_requests()
