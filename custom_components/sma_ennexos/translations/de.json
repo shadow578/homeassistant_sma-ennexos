@@ -138,7 +138,26 @@
                 "name": "Verfügbare unterregte Blindleistung"
             },
             "measurement_operation_health": {
-                "name": "Gerätezustand"
+                "name": "Gerätezustand",
+                "state": {
+                    "communication_error": "Kommunikationsfehler",
+                    "off": "Aus",
+                    "island_operation": "Inselbetrieb",
+                    "ok": "OK",
+                    "on": "An",
+                    "operating": "Betrieb",
+                    "open": "Offen",
+                    "phase_assignment": "Phasenzuordnung",
+                    "maximum_active_power": "Maximale Wirkleistung",
+                    "maximum_active_power_output": "Maximale Wirkleistungsausgabe",
+                    "active_power_setpoint_operating_mode": "Betrieb mit Wirkleistungssollwert",
+                    "overload": "Überlastung",
+                    "overtemperature": "Übertemperatur",
+                    "calibration": "Kalibrierung",
+                    "warning": "Warnung",
+                    "waiting_for_dc_start_condition": "Warte auf DC-Startbedingung",
+                    "waiting_for_grid_voltage": "Warte auf Netzspannung"
+                }
             },
             "measurement_operation_wmaxinlimnom": {
                 "name": "Maximaler Wirkleistungssollwert (Netzeinspeisung)"
@@ -366,7 +385,26 @@
                 "name": "Leistung DC-Seite"
             },
             "measurement_mltfncsw_sttmstr": {
-                "name": "Status des Multifunktionsrelais"
+                "name": "Status des Multifunktionsrelais",
+                "state": {
+                    "communication_error": "Kommunikationsfehler",
+                    "off": "Aus",
+                    "island_operation": "Inselbetrieb",
+                    "ok": "OK",
+                    "on": "An",
+                    "operating": "Betrieb",
+                    "open": "Offen",
+                    "phase_assignment": "Phasenzuordnung",
+                    "maximum_active_power": "Maximale Wirkleistung",
+                    "maximum_active_power_output": "Maximale Wirkleistungsausgabe",
+                    "active_power_setpoint_operating_mode": "Betrieb mit Wirkleistungssollwert",
+                    "overload": "Überlastung",
+                    "overtemperature": "Übertemperatur",
+                    "calibration": "Kalibrierung",
+                    "warning": "Warnung",
+                    "waiting_for_dc_start_condition": "Warte auf DC-Startbedingung",
+                    "waiting_for_grid_voltage": "Warte auf Netzspannung"
+                }
             }
         }
     }

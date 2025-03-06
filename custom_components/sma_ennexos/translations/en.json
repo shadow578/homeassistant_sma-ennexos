@@ -138,7 +138,26 @@
                 "name": "Available underexcited reactive Power"
             },
             "measurement_operation_health": {
-                "name": "Device Health Status"
+                "name": "Device Health Status",
+                "state": {
+                    "communication_error": "Communication Error",
+                    "off": "Off",
+                    "island_operation": "Island Operation",
+                    "ok": "OK",
+                    "on": "On",
+                    "operating": "Operating",
+                    "open": "Open",
+                    "phase_assignment": "Phase Assignment",
+                    "maximum_active_power": "Maximum Active Power",
+                    "maximum_active_power_output": "Maximum Active Power Output",
+                    "active_power_setpoint_operating_mode": "Active Power Setpoint Operating Mode",
+                    "overload": "Overload",
+                    "overtemperature": "Overtemperature",
+                    "calibration": "Calibration",
+                    "warning": "Warning",
+                    "waiting_for_dc_start_condition": "Waiting for DC Start Condition",
+                    "waiting_for_grid_voltage": "Waiting for Grid Voltage"
+                }
             },
             "measurement_operation_wmaxinlimnom": {
                 "name": "Maximum Active Power setpoint (Grid Supply)"
@@ -366,7 +385,26 @@
                 "name": "DC Power"
             },
             "measurement_mltfncsw_sttmstr": {
-                "name": "Multi-function Relay Status"
+                "name": "Multi-function Relay Status",
+                "state": {
+                    "communication_error": "Communication Error",
+                    "off": "Off",
+                    "island_operation": "Island Operation",
+                    "ok": "OK",
+                    "on": "On",
+                    "operating": "Operating",
+                    "open": "Open",
+                    "phase_assignment": "Phase Assignment",
+                    "maximum_active_power": "Maximum Active Power",
+                    "maximum_active_power_output": "Maximum Active Power Output",
+                    "active_power_setpoint_operating_mode": "Active Power Setpoint Operating Mode",
+                    "overload": "Overload",
+                    "overtemperature": "Overtemperature",
+                    "calibration": "Calibration",
+                    "warning": "Warning",
+                    "waiting_for_dc_start_condition": "Waiting for DC Start Condition",
+                    "waiting_for_grid_voltage": "Waiting for Grid Voltage"
+                }
             }
         }
     }
