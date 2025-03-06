@@ -190,6 +190,10 @@ class SMASensor(SMAEntity, SensorEntity):
                     )
                     self.enum_values = {}
 
+                # for enum sensors, options attribute should be a list of
+                # all possible values
+                self._attr_options = list(self.enum_values.values())
+
             # device class ENUM requires state class to be None
             if device_class == SensorDeviceClass.ENUM:
                 state_class = None

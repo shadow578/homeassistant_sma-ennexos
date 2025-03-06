@@ -261,6 +261,9 @@ async def test_sensor_known_channel_enum(
         assert state.attributes.get("unit_of_measurement") is None
         assert state.attributes["device_class"] == SensorDeviceClass.ENUM
 
+        # options is set to a list of possible enum values
+        assert state.attributes["options"] == ["mock-enum-0", "mock-enum-10"]
+
 
 async def test_sensor_none_value_fallback(
     anyio_backend,
