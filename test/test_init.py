@@ -48,8 +48,9 @@ async def test_setup_unload_and_reload_entry(anyio_backend, hass, mock_sma_clien
     await hass.async_block_till_done()
     assert_entry()
 
-    # should have logged in twice (async_setup_entry and coordinator) and fetched all components
-    assert mock_sma_client.cnt_login == 2
+    # should have logged in three times (get_all_components in sensor.py and 2x coordinator refresh)
+    # and fetched all components
+    assert mock_sma_client.cnt_login == 3
     assert mock_sma_client.cnt_get_all_components == 1
 
     mock_sma_client.reset_counts()
@@ -58,9 +59,9 @@ async def test_setup_unload_and_reload_entry(anyio_backend, hass, mock_sma_clien
     assert await async_reload_entry(hass, config_entry) is None
     assert_entry()
 
-    # should have logged out, then logged in and fetched all components again
+    # should have logged out, then re-setup
     assert mock_sma_client.cnt_logout == 1
-    assert mock_sma_client.cnt_login == 2
+    assert mock_sma_client.cnt_login == 3
     assert mock_sma_client.cnt_get_all_components == 1
 
     mock_sma_client.reset_counts()

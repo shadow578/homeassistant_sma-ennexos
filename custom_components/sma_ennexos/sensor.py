@@ -22,7 +22,7 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfTime,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .base_entity import SMAEntity
@@ -111,9 +111,9 @@ class SMASensor(SMAEntity, SensorEntity):
         )
         self.__set_description()
 
-    @property
-    def native_value(self):
-        """Return the native value of the sensor."""
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
         data = self.coordinator.data
 
         # find the ChannelValues of this sensor
@@ -147,9 +147,11 @@ class SMASensor(SMAEntity, SensorEntity):
                 )
                 value = f"[{value}]"
 
-        # return value
+        # apply new value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
-        return value
+        self._attr_native_value = value
+
+        super()._handle_coordinator_update()
 
     def __set_description(self) -> None:
         """Set entity description using known channels."""
