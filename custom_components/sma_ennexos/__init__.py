@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from homeassistant.config_entries import ConfigEntry, ConfigEntryState
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 
@@ -32,16 +32,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SMADataCoordinator.for_config_entry(hass, entry)
     )
 
-    if entry.state == ConfigEntryState.SETUP_IN_PROGRESS:
-        # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-        await coordinator.async_config_entry_first_refresh()
-    else:
-        # To fix deprecation warning (???)
-        # Detected that custom integration 'xmltv_epg' uses `async_config_entry_first_refresh`, which is only supported when entry state is ConfigEntryState.SETUP_IN_PROGRESS, but it is in state ConfigEntryState.LOADED
-        await coordinator.async_refresh()
+    # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
+    await coordinator.async_config_entry_first_refresh()
 
     # setup platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # listen for updates to the config entry to re-setup it
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
 
     # FIXME for some reason, following the example for a coordinated single API poll, the
@@ -65,5 +62,4 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload integration entry."""
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    await hass.config_entries.async_reload(entry.entry_id)

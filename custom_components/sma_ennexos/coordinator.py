@@ -52,7 +52,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
     query: list[LiveMeasurementQueryItem]
     data: list[ChannelValues]
 
-    __all_components: list[ComponentInfo] | None = None
+    __all_components: list[ComponentInfo]
 
     @classmethod
     def for_config_entry(
@@ -98,6 +98,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
     ) -> None:
         """Init."""
         self.client = client
+        self.__all_components = []
 
         # prepare query
         self.query = []
@@ -129,6 +130,11 @@ class SMADataCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(seconds=update_interval_seconds),
         )
 
+    async def _async_setup(self) -> None:
+        """Set up the coordinator initially."""
+        await self.client.login()
+        self.__all_components = await self.client.get_all_components()
+
     async def _async_update_data(self) -> list[ChannelValues]:
         """Update data."""
         try:
@@ -150,8 +156,4 @@ class SMADataCoordinator(DataUpdateCoordinator):
 
     async def get_all_components(self) -> list[ComponentInfo]:
         """Get all available components from the API."""
-        if self.__all_components is None:
-            await self.client.login()
-            self.__all_components = await self.client.get_all_components()
-
         return self.__all_components
