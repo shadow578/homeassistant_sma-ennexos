@@ -46,7 +46,7 @@ class SMAApiClient:
         password: str | None,
         session: aiohttp.ClientSession,
         use_ssl: bool = True,
-        request_timeout: int = 10,
+        request_timeout: float = 10.0,
         request_retries: int = 3,
         logger: Logger | None = None,
     ) -> None:

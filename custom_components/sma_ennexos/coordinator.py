@@ -72,8 +72,8 @@ class SMADataCoordinator(DataUpdateCoordinator):
             request_timeout=config_entry.options.get(
                 OPT_REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT
             ),
-            request_retries=config_entry.options.get(
-                OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES
+            request_retries=int(
+                config_entry.options.get(OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES)
             ),
             logger=LOGGER,
         )
