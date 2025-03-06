@@ -56,10 +56,14 @@ async def async_setup_entry(
         )
         return
 
-    all_components = await coordinator.get_all_components()
+    all_components = coordinator.all_components
 
     # create entities based on ChannelValues in coordinator.data
-    LOGGER.info("creating %s sensor entities", len(coordinator.data))
+    LOGGER.info(
+        "creating %s sensor entities, referencing %s components",
+        len(coordinator.data),
+        len(all_components),
+    )
     async_add_entities(
         [
             SMASensor(

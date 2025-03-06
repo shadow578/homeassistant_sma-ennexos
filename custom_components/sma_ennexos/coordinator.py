@@ -47,11 +47,10 @@ class SMADataCoordinator(DataUpdateCoordinator):
     """data coordinator for SMA client."""
 
     config_entry: ConfigEntry
-
-    client: SMAApiClient
-    query: list[LiveMeasurementQueryItem]
     data: list[ChannelValues]
 
+    __client: SMAApiClient
+    __query: list[LiveMeasurementQueryItem]
     __all_components: list[ComponentInfo]
 
     @classmethod
@@ -97,14 +96,14 @@ class SMADataCoordinator(DataUpdateCoordinator):
         update_interval_seconds: int = 60,
     ) -> None:
         """Init."""
-        self.client = client
+        self.__client = client
         self.__all_components = []
 
         # prepare query
-        self.query = []
+        self.__query = []
         for fqid in channel_fqids:
             (component_id, channel_id) = channel_fqid_to_parts(fqid)
-            self.query.append(
+            self.__query.append(
                 LiveMeasurementQueryItem(
                     component_id=component_id, channel_id=channel_id
                 )
@@ -116,7 +115,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
                 "; ".join(
                     [
                         channel_parts_to_fqid(qi.component_id, qi.channel_id)
-                        for qi in self.query
+                        for qi in self.__query
                     ]
                 )
             ),
@@ -132,17 +131,17 @@ class SMADataCoordinator(DataUpdateCoordinator):
 
     async def _async_setup(self) -> None:
         """Set up the coordinator initially."""
-        await self.client.login()
-        self.__all_components = await self.client.get_all_components()
+        await self.__client.login()
+        self.__all_components = await self.__client.get_all_components()
 
     async def _async_update_data(self) -> list[ChannelValues]:
         """Update data."""
         try:
-            LOGGER.debug("updating data for %s", self.client.host)
+            LOGGER.debug("updating data for %s", self.__client.host)
 
-            await self.client.login()
-            measurements = await self.client.get_live_measurements(query=self.query)
-            # await self.client.logout()
+            await self.__client.login()
+            measurements = await self.__client.get_live_measurements(query=self.__query)
+            # await self.__client.logout()
 
             return measurements
         except SMAApiAuthenticationError as exception:
@@ -154,6 +153,11 @@ class SMADataCoordinator(DataUpdateCoordinator):
         except SMAApiClientError as exception:
             raise UpdateFailed(exception) from exception
 
-    async def get_all_components(self) -> list[ComponentInfo]:
-        """Get all available components from the API."""
+    async def _async_unload(self) -> None:
+        """Unload the coordinator."""
+        await self.__client.logout()
+
+    @property
+    def all_components(self) -> list[ComponentInfo]:
+        """Get all components available."""
         return self.__all_components
