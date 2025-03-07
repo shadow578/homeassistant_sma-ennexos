@@ -219,22 +219,23 @@ class SMASensor(SMAEntity, SensorEntity):
         # if a sensor is setup with a translation key that does not exist, the UI will show 'None'.
         # this setup makes it so any known channel will show with a nice translation, and any
         # unknown channel will show the SMA channel id as its name, with the option for the user to rename it.
-        has_translation_key = known_channel is not None
+        is_known_channel = known_channel is not None
         translation_key = channel_to_translation_key(self.channel_id)
 
         self.entity_description = SensorEntityDescription(
             key=translation_key,
-            translation_key=translation_key if has_translation_key else None,
-            name=self.channel_id if not has_translation_key else None,
+            translation_key=translation_key if is_known_channel else None,
+            name=self.channel_id if not is_known_channel else None,
             icon=icon,
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,
             state_class=state_class,
             suggested_display_precision=suggested_display_precision,
+            entity_registry_enabled_default=is_known_channel,
         )
 
         # required for using translation_key
-        self._attr_has_entity_name = has_translation_key
+        self._attr_has_entity_name = is_known_channel
 
     def __device_kind_to_icon(self, device_kind: SMADeviceKind) -> str:
         """SMADeviceKind to mdi icon."""
