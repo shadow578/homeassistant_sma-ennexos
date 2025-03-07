@@ -56,11 +56,12 @@ async def async_setup_entry(
         return
 
     all_components = coordinator.all_components
+    all_measurements = coordinator.all_measurements
 
     # create entities based on ChannelValues in coordinator.data
     LOGGER.info(
         "creating %s sensor entities, referencing %s components",
-        len(coordinator.data),
+        len(all_measurements),
         len(all_components),
     )
     async_add_entities(
@@ -74,7 +75,7 @@ async def async_setup_entry(
                     if comp.component_id == channel_value.component_id
                 ),
             )
-            for channel_value in coordinator.data
+            for channel_value in all_measurements
         ]
     )
 
