@@ -99,15 +99,18 @@ async def test_diagnostics(
 
     entry = diagnostics["config_entry"]
     assert entry["data"][CONF_HOST] == "sma.local"
-    assert entry["data"][CONF_USERNAME] != "user" # redacted
-    assert entry["data"][CONF_PASSWORD] != "password" # redacted
+    assert entry["data"][CONF_USERNAME] != "user"  # redacted
+    assert entry["data"][CONF_PASSWORD] != "password"  # redacted
     assert entry["data"][CONF_USE_SSL] is False
     assert entry["data"][CONF_VERIFY_SSL] is True
     assert entry["options"] == {}
 
     entities = diagnostics["entities"]
     assert len(entities) == 2
-    assert entities["sensor.component_1_channel1"].entity_id == "sensor.component_1_channel1"
+    assert (
+        entities["sensor.component_1_channel1"].entity_id
+        == "sensor.component_1_channel1"
+    )
     assert entities["sensor.component_1_channel1"].state == "300.0"
 
     raw_data = diagnostics["raw_data"]
@@ -130,14 +133,16 @@ async def test_diagnostics(
             "name": "Component 2",
             "vendor": "Vendor",
             "product_name": "Product",
-            "serial_number": raw_data["components"][1]["serial_number"], # redacted, checked below
+            "serial_number": raw_data["components"][1][
+                "serial_number"
+            ],  # redacted, checked below
             "firmware_version": "1.0",
             "ip_address": "192.168.0.10",
             "generator_power": 1000,
             "product_tag_id": 5678,
         },
     ]
-    assert raw_data["components"][1]["serial_number"] != "123456" # redacted
+    assert raw_data["components"][1]["serial_number"] != "123456"  # redacted
 
     assert raw_data["measurements"] == [
         {
