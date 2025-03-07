@@ -6,7 +6,6 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.helpers import device_registry, entity_registry
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.sma_ennexos import async_setup_entry
 from custom_components.sma_ennexos.const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -26,6 +25,7 @@ from custom_components.sma_ennexos.sma.known_channels import (
 from custom_components.sma_ennexos.sma.model import (
     ChannelValues,
     ComponentInfo,
+    LiveMeasurementQueryItem,
     TimeValuePair,
 )
 from custom_components.sma_ennexos.util import channel_parts_to_fqid
@@ -94,9 +94,6 @@ async def test_sensor_basic(
     await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
 
-    assert await async_setup_entry(hass, config_entry)
-    await hass.async_block_till_done()
-
     # following sensors should be present
     state = hass.states.get("sensor.component_1_channel1")
     assert state
@@ -162,9 +159,6 @@ async def test_sensor_known_channel_attributes(
         )
         config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(config_entry.entry_id)
-        await hass.async_block_till_done()
-
-        assert await async_setup_entry(hass, config_entry)
         await hass.async_block_till_done()
 
         # sensour should have attemptet to figure out a known channel
@@ -238,9 +232,6 @@ async def test_sensor_none_value_fallback(
         )
         config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(config_entry.entry_id)
-        await hass.async_block_till_done()
-
-        assert await async_setup_entry(hass, config_entry)
         await hass.async_block_till_done()
 
         # sensour should have attemptet to figure out a known channel
@@ -329,9 +320,6 @@ async def test_device_entries(
     await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
 
-    assert await async_setup_entry(hass, config_entry)
-    await hass.async_block_till_done()
-
     er = entity_registry.async_get(hass)
     dr = device_registry.async_get(hass)
 
@@ -366,3 +354,126 @@ async def test_device_entries(
     assert device.serial_number == "123456"
     assert device.sw_version == "1.2.3"
     assert device.configuration_url == "https://127.0.0.2/"
+
+
+async def test_sensor_disabled_entities_are_not_fetched(
+    anyio_backend,
+    hass,
+    mock_sma_client,
+):
+    """Test that entities that are disabled in the entity registry are not fetched."""
+    mock_sma_client.components = [
+        ComponentInfo(
+            component_id="component1",
+            component_type="type1",
+            name="Component 1",
+        ),
+        ComponentInfo(
+            component_id="component2",
+            component_type="type2",
+            name="Component 2",
+        ),
+    ]
+
+    mock_sma_client.measurements = [
+        ChannelValues(
+            component_id="component1",
+            channel_id="channel1",
+            values=[
+                TimeValuePair(
+                    time="2024-02-01T11:25:46Z",
+                    value=300.0,
+                )
+            ],
+        ),
+        ChannelValues(
+            component_id="component2",
+            channel_id="channel2",
+            values=[
+                TimeValuePair(
+                    time="2024-02-01T11:25:46Z",
+                    value=400.0,
+                )
+            ],
+        ),
+    ]
+
+    # add a hook to record the query used in get_live_measurements call
+    last_query: list[LiveMeasurementQueryItem] = []
+
+    def on_get_live_measurements(query: list[LiveMeasurementQueryItem]):
+        nonlocal last_query
+        last_query = query
+
+    mock_sma_client.on_get_live_measurements = on_get_live_measurements
+
+    # setup the entry
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="MOCK",
+        data={
+            CONF_HOST: "sma.local",
+            CONF_USERNAME: "user",
+            CONF_PASSWORD: "password",
+            CONF_USE_SSL: False,
+            CONF_VERIFY_SSL: True,
+        },
+        options={
+            OPT_SENSOR_CHANNELS: [
+                channel_parts_to_fqid("component1", "channel1"),
+                channel_parts_to_fqid("component2", "channel2"),
+            ]
+        },
+    )
+    config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    # following sensors should be present
+    state = hass.states.get("sensor.component_1_channel1")
+    assert state
+    assert state.state == "300.0"
+
+    state = hass.states.get("sensor.component_2_channel2")
+    assert state
+    assert state.state == "400.0"
+
+    # should have queried for both channels
+    assert len(last_query) == 2
+    assert last_query[0].component_id == "component1"
+    assert last_query[0].channel_id == "channel1"
+    assert last_query[1].component_id == "component2"
+    assert last_query[1].channel_id == "channel2"
+
+    # disable the first sensor
+    er = entity_registry.async_get(hass)
+    er.async_update_entity(
+        "sensor.component_1_channel1",
+        disabled_by=entity_registry.RegistryEntryDisabler.USER,
+    )
+
+    # should no longer have a state, it's disabled
+    state = hass.states.get("sensor.component_1_channel1")
+    assert state is None
+
+    # change the values for both channels, to see if updates go trough
+    mock_sma_client.measurements[0].values[0].value = 301.0
+    mock_sma_client.measurements[1].values[0].value = 401.0
+
+    # force refresh the coordinator to fetch new values
+    await hass.data[DOMAIN][config_entry.entry_id].async_refresh()
+    await hass.async_block_till_done()
+
+    # channel 1 should still be disabled
+    state = hass.states.get("sensor.component_1_channel1")
+    assert state is None
+
+    # channel 2 should have updated value
+    state = hass.states.get("sensor.component_2_channel2")
+    assert state
+    assert state.state == "401.0"
+
+    # should have queried only for the enabled channel
+    assert len(last_query) == 1
+    assert last_query[0].component_id == "component2"
+    assert last_query[0].channel_id == "channel2"

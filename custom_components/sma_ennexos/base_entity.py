@@ -29,7 +29,7 @@ class SMAEntity(CoordinatorEntity):
 
         base entity handles device and entity id generation and device info.
         """
-        super().__init__(coordinator)
+        super().__init__(coordinator, context=(component_info.component_id, channel_id))
 
         # generate component (=device) id
         device_id = str(

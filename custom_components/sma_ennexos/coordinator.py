@@ -39,7 +39,7 @@ from .sma.model import (
     SMAApiCommunicationError,
     SMAApiParsingError,
 )
-from .util import channel_fqid_to_parts, channel_parts_to_fqid
+from .util import channel_parts_to_fqid
 
 
 # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
@@ -50,7 +50,6 @@ class SMADataCoordinator(DataUpdateCoordinator):
     data: list[ChannelValues]
 
     __client: SMAApiClient
-    __query: list[LiveMeasurementQueryItem]
     __all_components: list[ComponentInfo]
 
     @classmethod
@@ -99,28 +98,6 @@ class SMADataCoordinator(DataUpdateCoordinator):
         self.__client = client
         self.__all_components = []
 
-        # prepare query
-        self.__query = []
-        for fqid in channel_fqids:
-            (component_id, channel_id) = channel_fqid_to_parts(fqid)
-            self.__query.append(
-                LiveMeasurementQueryItem(
-                    component_id=component_id, channel_id=channel_id
-                )
-            )
-
-        LOGGER.debug(
-            "setup coordinator with query: %s",
-            (
-                "; ".join(
-                    [
-                        channel_parts_to_fqid(qi.component_id, qi.channel_id)
-                        for qi in self.__query
-                    ]
-                )
-            ),
-        )
-
         super().__init__(
             hass=hass,
             config_entry=config_entry,
@@ -136,6 +113,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
 
     async def _async_update_data(self) -> list[ChannelValues]:
         """Update data."""
+
         try:
             LOGGER.debug("updating data for %s", self.__client.host)
 
@@ -161,3 +139,43 @@ class SMADataCoordinator(DataUpdateCoordinator):
     def all_components(self) -> list[ComponentInfo]:
         """Get all components available."""
         return self.__all_components
+
+    @property
+    def __query(self) -> list[LiveMeasurementQueryItem]:
+        """Generate measurements query for currently active listeners."""
+
+        # all coordinator sensors set their coordinator context to a
+        # tuple (component_id, channel_id) so we can dynamically build
+        # the query based on the active listeners only.
+        # entities that are disabled are thus not part of the query.
+        channels: list[tuple[str, str]] = []
+        for _, ctx in self._listeners.values():
+            if (
+                isinstance(ctx, tuple)
+                and len(ctx) == 2
+                and isinstance(ctx[0], str)
+                and isinstance(ctx[1], str)
+            ):
+                channels.append(ctx)
+            else:
+                LOGGER.warning("invalid listener context: '%s'", ctx)
+
+        query = [
+            LiveMeasurementQueryItem(component_id=component_id, channel_id=channel_id)
+            for component_id, channel_id in channels
+        ]
+
+        LOGGER.debug(
+            "generated measurements query for %s listeners: %s",
+            len(self._listeners),
+            (
+                "; ".join(
+                    [
+                        channel_parts_to_fqid(qi.component_id, qi.channel_id)
+                        for qi in query
+                    ]
+                )
+            ),
+        )
+
+        return query
