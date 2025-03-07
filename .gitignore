@@ -10,6 +10,7 @@ __pycache__
 .coverage
 .vscode
 coverage.xml
+junit.xml
 
 
 # Home Assistant configuration
