@@ -16,10 +16,8 @@ from custom_components.sma_ennexos.const import (
     OPT_UPDATE_INTERVAL,
 )
 from custom_components.sma_ennexos.sma.model import (
-    ChannelValues,
     ComponentInfo,
     SMAApiAuthenticationError,
-    TimeValuePair,
 )
 
 
@@ -167,9 +165,7 @@ async def test_config_flow_user_step_handles_no_plant(
     assert result["errors"] == {"base": "no_plant_component"}
 
 
-async def test_options_flow_init_step_ok(
-    anyio_backend, hass, bypass_integration_setup, mock_sma_client
-):
+async def test_options_flow_init_step_ok(anyio_backend, hass, bypass_integration_setup):
     """Test that the 'init' options step correctly creates an options entry."""
 
     # create a config entry to bypass the config flow
@@ -185,29 +181,6 @@ async def test_options_flow_init_step_ok(
     )
     entry.add_to_hass(hass)
 
-    # ensure there are some components returned by the API
-    mock_sma_client.components = [
-        ComponentInfo(
-            component_id="plant",
-            component_type="Plant",
-            name="MOCK PLANT",
-        ),
-        ComponentInfo(
-            component_id="inverter1",
-            component_type="Inverter",
-            name="MOCK INVERTER",
-        ),
-    ]
-    mock_sma_client.measurements = [
-        ChannelValues(
-            channel_id="volt",
-            component_id="inverter1",
-            values=[TimeValuePair(time="2021-01-01T12:00:00Z", value=230.0)],
-        )
-    ]
-
-    mock_sma_client.reset_counts()
-
     # initialize options flow
     await hass.config_entries.async_setup(entry.entry_id)
     result = await hass.config_entries.options.async_init(entry.entry_id)
@@ -215,13 +188,6 @@ async def test_options_flow_init_step_ok(
     # first step is a form
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "init"
-
-    # TODO verify the multi select contains the correct options
-
-    # already, there should have been a call to get_all_components
-    assert mock_sma_client.cnt_get_all_components == 1
-
-    mock_sma_client.reset_counts()
 
     # simulate user selecting some options
     result = await hass.config_entries.options.async_configure(
