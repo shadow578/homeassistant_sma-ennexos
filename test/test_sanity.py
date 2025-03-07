@@ -5,7 +5,7 @@ from unittest import mock
 import pytest
 
 from custom_components.sma_ennexos.sma.client import (
-    LOGIN_RESULT_ALREADY_LOGGED_IN,
+    LoginResult,
     SMAApiClient,
 )
 from custom_components.sma_ennexos.sma.model import (
@@ -30,7 +30,7 @@ async def test_sma_client_mock_fixture_counters_and_data(mock_sma_client):
 
     mock_sma_client.reset_counts()
     assert mock_sma_client.cnt_login == 0
-    assert await sma.login() == LOGIN_RESULT_ALREADY_LOGGED_IN
+    assert await sma.login() == LoginResult.ALREADY_LOGGED_IN
     assert mock_sma_client.cnt_login == 1
 
     mock_sma_client.reset_counts()

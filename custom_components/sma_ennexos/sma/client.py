@@ -4,37 +4,40 @@ from __future__ import annotations
 
 import contextlib
 from datetime import timedelta
+from enum import Enum
 from itertools import chain
 from logging import Logger
-from typing import Any
 from urllib.parse import quote
 
 import aiohttp
 
-from .base_client import SMABaseClient
+from custom_components.sma_ennexos.sma.session import SMAClientSession
+
 from .model import (
     AuthToken,
     ChannelValues,
     ComponentInfo,
     LiveMeasurementQueryItem,
-    SMAApiAuthenticationError,
     SMAApiClientError,
-    SMAApiCommunicationError,
-    SMAApiParsingError,
 )
 
-LOGIN_RESULT_ALREADY_LOGGED_IN = "already_logged_in"
-LOGIN_RESULT_TOKEN_REFRESHED = "token_refreshed"
-LOGIN_RESULT_NEW_TOKEN = "new_token"
+
+class LoginResult(str, Enum):
+    """Result of a login attempt."""
+
+    ALREADY_LOGGED_IN = "already_logged_in"
+    TOKEN_REFRESHED = "token_refreshed"
+    NEW_TOKEN = "new_token"
 
 
-class SMAApiClient(SMABaseClient):
+class SMAApiClient:
     """API Client for SMA ennexOS devices."""
+
+    __session: SMAClientSession
+    __logger: Logger | None
 
     __username: str | None
     __password: str | None
-
-    __request_retries: int
 
     def __init__(
         self,
@@ -43,83 +46,99 @@ class SMAApiClient(SMABaseClient):
         password: str | None,
         session: aiohttp.ClientSession,
         use_ssl: bool = True,
-        request_timeout: int = 10,
+        request_timeout: float = 10.0,
         request_retries: int = 3,
         logger: Logger | None = None,
     ) -> None:
         """SMA ennexOS API Client."""
-        super().__init__(
-            host=host,
+        self.__session = SMAClientSession(
             session=session,
-            use_ssl=use_ssl,
-            request_timeout=request_timeout,
-            logger=logger,
+            host=host,
+            base_url=f"{'https' if use_ssl else 'http'}://{host}/api/v1",
+            timeout=request_timeout,
+            retries=request_retries,
+            logger=logger.getChild("session") if logger else None,
         )
+
+        async def reauth_hook(endpoint: str) -> None:
+            """Session re-auth hook."""
+            # do not re-auth on token endpoints
+            if endpoint == "token" or endpoint.startswith("refreshtoken"):
+                return
+
+            await self.logout()
+            await self.login()
+
+        self.__session.reauth_hook = reauth_hook
 
         self.__username = username
         self.__password = password
 
-        self.__request_retries = request_retries
+        self.__logger = logger
 
-    async def login(self) -> str:
+    @property
+    def host(self) -> str:
+        """Hostname of the device the client is connected to."""
+        return self.__session.host
+
+    async def login(self) -> LoginResult:
         """Login to the api.
 
         :returns: login result, one of LOGIN_RESULT_* constants
         """
 
         # if already logged in and token is still valid for at least 5 minutes, do nothing
-        if (
-            self._auth_data is not None
-            and self._auth_data.time_until_expiration > timedelta(minutes=5)
-        ):
-            if self._logger:
-                self._logger.debug("already logged in, skipping login")
-            return LOGIN_RESULT_ALREADY_LOGGED_IN
+        token = self.__session.token
+        if token is not None and token.time_until_expiration > timedelta(minutes=5):
+            if self.__logger:
+                self.__logger.debug("already logged in, skipping login")
+            return LoginResult.ALREADY_LOGGED_IN
 
         # if we have a session and refresh token, try refreshing the token
-        if self._session_id is not None and self._auth_data is not None:
+        if self.__session.session_id is not None and self.__session.token is not None:
             try:
-                self._auth_data = await self.__refresh_token(
-                    self._auth_data.refresh_token
+                self.__session.token = await self.__refresh_token(
+                    self.__session.token.refresh_token
                 )
-                if self._logger:
-                    self._logger.debug("refreshed token successfully")
-                return LOGIN_RESULT_TOKEN_REFRESHED
+                if self.__logger:
+                    self.__logger.debug("refreshed token successfully")
+                return LoginResult.TOKEN_REFRESHED
             except SMAApiClientError:
                 # refresh failed, try to re-login with username and password
-                if self._logger:
-                    self._logger.debug("failed to refresh token, trying to re-login")
+                if self.__logger:
+                    self.__logger.debug("failed to refresh token, trying to re-login")
 
         # if all else fails, get a new token using username and password
         if self.__username is None or self.__password is None:
             raise ValueError("username and password are required for login")
-        self._auth_data = await self.__get_new_token(self.__username, self.__password)
+        self.__session.token = await self.__get_new_token(
+            self.__username, self.__password
+        )
 
-        if self._logger:
-            self._logger.debug("got new token successfully")
-        return LOGIN_RESULT_NEW_TOKEN
+        if self.__logger:
+            self.__logger.debug("got new token successfully")
+        return LoginResult.NEW_TOKEN
 
     async def __get_new_token(self, username: str, password: str) -> AuthToken:
         """Get a new access token using username and password."""
-        token_response = await self._make_request(
+        token_response = await self.__session.request(
             method="POST",
             endpoint="token",
+            # use form data instead of json payload
             data={
                 "grant_type": "password",
                 "username": username,
                 "password": password,
             },
             headers={
-                **self._origin_headers,
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Accept": "application/json",
             },
-            as_json=False,  # use form data instead of json payload
+            auth="none",
         )
 
-        # update session id
-        self._update_session_id(token_response)
-        if self._session_id is None:
+        # should have received a session id at login
+        if self.__session.session_id is None:
             raise SMAApiClientError("No session id received")
 
         # set access token
@@ -128,20 +147,19 @@ class SMAApiClient(SMABaseClient):
 
     async def __refresh_token(self, refresh_token: str) -> AuthToken:
         """Get a new access token using a refresh token."""
-        token_response = await self._make_request(
+        token_response = await self.__session.request(
             method="POST",
             endpoint="token",
+            # use form data instead of json payload
             data={
                 "grant_type": "refresh_token",
                 "refresh_token": refresh_token,
             },
             headers={
-                **self._origin_headers,
-                **self._session_headers,
                 "Content-Type": "application/x-www-form-urlencoded",
                 "Accept": "application/json",
             },
-            as_json=False,  # use form data instead of json payload
+            auth="session",
         )
 
         # set access token
@@ -150,19 +168,21 @@ class SMAApiClient(SMABaseClient):
 
     async def logout(self) -> None:
         """Logout from the api."""
-        if self._logger:
-            self._logger.debug("logging out")
+        if self.__logger:
+            self.__logger.debug("logging out")
+
+        if self.__session.token is None:
+            return
 
         # logout request, ignore errors
         with contextlib.suppress(Exception):
-            await self._make_request(
+            await self.__session.request(
                 method="DELETE",
-                endpoint=f"refreshtoken?refreshToken={quote(self.auth_data.refresh_token)}",
+                endpoint=f"refreshtoken?refreshToken={quote(self.__session.token.refresh_token)}",
             )
 
-        # clear auth data
-        self._auth_data = None
-        self._session_id = None
+        self.__session.session_id = None
+        self.__session.token = None
 
     async def get_all_components(self) -> list[ComponentInfo]:
         """Get a list of all available components and their ids."""
@@ -171,17 +191,17 @@ class SMAApiClient(SMABaseClient):
             parent_id: str | None = None,
         ) -> list[ComponentInfo]:
             """Get data from /navigation endpoint."""
-            if self._logger:
-                self._logger.debug(f"getting navigation data for parent={parent_id}")
+            if self.__logger:
+                self.__logger.debug(f"getting navigation data for parent={parent_id}")
 
-            navigation_response = await self._make_request(
+            navigation_response = await self.__session.request(
                 method="GET",
                 endpoint="navigation"
                 + (f"?parentId={quote(parent_id)}" if parent_id else ""),
                 headers={
-                    **self._auth_headers,
                     "Accept": "application/json",
                 },
+                auth="full",
             )
 
             # check & validate response
@@ -194,53 +214,53 @@ class SMAApiClient(SMABaseClient):
             root_component: ComponentInfo, component: ComponentInfo
         ) -> None:
             """Get device info for a component."""
-            if self._logger:
-                self._logger.debug(
+            if self.__logger:
+                self.__logger.debug(
                     f"getting device info for component={component.component_id}"
                 )
 
             try:
-                device_info_response = await self._make_request(
+                device_info_response = await self.__session.request(
                     method="GET",
                     endpoint=f"plants/{root_component.component_id}/devices/{component.component_id}",
                     headers={
-                        **self._auth_headers,
                         "Accept": "application/json",
                     },
+                    auth="full",
                 )
 
                 # try adding extra info to component
                 device_info = await device_info_response.json()
                 component.add_extra(device_info)
             except Exception as e:
-                if self._logger:
-                    self._logger.debug(
+                if self.__logger:
+                    self.__logger.debug(
                         f"error getting device info for component={component.component_id}: {e}"
                     )
 
         async def __add_widget_info(component: ComponentInfo) -> None:
             """Get extra info for a component."""
-            if self._logger:
-                self._logger.debug(
+            if self.__logger:
+                self.__logger.debug(
                     f"getting widget info for component={component.component_id}"
                 )
 
             try:
-                device_info_response = await self._make_request(
+                device_info_response = await self.__session.request(
                     method="GET",
                     endpoint=f"widgets/deviceinfo?deviceId={component.component_id}",
                     headers={
-                        **self._auth_headers,
                         "Accept": "application/json",
                     },
+                    auth="full",
                 )
 
                 # try adding extra info to component
                 device_info = await device_info_response.json()
                 component.add_extra(device_info)
             except Exception as e:
-                if self._logger:
-                    self._logger.debug(
+                if self.__logger:
+                    self.__logger.debug(
                         f"error getting widget info for component={component.component_id}: {e}"
                     )
 
@@ -270,32 +290,29 @@ class SMAApiClient(SMABaseClient):
                 await __add_device_info(root_component, component)
                 await __add_widget_info(component)
 
-        if self._logger:
-            self._logger.debug(f"got {len(all_components)} components")
+        if self.__logger:
+            self.__logger.debug(f"got {len(all_components)} components")
         return all_components
 
     def get_product_icon_url(self, component: ComponentInfo) -> str | None:
         """Get the URL for the product icon of a component."""
         if component.product_tag_id is None:
             return None
-        return f"{self.base_url}/product/icon/{component.product_tag_id}/neutral/64"
+        return f"{self.__session.base_url}/product/icon/{component.product_tag_id}/neutral/64"
 
     async def get_all_live_measurements(
         self, component_ids: list[str]
     ) -> list[ChannelValues]:
         """Get live data for all channels of the requested components."""
-        payload = [{"componentId": id} for id in component_ids]
-
-        measurements_response = await self._make_request(
+        measurements_response = await self.__session.request(
             method="POST",
             endpoint="measurements/live",
-            data=payload,
+            json=[{"componentId": id} for id in component_ids],
             headers={
-                **self._auth_headers,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            as_json=True,
+            auth="full",
         )
 
         measurements = await measurements_response.json()
@@ -305,17 +322,15 @@ class SMAApiClient(SMABaseClient):
         self, query: list[LiveMeasurementQueryItem]
     ) -> list[ChannelValues]:
         """Get live data for the requested channels."""
-        payload = [item.to_dict() for item in query]
-        measurements_response = await self._make_request(
+        measurements_response = await self.__session.request(
             method="POST",
             endpoint="measurements/live",
-            data=payload,
+            json=[item.to_dict() for item in query],
             headers={
-                **self._auth_headers,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            as_json=True,
+            auth="full",
         )
 
         measurements = await measurements_response.json()
@@ -334,66 +349,3 @@ class SMAApiClient(SMABaseClient):
 
         # flatten list of lists
         return list(chain.from_iterable(cvs))
-
-    async def _make_request(
-        self,
-        method: str,
-        endpoint: str,
-        data: Any | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ) -> aiohttp.ClientResponse:
-        """Make a request to an API endpoint, handling re-auth and retries."""
-        make_request_impl = super()._make_request
-
-        async def _make_request_w(
-            tries: int = 0, did_reauth: bool = False
-        ) -> aiohttp.ClientResponse:
-            try:
-                if self._logger:
-                    self._logger.debug(f"requesting {endpoint} ({tries})")
-                return await make_request_impl(method, endpoint, data, headers, as_json)
-            except SMAApiAuthenticationError as exception:
-                # on auth error, re-login and try again
-                # only if this is the first time we've tried to re-auth
-
-                # don't re-auth on /token endpoint
-                if (
-                    not did_reauth
-                    and endpoint != "token"
-                    and not endpoint.startswith("refreshtoken")
-                ):
-                    if self._logger:
-                        self._logger.debug(
-                            "SMA auth error (%s), re-authenticating", exception
-                        )
-
-                    try:
-                        await self.logout()
-                        await self.login()
-                    except SMAApiClientError as reauth_exception:
-                        # re-login failed, raise original exception
-                        if self._logger:
-                            self._logger.debug(
-                                "re-authentication failed (%s)", reauth_exception
-                            )
-                        raise exception from None
-
-                    # re-login ok, try again
-                    return await _make_request_w(tries=tries + 1, did_reauth=True)
-                else:
-                    raise exception
-            except (
-                SMAApiCommunicationError,
-                SMAApiParsingError,
-                SMAApiClientError,
-            ) as exception:
-                # on other API errors, retry up to the configured number of times
-                if tries <= self.__request_retries:
-                    if self._logger:
-                        self._logger.debug("SMA API error (%s), retrying", exception)
-                    return await _make_request_w(tries=tries + 1, did_reauth=did_reauth)
-                else:
-                    raise exception
-
-        return await _make_request_w()
