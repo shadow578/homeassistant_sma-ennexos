@@ -20,7 +20,6 @@ CONF_USE_SSL = hass_const.CONF_SSL
 CONF_VERIFY_SSL = hass_const.CONF_VERIFY_SSL
 
 # configuration keys (options)
-OPT_SENSOR_CHANNELS = "sensor_channels"
 OPT_REQUEST_TIMEOUT = "request_timeout"
 OPT_UPDATE_INTERVAL = "update_interval"
 OPT_REQUEST_RETIRES = "request_retries"

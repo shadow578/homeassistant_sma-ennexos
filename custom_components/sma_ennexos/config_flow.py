@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import urlparse
 
-import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from attr import dataclass
 from homeassistant.config_entries import (
@@ -38,7 +37,6 @@ from .const import (
     LOGGER,
     OPT_REQUEST_RETIRES,
     OPT_REQUEST_TIMEOUT,
-    OPT_SENSOR_CHANNELS,
     OPT_UPDATE_INTERVAL,
 )
 from .sma.client import SMAApiClient
@@ -47,7 +45,6 @@ from .sma.model import (
     SMAApiClientError,
     SMAApiCommunicationError,
 )
-from .util import channel_parts_to_fqid
 
 
 class NoPlantComponentFoundError(Exception):
@@ -211,9 +208,6 @@ class OptionsFlowAvailableChannels:
     channel_id: str
 
 
-OPT_ALL_SENSOR_CHANNELS = "use_all_sensor_channels"
-
-
 class SMAOptionsFlow(OptionsFlow):
     """options flow for SMA."""
 
@@ -226,20 +220,7 @@ class SMAOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage enabled sensor channels."""
-        # build multi select options
-        available_channels = await self.__fetch_available_channels()
-        available_channels_opt = {}
-        for channel in available_channels:
-            fqid = channel_parts_to_fqid(channel.component_id, channel.channel_id)
-            available_channels_opt[fqid] = (
-                f"{channel.channel_id} @ {channel.component_name}"
-            )
-
         if user_input is not None:
-            # apply use_all_channels option
-            if user_input.pop(OPT_ALL_SENSOR_CHANNELS, False):
-                user_input[OPT_SENSOR_CHANNELS] = list(available_channels_opt.keys())
-
             return self.async_create_entry(
                 data=user_input,
             )
@@ -249,17 +230,6 @@ class SMAOptionsFlow(OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    # channels
-                    vol.Required(
-                        OPT_SENSOR_CHANNELS,
-                        default=self.config_entry.options.get(OPT_SENSOR_CHANNELS),
-                    ): cv.multi_select(available_channels_opt),
-                    vol.Required(
-                        OPT_ALL_SENSOR_CHANNELS,
-                        default=self.config_entry.options.get(
-                            OPT_ALL_SENSOR_CHANNELS, False
-                        ),
-                    ): BooleanSelector(),
                     # refresh interval
                     vol.Required(
                         OPT_UPDATE_INTERVAL,
@@ -306,60 +276,3 @@ class SMAOptionsFlow(OptionsFlow):
                 }
             ),
         )
-
-    async def __fetch_available_channels(
-        self,
-    ) -> list[OptionsFlowAvailableChannels]:
-        """Get a list of all available channels and their ids."""
-        host = self.config_entry.data[CONF_HOST]
-        LOGGER.debug("attempting to fetch available channels for host=%s", host)
-        sma = SMAApiClient(
-            host=host,
-            username=self.config_entry.data[CONF_USERNAME],
-            password=self.config_entry.data[CONF_PASSWORD],
-            session=async_create_clientsession(
-                hass=self.hass,
-                verify_ssl=self.config_entry.data[CONF_VERIFY_SSL],
-            ),
-            use_ssl=self.config_entry.data[CONF_USE_SSL],
-            request_timeout=self.config_entry.options.get(
-                OPT_REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT
-            ),
-            request_retries=self.config_entry.options.get(
-                OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES
-            ),
-            logger=LOGGER,
-        )
-
-        await sma.login()
-
-        # get components
-        all_components = await sma.get_all_components()
-
-        # fetch live data for all components
-        all_live_data = await sma.get_all_live_measurements(
-            component_ids=[component.component_id for component in all_components]
-        )
-        await sma.logout()
-
-        # return a dict for each live measurement
-        LOGGER.debug("found %s available channels before filtering", len(all_live_data))
-        result = [
-            OptionsFlowAvailableChannels(
-                component_name=next(
-                    (
-                        component.name
-                        for component in all_components
-                        if component.component_id == ld.component_id
-                    ),
-                    None,
-                ),
-                component_id=ld.component_id,
-                channel_id=ld.channel_id,
-            )
-            for ld in all_live_data
-            # ignore all entries that have no value in the latest measurement
-            if ld.latest_value.value is not None
-        ]
-        LOGGER.debug("found %s available channels after filtering", len(result))
-        return result

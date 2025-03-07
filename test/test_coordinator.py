@@ -30,7 +30,6 @@ async def test_coordinator_basic(
         client=SMAApiClient(
             host="sma.local", username="user", password="password", session=MagicMock()
         ),
-        channel_fqids=[],
     )
 
     mock_sma_client.reset_counts()

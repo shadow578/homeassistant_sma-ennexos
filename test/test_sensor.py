@@ -14,7 +14,6 @@ from custom_components.sma_ennexos.const import (
     CONF_VERIFY_SSL,
     DEVICE_MANUFACTURER,
     DOMAIN,
-    OPT_SENSOR_CHANNELS,
 )
 from custom_components.sma_ennexos.sma.known_channels import (
     KnownChannelEntry,
@@ -28,7 +27,6 @@ from custom_components.sma_ennexos.sma.model import (
     LiveMeasurementQueryItem,
     TimeValuePair,
 )
-from custom_components.sma_ennexos.util import channel_parts_to_fqid
 
 
 async def test_sensor_basic(
@@ -82,12 +80,6 @@ async def test_sensor_basic(
             CONF_PASSWORD: "password",
             CONF_USE_SSL: False,
             CONF_VERIFY_SSL: True,
-        },
-        options={
-            OPT_SENSOR_CHANNELS: [
-                channel_parts_to_fqid("component1", "channel1"),
-                channel_parts_to_fqid("component2", "channel2"),
-            ]
         },
     )
     config_entry.add_to_hass(hass)
@@ -150,11 +142,6 @@ async def test_sensor_known_channel_attributes(
                 CONF_PASSWORD: "password",
                 CONF_USE_SSL: False,
                 CONF_VERIFY_SSL: True,
-            },
-            options={
-                OPT_SENSOR_CHANNELS: [
-                    channel_parts_to_fqid("mock_inverter", "Mock.Measurement.TotWhOut")
-                ]
             },
         )
         config_entry.add_to_hass(hass)
@@ -223,11 +210,6 @@ async def test_sensor_none_value_fallback(
                 CONF_PASSWORD: "password",
                 CONF_USE_SSL: False,
                 CONF_VERIFY_SSL: True,
-            },
-            options={
-                OPT_SENSOR_CHANNELS: [
-                    channel_parts_to_fqid("mock_inverter", "Mock.Measurement.TotW.Pv")
-                ]
             },
         )
         config_entry.add_to_hass(hass)
@@ -308,12 +290,6 @@ async def test_device_entries(
             CONF_PASSWORD: "password",
             CONF_USE_SSL: False,
             CONF_VERIFY_SSL: True,
-        },
-        options={
-            OPT_SENSOR_CHANNELS: [
-                channel_parts_to_fqid("component1", "channel1"),
-                channel_parts_to_fqid("component2", "channel2"),
-            ]
         },
     )
     config_entry.add_to_hass(hass)
@@ -417,12 +393,6 @@ async def test_sensor_disabled_entities_are_not_fetched(
             CONF_PASSWORD: "password",
             CONF_USE_SSL: False,
             CONF_VERIFY_SSL: True,
-        },
-        options={
-            OPT_SENSOR_CHANNELS: [
-                channel_parts_to_fqid("component1", "channel1"),
-                channel_parts_to_fqid("component2", "channel2"),
-            ]
         },
     )
     config_entry.add_to_hass(hass)

@@ -26,7 +26,6 @@ from .const import (
     LOGGER,
     OPT_REQUEST_RETIRES,
     OPT_REQUEST_TIMEOUT,
-    OPT_SENSOR_CHANNELS,
     OPT_UPDATE_INTERVAL,
 )
 from .sma.client import SMAApiClient
@@ -39,7 +38,6 @@ from .sma.model import (
     SMAApiCommunicationError,
     SMAApiParsingError,
 )
-from .util import channel_parts_to_fqid
 
 
 # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
@@ -80,7 +78,6 @@ class SMADataCoordinator(DataUpdateCoordinator):
             hass=hass,
             config_entry=config_entry,
             client=client,
-            channel_fqids=config_entry.options.get(OPT_SENSOR_CHANNELS, []),
             update_interval_seconds=config_entry.options.get(
                 OPT_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL
             ),
@@ -91,7 +88,6 @@ class SMADataCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         config_entry: ConfigEntry,
         client: SMAApiClient,
-        channel_fqids: list[str],
         update_interval_seconds: int = 60,
     ) -> None:
         """Init."""
@@ -168,14 +164,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
         LOGGER.debug(
             "generated measurements query for %s listeners: %s",
             len(self._listeners),
-            (
-                "; ".join(
-                    [
-                        channel_parts_to_fqid(qi.component_id, qi.channel_id)
-                        for qi in query
-                    ]
-                )
-            ),
+            ("; ".join([f"{qi.component_id}@{qi.channel_id}" for qi in query])),
         )
 
         return query

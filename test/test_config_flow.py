@@ -4,7 +4,6 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.sma_ennexos.config_flow import OPT_ALL_SENSOR_CHANNELS
 from custom_components.sma_ennexos.const import (
     CONF_HOST,
     CONF_PASSWORD,
@@ -14,7 +13,6 @@ from custom_components.sma_ennexos.const import (
     DOMAIN,
     OPT_REQUEST_RETIRES,
     OPT_REQUEST_TIMEOUT,
-    OPT_SENSOR_CHANNELS,
     OPT_UPDATE_INTERVAL,
 )
 from custom_components.sma_ennexos.sma.model import (
@@ -23,7 +21,6 @@ from custom_components.sma_ennexos.sma.model import (
     SMAApiAuthenticationError,
     TimeValuePair,
 )
-from custom_components.sma_ennexos.util import channel_parts_to_fqid
 
 
 # note: need to bypass integration setup since otherwise it would interfere with the
@@ -230,9 +227,6 @@ async def test_options_flow_init_step_ok(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         user_input={
-            OPT_SENSOR_CHANNELS: [
-                channel_parts_to_fqid("inverter1", "volt"),
-            ],
             OPT_UPDATE_INTERVAL: 30,
             OPT_REQUEST_TIMEOUT: 10,
             OPT_REQUEST_RETIRES: 3,
@@ -242,88 +236,7 @@ async def test_options_flow_init_step_ok(
     # the flow should now finish and create a options entry
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"] == {
-        OPT_SENSOR_CHANNELS: [
-            channel_parts_to_fqid("inverter1", "volt"),
-        ],
         OPT_UPDATE_INTERVAL: 30,
         OPT_REQUEST_TIMEOUT: 10,
         OPT_REQUEST_RETIRES: 3,
     }
-
-
-async def test_options_flow_init_step_all_channels(
-    anyio_backend, hass, bypass_integration_setup, mock_sma_client
-):
-    """Test that the 'init' options step correctly selects all channels if requested."""
-
-    # create a config entry to bypass the config flow
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_HOST: "sma.local",
-            CONF_USERNAME: "user",
-            CONF_PASSWORD: "pass",
-            CONF_USE_SSL: True,
-            CONF_VERIFY_SSL: True,
-        },
-    )
-    entry.add_to_hass(hass)
-
-    # ensure there are some components returned by the API
-    mock_sma_client.components = [
-        ComponentInfo(
-            component_id="plant",
-            component_type="Plant",
-            name="MOCK PLANT",
-        ),
-        ComponentInfo(
-            component_id="inverter1",
-            component_type="Inverter",
-            name="MOCK INVERTER",
-        ),
-    ]
-    mock_sma_client.measurements = [
-        ChannelValues(
-            channel_id="volt",
-            component_id="inverter1",
-            values=[TimeValuePair(time="2021-01-01T12:00:00Z", value=230.0)],
-        ),
-        ChannelValues(
-            channel_id="amp",
-            component_id="inverter1",
-            values=[TimeValuePair(time="2021-01-01T12:00:00Z", value=10.0)],
-        ),
-    ]
-
-    mock_sma_client.reset_counts()
-
-    # initialize options flow
-    await hass.config_entries.async_setup(entry.entry_id)
-    result = await hass.config_entries.options.async_init(entry.entry_id)
-
-    # first step is a form
-    assert result["type"] == FlowResultType.FORM
-    assert result["step_id"] == "init"
-
-    mock_sma_client.reset_counts()
-
-    # simulate user selecting "use all channels"
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            OPT_SENSOR_CHANNELS: [],
-            OPT_ALL_SENSOR_CHANNELS: True,
-            OPT_UPDATE_INTERVAL: 30,
-            OPT_REQUEST_TIMEOUT: 10,
-            OPT_REQUEST_RETIRES: 3,
-        },
-    )
-
-    # the flow should now finish and create a options entry
-    # OPT_SENSOR_CHANNELS should contain all channels, despite
-    # the user not selecting any in the dropdown
-    assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert result["data"]
-
-    channels = result["data"][OPT_SENSOR_CHANNELS]
-    assert len(channels) == 2

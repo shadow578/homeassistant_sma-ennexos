@@ -37,7 +37,6 @@ from .sma.known_channels import (
 from .sma.model import ComponentInfo
 from .util import (
     channel_parts_to_entity_id,
-    channel_parts_to_fqid,
     channel_to_translation_key,
 )
 
@@ -159,8 +158,6 @@ class SMASensor(SMAEntity, SensorEntity):
 
     def __set_description(self) -> None:
         """Set entity description using known channels."""
-        fqid = channel_parts_to_fqid(self.component_id, self.channel_id)
-
         # get entry for known channel
         known_channel = get_known_channel(self.channel_id)
 
@@ -201,9 +198,10 @@ class SMASensor(SMAEntity, SensorEntity):
                 state_class = None
 
             LOGGER.debug(
-                "configure %s using known channel:"
+                "configuring %s@%s using known channel:"
                 "icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
-                fqid,
+                self.component_id,
+                self.channel_id,
                 icon,
                 device_class,
                 unit_of_measurement,
@@ -211,7 +209,11 @@ class SMASensor(SMAEntity, SensorEntity):
                 suggested_display_precision,
             )
         else:
-            LOGGER.debug("configure %s as generic sensor", fqid)
+            LOGGER.debug(
+                "configuring %s@%s as generic sensor",
+                self.component_id,
+                self.channel_id,
+            )
 
         # assume all channels in known_channels have a translation.
         # if a sensor is setup with a translation key that does not exist, the UI will show 'None'.

@@ -1,30 +1,6 @@
 """integration utilities."""
 
 
-def channel_parts_to_fqid(component_id: str, channel_id: str) -> str:
-    """Convert a channel_id and component_id to a channel fqid (channel@component).
-
-    :param component_id: The component_id of the channel.
-    :param channel_id: The channel_id of the channel.
-    :return: a channel fqid (channel@component).
-    """
-    return f"{channel_id}@{component_id}"
-
-
-def channel_fqid_to_parts(fqid: str) -> tuple[str, str]:
-    """Convert a channel fqid (channel@component) to its component_id and channel_id parts.
-
-    :param fqid: The channel fqid to convert (channel@component).
-    :return: a tuple of (component_id, channel_id)
-    """
-    split = fqid.split("@")
-
-    if len(split) != 2:
-        raise ValueError(f"Invalid channel fqid: {fqid}")
-
-    return (split[1], split[0])
-
-
 def __normalize_for_id(s: str) -> str:
     """Normalize a string for use in an entity id or translation key."""
 
