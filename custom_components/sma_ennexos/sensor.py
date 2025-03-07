@@ -22,7 +22,7 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfTime,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .base_entity import SMAEntity
@@ -37,7 +37,6 @@ from .sma.known_channels import (
 from .sma.model import ComponentInfo
 from .util import (
     channel_parts_to_entity_id,
-    channel_parts_to_fqid,
     channel_to_translation_key,
 )
 
@@ -56,10 +55,15 @@ async def async_setup_entry(
         )
         return
 
-    all_components = await coordinator.get_all_components()
+    all_components = coordinator.all_components
+    all_measurements = coordinator.all_measurements
 
     # create entities based on ChannelValues in coordinator.data
-    LOGGER.info("creating %s sensor entities", len(coordinator.data))
+    LOGGER.info(
+        "creating %s sensor entities, referencing %s components",
+        len(all_measurements),
+        len(all_components),
+    )
     async_add_entities(
         [
             SMASensor(
@@ -71,7 +75,7 @@ async def async_setup_entry(
                     if comp.component_id == channel_value.component_id
                 ),
             )
-            for channel_value in coordinator.data
+            for channel_value in all_measurements
         ]
     )
 
@@ -111,9 +115,9 @@ class SMASensor(SMAEntity, SensorEntity):
         )
         self.__set_description()
 
-    @property
-    def native_value(self):
-        """Return the native value of the sensor."""
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
         data = self.coordinator.data
 
         # find the ChannelValues of this sensor
@@ -147,14 +151,14 @@ class SMASensor(SMAEntity, SensorEntity):
                 )
                 value = f"[{value}]"
 
-        # return value
+        # apply new value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
-        return value
+        self._attr_native_value = value
+
+        super()._handle_coordinator_update()
 
     def __set_description(self) -> None:
         """Set entity description using known channels."""
-        fqid = channel_parts_to_fqid(self.component_id, self.channel_id)
-
         # get entry for known channel
         known_channel = get_known_channel(self.channel_id)
 
@@ -199,9 +203,10 @@ class SMASensor(SMAEntity, SensorEntity):
                 state_class = None
 
             LOGGER.debug(
-                "configure %s using known channel:"
+                "configuring %s@%s using known channel:"
                 "icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
-                fqid,
+                self.component_id,
+                self.channel_id,
                 icon,
                 device_class,
                 unit_of_measurement,
@@ -209,28 +214,33 @@ class SMASensor(SMAEntity, SensorEntity):
                 suggested_display_precision,
             )
         else:
-            LOGGER.debug("configure %s as generic sensor", fqid)
+            LOGGER.debug(
+                "configuring %s@%s as generic sensor",
+                self.component_id,
+                self.channel_id,
+            )
 
         # assume all channels in known_channels have a translation.
         # if a sensor is setup with a translation key that does not exist, the UI will show 'None'.
         # this setup makes it so any known channel will show with a nice translation, and any
         # unknown channel will show the SMA channel id as its name, with the option for the user to rename it.
-        has_translation_key = known_channel is not None
+        is_known_channel = known_channel is not None
         translation_key = channel_to_translation_key(self.channel_id)
 
         self.entity_description = SensorEntityDescription(
             key=translation_key,
-            translation_key=translation_key if has_translation_key else None,
-            name=self.channel_id if not has_translation_key else None,
+            translation_key=translation_key if is_known_channel else None,
+            name=self.channel_id if not is_known_channel else None,
             icon=icon,
             device_class=device_class,
             native_unit_of_measurement=unit_of_measurement,
             state_class=state_class,
             suggested_display_precision=suggested_display_precision,
+            entity_registry_enabled_default=is_known_channel,
         )
 
         # required for using translation_key
-        self._attr_has_entity_name = has_translation_key
+        self._attr_has_entity_name = is_known_channel
 
     def __device_kind_to_icon(self, device_kind: SMADeviceKind) -> str:
         """SMADeviceKind to mdi icon."""

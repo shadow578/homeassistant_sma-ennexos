@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import urlparse
 
-import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from attr import dataclass
 from homeassistant.config_entries import (
@@ -38,7 +37,6 @@ from .const import (
     LOGGER,
     OPT_REQUEST_RETIRES,
     OPT_REQUEST_TIMEOUT,
-    OPT_SENSOR_CHANNELS,
     OPT_UPDATE_INTERVAL,
 )
 from .sma.client import SMAApiClient
@@ -47,7 +45,6 @@ from .sma.model import (
     SMAApiClientError,
     SMAApiCommunicationError,
 )
-from .util import channel_parts_to_fqid
 
 
 class NoPlantComponentFoundError(Exception):
@@ -135,7 +132,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): BooleanSelector(),
                     # verify ssl?
                     vol.Required(
-                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, True)
+                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, False)
                     ): BooleanSelector(),
                 }
             ),
@@ -211,9 +208,6 @@ class OptionsFlowAvailableChannels:
     channel_id: str
 
 
-OPT_ALL_SENSOR_CHANNELS = "use_all_sensor_channels"
-
-
 class SMAOptionsFlow(OptionsFlow):
     """options flow for SMA."""
 
@@ -226,20 +220,7 @@ class SMAOptionsFlow(OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage enabled sensor channels."""
-        # build multi select options
-        available_channels = await self.__fetch_available_channels()
-        available_channels_opt = {}
-        for channel in available_channels:
-            fqid = channel_parts_to_fqid(channel.component_id, channel.channel_id)
-            available_channels_opt[fqid] = (
-                f"{channel.channel_id} @ {channel.component_name}"
-            )
-
         if user_input is not None:
-            # apply use_all_channels option
-            if user_input.pop(OPT_ALL_SENSOR_CHANNELS, False):
-                user_input[OPT_SENSOR_CHANNELS] = list(available_channels_opt.keys())
-
             return self.async_create_entry(
                 data=user_input,
             )
@@ -249,17 +230,6 @@ class SMAOptionsFlow(OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    # channels
-                    vol.Required(
-                        OPT_SENSOR_CHANNELS,
-                        default=self.config_entry.options.get(OPT_SENSOR_CHANNELS),
-                    ): cv.multi_select(available_channels_opt),
-                    vol.Required(
-                        OPT_ALL_SENSOR_CHANNELS,
-                        default=self.config_entry.options.get(
-                            OPT_ALL_SENSOR_CHANNELS, False
-                        ),
-                    ): BooleanSelector(),
                     # refresh interval
                     vol.Required(
                         OPT_UPDATE_INTERVAL,

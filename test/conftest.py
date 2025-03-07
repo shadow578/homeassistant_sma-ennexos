@@ -8,7 +8,11 @@ import pytest
 from attr import dataclass
 
 from custom_components.sma_ennexos.sma.client import LoginResult
-from custom_components.sma_ennexos.sma.model import ChannelValues, ComponentInfo
+from custom_components.sma_ennexos.sma.model import (
+    ChannelValues,
+    ComponentInfo,
+    LiveMeasurementQueryItem,
+)
 
 pytest_plugins = "pytest_homeassistant_custom_component"
 
@@ -68,8 +72,10 @@ class MockSmaClientHandle:
     on_login: Callable | None = None
     on_logout: Callable | None = None
     on_get_all_components: Callable | None = None
-    on_get_all_live_measurements: Callable | None = None
-    on_get_live_measurements: Callable | None = None
+    on_get_all_live_measurements: Callable[[list[str]], None] | None = None
+    on_get_live_measurements: (
+        Callable[[list[LiveMeasurementQueryItem]], None] | None
+    ) = None
 
 
 @pytest.fixture()
@@ -98,17 +104,17 @@ def mock_sma_client():
         hnd.cnt_get_all_components += 1
         return hnd.components
 
-    async def get_all_live_measurements(component_ids):
+    async def get_all_live_measurements(component_ids: list[str]):
         nonlocal hnd
         if hnd.on_get_all_live_measurements:
-            hnd.on_get_all_live_measurements()
+            hnd.on_get_all_live_measurements(component_ids)
         hnd.cnt_get_all_live_measurements += 1
         return hnd.measurements
 
-    async def get_live_measurements(query):
+    async def get_live_measurements(query: list[LiveMeasurementQueryItem]):
         nonlocal hnd
         if hnd.on_get_live_measurements:
-            hnd.on_get_live_measurements()
+            hnd.on_get_live_measurements(query)
         hnd.cnt_get_live_measurements += 1
         return hnd.measurements
 
