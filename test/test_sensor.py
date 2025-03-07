@@ -183,6 +183,88 @@ async def test_sensor_known_channel_attributes(
         assert state.attributes["device_class"] == SensorDeviceClass.ENERGY
 
 
+async def test_sensor_known_channel_enum(
+    anyio_backend,
+    hass,
+    mock_sma_client,
+):
+    """Test enum sensors set state and attributes correctly."""
+    with mock.patch(
+        # note: need to patch in the importing module, not the defining module
+        "custom_components.sma_ennexos.sensor.get_known_channel"
+    ) as mock_get_known_channel:
+        mock_get_known_channel.return_value = KnownChannelEntry(
+            device_kind=SMADeviceKind.OTHER,
+            unit=SMAUnit.ENUM,
+            enum_values={
+                0: "mock-enum-0",
+                10: "mock-enum-10",
+            },
+        )
+
+        mock_sma_client.components = [
+            ComponentInfo(
+                component_id="mock_inverter",
+                component_type="Inverter",
+                name="Mock Inverter",
+            )
+        ]
+
+        mock_sma_client.measurements = [
+            ChannelValues(
+                component_id="mock_inverter",
+                channel_id="Mock.Measurement.Operation.Health",
+                values=[
+                    TimeValuePair(
+                        time="2024-02-01T11:25:46Z",
+                        value=10,
+                    )
+                ],
+            )
+        ]
+
+        config_entry = MockConfigEntry(
+            domain=DOMAIN,
+            entry_id="MOCK",
+            data={
+                CONF_HOST: "sma.local",
+                CONF_USERNAME: "user",
+                CONF_PASSWORD: "password",
+                CONF_USE_SSL: False,
+                CONF_VERIFY_SSL: True,
+            },
+            options={
+                OPT_SENSOR_CHANNELS: [
+                    channel_parts_to_fqid("mock_inverter", "Mock.Measurement.TotWhOut")
+                ]
+            },
+        )
+        config_entry.add_to_hass(hass)
+        await hass.config_entries.async_setup(config_entry.entry_id)
+        await hass.async_block_till_done()
+
+        assert await async_setup_entry(hass, config_entry)
+        await hass.async_block_till_done()
+
+        # sensour should have attemptet to figure out a known channel
+        assert mock_get_known_channel.called
+
+        # the sensor created should be a energy (Wh) sensor with following attributes
+        state = hass.states.get(
+            "sensor.mock_inverter_mock_measurement_operation_health"
+        )
+        assert state
+        assert state.state == "mock-enum-10"
+
+        # enum sensors have no state class and no unit
+        assert state.attributes.get("state_class") is None
+        assert state.attributes.get("unit_of_measurement") is None
+        assert state.attributes["device_class"] == SensorDeviceClass.ENUM
+
+        # options is set to a list of possible enum values
+        assert state.attributes["options"] == ["mock-enum-0", "mock-enum-10"]
+
+
 async def test_sensor_none_value_fallback(
     anyio_backend,
     hass,
