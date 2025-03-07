@@ -8,6 +8,7 @@ import pytest
 from attr import dataclass
 
 from custom_components.sma_ennexos.sma.client import LoginResult
+from custom_components.sma_ennexos.sma.known_channels import KnownChannelEntry
 from custom_components.sma_ennexos.sma.model import (
     ChannelValues,
     ComponentInfo,
@@ -139,3 +140,21 @@ def mock_sma_client():
         ),
     ):
         yield hnd
+
+
+@pytest.fixture()
+def mock_known_channels():
+    """Fixture to mock known_channels in sensor platform."""
+
+    known_channels: dict[str, KnownChannelEntry] = {}
+
+    def get_known_channel(channel_id: str) -> KnownChannelEntry | None:
+        nonlocal known_channels
+        return known_channels.get(channel_id)
+
+    with mock.patch(
+        # have to patch the importing module, not the defining module
+        "custom_components.sma_ennexos.sensor.get_known_channel",
+        wraps=get_known_channel,
+    ) as m:
+        yield (m, known_channels)

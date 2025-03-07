@@ -1,8 +1,5 @@
 """Test sma-ennexos sensor component."""
 
-from unittest import mock
-
-import pytest
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.helpers import device_registry, entity_registry
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -28,24 +25,6 @@ from custom_components.sma_ennexos.sma.model import (
     LiveMeasurementQueryItem,
     TimeValuePair,
 )
-
-
-@pytest.fixture()
-def mock_known_channels():
-    """Fixture to mock known_channels in sensor platform."""
-
-    known_channels: dict[str, KnownChannelEntry] = {}
-
-    def get_known_channel(channel_id: str) -> KnownChannelEntry | None:
-        nonlocal known_channels
-        return known_channels.get(channel_id)
-
-    with mock.patch(
-        # have to patch the importing module, not the defining module
-        "custom_components.sma_ennexos.sensor.get_known_channel",
-        wraps=get_known_channel,
-    ) as m:
-        yield (m, known_channels)
 
 
 async def test_sensor_basic(
