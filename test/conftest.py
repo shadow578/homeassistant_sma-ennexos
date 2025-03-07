@@ -7,7 +7,7 @@ from unittest.mock import patch
 import pytest
 from attr import dataclass
 
-from custom_components.sma_ennexos.sma.client import LOGIN_RESULT_ALREADY_LOGGED_IN
+from custom_components.sma_ennexos.sma.client import LoginResult
 from custom_components.sma_ennexos.sma.model import (
     ChannelValues,
     ComponentInfo,
@@ -89,7 +89,7 @@ def mock_sma_client():
         if hnd.on_login:
             hnd.on_login()
         hnd.cnt_login += 1
-        return LOGIN_RESULT_ALREADY_LOGGED_IN
+        return LoginResult.ALREADY_LOGGED_IN
 
     async def logout():
         nonlocal hnd

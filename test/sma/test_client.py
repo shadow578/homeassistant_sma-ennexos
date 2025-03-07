@@ -1,536 +1,478 @@
 """unit test for SMA client implementation."""
 
-from typing import Any
-from unittest import mock
-from urllib.parse import quote
+from logging import Logger
 
 import pytest
 
 from custom_components.sma_ennexos.sma.client import (
-    LOGIN_RESULT_ALREADY_LOGGED_IN,
-    LOGIN_RESULT_NEW_TOKEN,
-    LOGIN_RESULT_TOKEN_REFRESHED,
+    LoginResult,
     SMAApiClient,
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
-from custom_components.sma_ennexos.sma.model.errors import SMAApiCommunicationError
+from test.sma.aiohttp_mock import AioHttpMock, ResponseEntry
 
-from .http_response_mock import ClientResponseMock
+LOGGER = Logger(__name__)
+LOGGER.setLevel("DEBUG")
 
 
 @pytest.mark.asyncio
 async def test_client_auth():
     """Test client login / logout methods."""
-
-    # mock for make_request
-    did_get_token = False
-    did_refresh_token = False
-    did_delete_token = False
-
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_token
-        nonlocal did_refresh_token
-        nonlocal did_delete_token
-
-        # POST /api/v1/token (login, NEW and REFRESH)
-        if method == "POST" and endpoint == "token":
-            assert data is not None
-            assert (
-                data["grant_type"] == "password"
-                or data["grant_type"] == "refresh_token"
-            )
-
-            # check headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-
-            # content type headers
-            assert headers["Content-Type"] == "application/x-www-form-urlencoded"
-            assert headers["Accept"] == "application/json"
-
-            if data["grant_type"] == "password":
-                # check data
-                assert data["username"] == "test"
-                assert data["password"] == "test123"
-
-                # should use form data instead of json
-                assert as_json is False
-
-                # return mock response
-                did_get_token = True
-                return ClientResponseMock(
-                    data={
-                        "access_token": "acc-token-1",
-                        "refresh_token": "ref-token-1",
-                        "token_type": "Bearer",
-                        "expires_in": 30,  # ultra short-lived to test token refresh
-                    },
-                    cookies=[
-                        ("JSESSIONID", "session-id"),
-                    ],
-                )
-            elif data["grant_type"] == "refresh_token":
-                # token refresh requires session cookie
-                assert headers["Cookie"] == "JSESSIONID=session-id"
-
-                # check data
-                assert data["refresh_token"] == "ref-token-1"
-
-                # should use form data instead of json
-                assert as_json is False
-
-                # return mock response
-                did_refresh_token = True
-                return ClientResponseMock(
-                    data={
-                        "access_token": "acc-token-2",
-                        "refresh_token": "ref-token-2",
-                        "token_type": "Bearer",
-                        "expires_in": 3600,  # long-lived
-                    },
-                    cookies=[
-                        ("JSESSIONID", "session-id"),
-                    ],
-                )
-
-        # DELETE /api/v1/token (logout)
-        if method == "DELETE":
-            assert endpoint == f"refreshtoken?refreshToken={quote('ref-token-2')}"
-            did_delete_token = True
-
-            return ClientResponseMock(data={}, cookies=[])
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
+    mock = AioHttpMock("http://sma.local/api/v1")
 
     # create the client
     sma = SMAApiClient(
         host="sma.local",
         username="test",
         password="test123",
-        session=mock.MagicMock(),
+        session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        # login should get a new token
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
-        assert did_get_token is True
-        assert did_refresh_token is False
-        assert did_delete_token is False
+    token_data = {
+        "access_token": "mock-access-token",
+        "refresh_token": "mock-refresh-token",
+        "token_type": "Bearer",
+    }
 
-        did_get_token = False
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                **token_data,
+                "expires_in": 30,  # very short-lived token to trigger refresh
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
 
-        # token is super short-lived, so another login should refresh it
-        assert (await sma.login()) == LOGIN_RESULT_TOKEN_REFRESHED
-        assert did_get_token is False
-        assert did_refresh_token is True
-        assert did_delete_token is False
+    # login should get a new token
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        did_refresh_token = False
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "password",
+        "username": "test",
+        "password": "test123",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
+    assert request.is_json is False
+    assert request.was_handled
 
-        # now the token is long-lived, so another login should do nothing
-        assert (await sma.login()) == LOGIN_RESULT_ALREADY_LOGGED_IN
-        assert did_get_token is False
-        assert did_refresh_token is False
-        assert did_delete_token is False
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                **token_data,
+                "expires_in": 3600,  # no refresh needed
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
 
-        # logout
-        await sma.logout()
-        assert did_delete_token is True
+    # login now should refresh the token
+    assert (await sma.login()) == LoginResult.TOKEN_REFRESHED
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "refresh_token",
+        "refresh_token": "mock-refresh-token",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+        "Cookie": "JSESSIONID=mock-session-id",
+    }
+    assert request.is_json is False
+    assert request.was_handled
+
+    mock.clear_requests()
+
+    # now the token is long-lived, so another login should do nothing
+    assert (await sma.login()) == LoginResult.ALREADY_LOGGED_IN
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is None
+
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="DELETE",
+            endpoint="refreshtoken?refreshToken=mock-refresh-token",
+            status_code=200,
+        )
+    )
+
+    # logout
+    await sma.logout()
+
+    request = mock.get_request(
+        method="DELETE", endpoint="refreshtoken?refreshToken=mock-refresh-token"
+    )
+    assert request is not None
+    assert request.was_handled
 
 
 @pytest.mark.asyncio
 async def test_client_get_all_components():
     """Test SMAApiClient.get_all_components."""
+    mock = AioHttpMock("http://sma.local/api/v1")
 
-    # mock for make_request
-    did_get_root = False
-    did_get_children = False
-    did_get_inv1_widget = False
-    did_get_inv1_extra = False
-    did_get_inv2_widget = False
-    did_get_inv2_extra = False
-    did_get_inv3_widget = False
-    did_get_inv3_extra = False
-    did_get_inv4_widget = False
-    did_get_inv4_extra = False
-
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_root
-        nonlocal did_get_children
-        nonlocal did_get_inv1_widget
-        nonlocal did_get_inv1_extra
-        nonlocal did_get_inv2_widget
-        nonlocal did_get_inv2_extra
-        nonlocal did_get_inv3_widget
-        nonlocal did_get_inv3_extra
-        nonlocal did_get_inv4_widget
-        nonlocal did_get_inv4_extra
-
-        # required for login
-        if method == "POST" and endpoint == "token":
-            return ClientResponseMock(
-                data={
-                    "access_token": "acc-token-1",
-                    "refresh_token": "ref-token-1",
-                    "token_type": "Bearer",
-                    "expires_in": 30,  # ultra short-lived to test token refresh
-                },
-                cookies=[
-                    ("JSESSIONID", "session-id"),
-                ],
-            )
-
-        # GET /api/v1/navigation (component discovery)
-        if method == "GET" and endpoint.startswith("navigation"):
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # ROOT component
-            if endpoint == "navigation":
-                did_get_root = True
-                return ClientResponseMock(
-                    data=[
-                        {
-                            "componentId": "plant0",
-                            "componentType": "Plant",
-                            "name": "The Plant",
-                        },
-                    ]
-                )
-
-            # children of ROOT component
-            if endpoint == f"navigation?parentId={quote('plant0')}":
-                did_get_children = True
-                return ClientResponseMock(
-                    data=[
-                        {
-                            "componentId": "inv1",
-                            "componentType": "Inverter",
-                            "name": "The 1st Inverter",
-                        },
-                        {
-                            "componentId": "inv2",
-                            "componentType": "Inverter",
-                            "name": "The 2nd Inverter",
-                        },
-                        {
-                            "componentId": "inv3",
-                            "componentType": "Inverter",
-                            "name": "The 3rd Inverter",
-                        },
-                        {
-                            "componentId": "inv4",
-                            "componentType": "Inverter",
-                            "name": "The 4th Inverter",
-                        },
-                    ]
-                )
-
-        # GET /api/v1/widgets/deviceInfo (component extra info)
-        if method == "GET" and endpoint.startswith("widgets/deviceinfo"):
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # inv1
-            if endpoint == "widgets/deviceinfo?deviceId=inv1":
-                did_get_inv1_widget = True
-                return ClientResponseMock(
-                    data={
-                        "name": "widget-inv1-name",
-                        "serial": "widget-inv1-serial",
-                        "deviceInfoFeatures": [
-                            {
-                                "infoWidgetType": "FirmwareVersion",
-                                "value": "widget-inv1-firmware",
-                            }
-                        ],
-                        "productTagId": 1234,
-                    }
-                )
-
-            # inv2
-            if endpoint == "widgets/deviceinfo?deviceId=inv2":
-                did_get_inv2_widget = True
-                raise SMAApiCommunicationError("inv2 widget error should be dropped")
-
-            # inv3
-            if endpoint == "widgets/deviceinfo?deviceId=inv3":
-                did_get_inv3_widget = True
-                return ClientResponseMock(
-                    data={
-                        "name": "widget-inv3-name",
-                        "serial": "widget-inv3-serial",
-                        "deviceInfoFeatures": [
-                            {
-                                "infoWidgetType": "FirmwareVersion",
-                                "value": "widget-inv3-firmware",
-                            }
-                        ],
-                        "productTagId": 2345,
-                    }
-                )
-
-            # inv4
-            if endpoint == "widgets/deviceinfo?deviceId=inv4":
-                did_get_inv4_widget = True
-                raise SMAApiCommunicationError("inv4 widget error should be dropped")
-
-        # GET /api/v1/plants/{plantId}/devices/{componentId} (component extra info)
-        if method == "GET" and endpoint.startswith("plants/"):
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            parts = endpoint.split("/")
-            plant = parts[1]
-            component = parts[3]
-
-            assert plant == "plant0"
-            assert component in ["inv1", "inv2", "inv3", "inv4"]
-
-            if component == "inv1":
-                did_get_inv1_extra = True
-                return ClientResponseMock(
-                    data={
-                        "name": "extra-inv1-name",
-                        "product": "extra-inv1-product",
-                        "vendor": "extra-inv1-vendor",
-                        "serial": "extra-inv1-serial",
-                        "firmwareVersion": "extra-inv1-firmware",
-                        "ipAddress": "extra-inv1-ip",
-                        "generatorPower": 1234,
-                        "productTagId": 9876,
-                    }
-                )
-            if component == "inv2":
-                did_get_inv2_extra = True
-                return ClientResponseMock(
-                    data={
-                        "name": "extra-inv2-name",
-                        "product": "extra-inv2-product",
-                        "vendor": "extra-inv2-vendor",
-                        "serial": "extra-inv2-serial",
-                        "firmwareVersion": "extra-inv2-firmware",
-                        "ipAddress": "extra-inv2-ip",
-                        "generatorPower": 2345,
-                        "productTagId": 8765,
-                    }
-                )
-            if component == "inv3":
-                did_get_inv3_extra = True
-                raise SMAApiCommunicationError("inv3 extra error should be dropped")
-
-            if component == "inv4":
-                did_get_inv4_extra = True
-                raise SMAApiCommunicationError("inv4 extra error should be dropped")
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
-
-    # create the client
     sma = SMAApiClient(
         host="sma.local",
         username="test",
         password="test123",
-        session=mock.MagicMock(),
+        session=mock.session,
         use_ssl=False,
+        logger=LOGGER,
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    # need to login first
+    mock.add_response(
+        ResponseEntry(
+            repeat=True,
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        # get all components
-        all_components = await sma.get_all_components()
-        assert did_get_root is True
-        assert did_get_children is True
-        assert did_get_inv1_widget is True
-        assert did_get_inv1_extra is True
-        assert did_get_inv2_widget is True
-        assert did_get_inv2_extra is True
-        assert did_get_inv3_widget is True
-        assert did_get_inv3_extra is True
+    # mock responses needed for component discovery
+    mock.add_responses(
+        [
+            # root component discovery
+            ResponseEntry(
+                method="GET",
+                endpoint="navigation",
+                status_code=200,
+                data=[
+                    {
+                        "componentId": "plant0",
+                        "componentType": "Plant",
+                        "name": "The Plant",
+                    },
+                ],
+            ),
+            # children of root component
+            ResponseEntry(
+                method="GET",
+                endpoint="navigation?parentId=plant0",
+                status_code=200,
+                data=[
+                    {
+                        "componentId": "inv1",
+                        "componentType": "Inverter",
+                        "name": "The 1st Inverter",
+                    },
+                    {
+                        "componentId": "inv2",
+                        "componentType": "Inverter",
+                        "name": "The 2nd Inverter",
+                    },
+                    {
+                        "componentId": "inv3",
+                        "componentType": "Inverter",
+                        "name": "The 3rd Inverter",
+                    },
+                    {
+                        "componentId": "inv4",
+                        "componentType": "Inverter",
+                        "name": "The 4th Inverter",
+                    },
+                ],
+            ),
+            # inverter 1 widget
+            ResponseEntry(
+                method="GET",
+                endpoint="widgets/deviceinfo?deviceId=inv1",
+                status_code=200,
+                data={
+                    "name": "widget-inv1-name",
+                    "serial": "widget-inv1-serial",
+                    "deviceInfoFeatures": [
+                        {
+                            "infoWidgetType": "FirmwareVersion",
+                            "value": "widget-inv1-firmware",
+                        }
+                    ],
+                    "productTagId": 1234,
+                },
+            ),
+            # inverter 2 widget (404)
+            ResponseEntry(
+                method="GET",
+                endpoint="widgets/deviceinfo?deviceId=inv2",
+                status_code=404,
+            ),
+            # inverter 3 widget
+            ResponseEntry(
+                method="GET",
+                endpoint="widgets/deviceinfo?deviceId=inv3",
+                status_code=200,
+                data={
+                    "name": "widget-inv3-name",
+                    "serial": "widget-inv3-serial",
+                    "deviceInfoFeatures": [
+                        {
+                            "infoWidgetType": "FirmwareVersion",
+                            "value": "widget-inv3-firmware",
+                        }
+                    ],
+                    "productTagId": 2345,
+                },
+            ),
+            # inverter 4 widget (404)
+            ResponseEntry(
+                method="GET",
+                endpoint="widgets/deviceinfo?deviceId=inv4",
+                status_code=404,
+            ),
+            # inverter 1 extra info
+            ResponseEntry(
+                method="GET",
+                endpoint="plants/plant0/devices/inv1",
+                status_code=200,
+                data={
+                    "name": "extra-inv1-name",
+                    "product": "extra-inv1-product",
+                    "vendor": "extra-inv1-vendor",
+                    "serial": "extra-inv1-serial",
+                    "firmwareVersion": "extra-inv1-firmware",
+                    "ipAddress": "extra-inv1-ip",
+                    "generatorPower": 1234,
+                    "productTagId": 9876,
+                },
+            ),
+            # inverter 2 extra info
+            ResponseEntry(
+                method="GET",
+                endpoint="plants/plant0/devices/inv2",
+                status_code=200,
+                data={
+                    "name": "extra-inv2-name",
+                    "product": "extra-inv2-product",
+                    "vendor": "extra-inv2-vendor",
+                    "serial": "extra-inv2-serial",
+                    "firmwareVersion": "extra-inv2-firmware",
+                    "ipAddress": "extra-inv2-ip",
+                    "generatorPower": 2345,
+                    "productTagId": 8765,
+                },
+            ),
+            # inverter 3 extra info (404)
+            ResponseEntry(
+                method="GET",
+                endpoint="plants/plant0/devices/inv3",
+                status_code=404,
+            ),
+            # inverter 4 extra info (404)
+            ResponseEntry(
+                method="GET",
+                endpoint="plants/plant0/devices/inv4",
+                status_code=404,
+            ),
+        ]
+    )
 
-        assert len(all_components) == 5
+    mock.clear_requests()
 
-        # Plant
-        assert all_components[0].component_id == "plant0"
-        assert all_components[0].component_type == "Plant"
-        assert all_components[0].name == "The Plant"
+    # get all components, then check if the data is present correctly
+    all_components = await sma.get_all_components()
+    assert len(all_components) == 5
 
-        # inv1 has both widget and extra, extra takes precedence
-        assert all_components[1].component_id == "inv1"
-        assert all_components[1].component_type == "Inverter"
-        assert all_components[1].name == "The 1st Inverter"
+    # Plant
+    assert all_components[0].component_id == "plant0"
+    assert all_components[0].component_type == "Plant"
+    assert all_components[0].name == "The Plant"
 
-        assert all_components[1].vendor == "extra-inv1-vendor"
-        assert all_components[1].product_name == "extra-inv1-product"
-        assert all_components[1].serial_number == "extra-inv1-serial"
-        assert all_components[1].firmware_version == "extra-inv1-firmware"
-        assert all_components[1].ip_address == "extra-inv1-ip"
-        assert all_components[1].generator_power == 1234
-        assert all_components[1].product_tag_id == 9876
+    # inv1 has both widget and extra, extra takes precedence
+    assert all_components[1].component_id == "inv1"
+    assert all_components[1].component_type == "Inverter"
+    assert all_components[1].name == "The 1st Inverter"
 
-        # inv2 has only extra, widget throws. extra is used.
-        assert all_components[2].component_id == "inv2"
-        assert all_components[2].component_type == "Inverter"
-        assert all_components[2].name == "The 2nd Inverter"
+    assert all_components[1].vendor == "extra-inv1-vendor"
+    assert all_components[1].product_name == "extra-inv1-product"
+    assert all_components[1].serial_number == "extra-inv1-serial"
+    assert all_components[1].firmware_version == "extra-inv1-firmware"
+    assert all_components[1].ip_address == "extra-inv1-ip"
+    assert all_components[1].generator_power == 1234
+    assert all_components[1].product_tag_id == 9876
 
-        assert all_components[2].vendor == "extra-inv2-vendor"
-        assert all_components[2].product_name == "extra-inv2-product"
-        assert all_components[2].serial_number == "extra-inv2-serial"
-        assert all_components[2].firmware_version == "extra-inv2-firmware"
-        assert all_components[2].ip_address == "extra-inv2-ip"
-        assert all_components[2].generator_power == 2345
-        assert all_components[2].product_tag_id == 8765
+    # inv2 has only extra, widget throws. extra is used.
+    assert all_components[2].component_id == "inv2"
+    assert all_components[2].component_type == "Inverter"
+    assert all_components[2].name == "The 2nd Inverter"
 
-        # inv3 has only widget, extra throws. widget is used.
-        assert all_components[3].component_id == "inv3"
-        assert all_components[3].component_type == "Inverter"
-        assert all_components[3].name == "The 3rd Inverter"
+    assert all_components[2].vendor == "extra-inv2-vendor"
+    assert all_components[2].product_name == "extra-inv2-product"
+    assert all_components[2].serial_number == "extra-inv2-serial"
+    assert all_components[2].firmware_version == "extra-inv2-firmware"
+    assert all_components[2].ip_address == "extra-inv2-ip"
+    assert all_components[2].generator_power == 2345
+    assert all_components[2].product_tag_id == 8765
 
-        assert all_components[3].vendor is None
-        assert all_components[3].product_name == "widget-inv3-name"
-        assert all_components[3].serial_number == "widget-inv3-serial"
-        assert all_components[3].firmware_version == "widget-inv3-firmware"
-        assert all_components[3].ip_address is None
-        assert all_components[3].generator_power is None
-        assert all_components[3].product_tag_id == 2345
+    # inv3 has only widget, extra throws. widget is used.
+    assert all_components[3].component_id == "inv3"
+    assert all_components[3].component_type == "Inverter"
+    assert all_components[3].name == "The 3rd Inverter"
 
-        # inv4 has neither widget nor extra. all extra fields are None.
-        assert all_components[4].component_id == "inv4"
-        assert all_components[4].component_type == "Inverter"
-        assert all_components[4].name == "The 4th Inverter"
+    assert all_components[3].vendor is None
+    assert all_components[3].product_name == "widget-inv3-name"
+    assert all_components[3].serial_number == "widget-inv3-serial"
+    assert all_components[3].firmware_version == "widget-inv3-firmware"
+    assert all_components[3].ip_address is None
+    assert all_components[3].generator_power is None
+    assert all_components[3].product_tag_id == 2345
 
-        assert all_components[4].vendor is None
-        assert all_components[4].product_name is None
-        assert all_components[4].serial_number is None
-        assert all_components[4].firmware_version is None
-        assert all_components[4].ip_address is None
-        assert all_components[4].generator_power is None
-        assert all_components[4].product_tag_id is None
+    # inv4 has neither widget nor extra. all extra fields are None.
+    assert all_components[4].component_id == "inv4"
+    assert all_components[4].component_type == "Inverter"
+    assert all_components[4].name == "The 4th Inverter"
+
+    assert all_components[4].vendor is None
+    assert all_components[4].product_name is None
+    assert all_components[4].serial_number is None
+    assert all_components[4].firmware_version is None
+    assert all_components[4].ip_address is None
+    assert all_components[4].generator_power is None
+    assert all_components[4].product_tag_id is None
+
+    # ensure the right requests were made
+    base_headers = {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Cookie": "JSESSIONID=mock-session-id",
+        "Authorization": "Bearer mock-access-token",
+    }
+
+    # root component discovery
+    request = mock.get_request(method="GET", endpoint="navigation")
+    assert request is not None
+
+    assert request.data is None
+    assert request.headers == {
+        **base_headers,
+        "Accept": "application/json",
+    }
+    assert request.was_handled
+
+    # children of root component
+    request = mock.get_request(method="GET", endpoint="navigation?parentId=plant0")
+    assert request is not None
+
+    assert request.data is None
+    assert request.headers == {
+        **base_headers,
+        "Accept": "application/json",
+    }
+    assert request.was_handled
+
+    # inv1 widget
+    # assume inv2-inv4 are the same, so we only check inv1 thoroughly
+    request = mock.get_request(
+        method="GET", endpoint="widgets/deviceinfo?deviceId=inv1"
+    )
+    assert request is not None
+
+    assert request.data is None
+    assert request.headers == {
+        **base_headers,
+        "Accept": "application/json",
+    }
+    assert request.was_handled
+
+    assert mock.get_request(method="GET", endpoint="widgets/deviceinfo?deviceId=inv2")
+    assert mock.get_request(method="GET", endpoint="widgets/deviceinfo?deviceId=inv3")
+    assert mock.get_request(method="GET", endpoint="widgets/deviceinfo?deviceId=inv4")
+
+    # inv1 extra info
+    # assume inv2-inv4 are the same, so we only check inv1 thoroughly
+    request = mock.get_request(method="GET", endpoint="plants/plant0/devices/inv1")
+    assert request is not None
+
+    assert request.data is None
+    assert request.headers == {
+        **base_headers,
+        "Accept": "application/json",
+    }
+    assert request.was_handled
+
+    assert mock.get_request(method="GET", endpoint="plants/plant0/devices/inv2")
+    assert mock.get_request(method="GET", endpoint="plants/plant0/devices/inv3")
+    assert mock.get_request(method="GET", endpoint="plants/plant0/devices/inv4")
 
 
 @pytest.mark.asyncio
 async def test_client_get_all_live_measurements():
     """Test SMAApiClient.get_all_live_measurements."""
+    mock = AioHttpMock("http://sma.local/api/v1")
 
-    # mock for make_request
-    did_get_measurements = False
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        logger=LOGGER,
+    )
 
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_measurements
+    # need to login first
+    mock.add_response(
+        ResponseEntry(
+            repeat=True,
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        # required for login
-        if method == "POST" and endpoint == "token":
-            return ClientResponseMock(
-                data={
-                    "access_token": "acc-token-1",
-                    "refresh_token": "ref-token-1",
-                    "token_type": "Bearer",
-                    "expires_in": 30,  # ultra short-lived to test token refresh
-                },
-                cookies=[
-                    ("JSESSIONID", "session-id"),
-                ],
-            )
-
-        # POST /api/v1/measurements/live
-        if method == "POST" and endpoint == "measurements/live":
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Content-Type"] == "application/json"
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # check payload
-            assert data is not None
-            assert data == [
-                {
-                    "componentId": "inv0",
-                },
-                {
-                    "componentId": "inv1",
-                },
-            ]
-
-            # return mock response
-            did_get_measurements = True
-            return ClientResponseMock(
+    # mock responses needed for live measurements
+    mock.add_responses(
+        [
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
                 data=[
                     {
                         "channelId": "chastt",
@@ -542,149 +484,139 @@ async def test_client_get_all_live_measurements():
                         "componentId": "inv1",
                         "values": [{"time": "2024-02-01T11:30:00Z", "value": 25}],
                     },
-                ]
-            )
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
-
-    # create the client
-    sma = SMAApiClient(
-        host="sma.local",
-        username="test",
-        password="test123",
-        session=mock.MagicMock(),
-        use_ssl=False,
+                ],
+            ),
+        ]
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    mock.clear_requests()
 
-        # get all live measurements
-        measurements = await sma.get_all_live_measurements(
-            component_ids=["inv0", "inv1"]
-        )
-        assert did_get_measurements is True
+    # get all live measurements, then check if the data is present correctly
+    measurements = await sma.get_all_live_measurements(component_ids=["inv0", "inv1"])
+    assert len(measurements) == 2
 
-        assert len(measurements) == 2
+    # inv0
+    assert measurements[0].component_id == "inv0"
+    assert measurements[0].channel_id == "chastt"
+    assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[0].values[0].value == 10
 
-        # inv0
-        assert measurements[0].component_id == "inv0"
-        assert measurements[0].channel_id == "chastt"
-        assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[0].values[0].value == 10
+    # inv1
+    assert measurements[1].component_id == "inv1"
+    assert measurements[1].channel_id == "chastt"
+    assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[1].values[0].value == 25
 
-        # inv1
-        assert measurements[1].component_id == "inv1"
-        assert measurements[1].channel_id == "chastt"
-        assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[1].values[0].value == 25
+    # ensure the right requests were made
+    # live measurements request
+    request = mock.get_request(method="POST", endpoint="measurements/live")
+    assert request is not None
+
+    assert request.data == [
+        {"componentId": "inv0"},
+        {"componentId": "inv1"},
+    ]
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Cookie": "JSESSIONID=mock-session-id",
+        "Authorization": "Bearer mock-access-token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    assert request.is_json is True
+    assert request.was_handled
 
 
 @pytest.mark.asyncio
 async def test_client_get_live_measurements():
     """Test SMAApiClient.get_live_measurements for regular (non-array) channels."""
+    mock = AioHttpMock("http://sma.local/api/v1")
 
-    # mock for make_request
-    did_get_measurement = False
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        logger=LOGGER,
+    )
 
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: Any | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_measurement
+    # need to login first
+    mock.add_response(
+        ResponseEntry(
+            repeat=True,
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        # required for login
-        if method == "POST" and endpoint == "token":
-            return ClientResponseMock(
-                data={
-                    "access_token": "acc-token-1",
-                    "refresh_token": "ref-token-1",
-                    "token_type": "Bearer",
-                    "expires_in": 30,  # ultra short-lived to test token refresh
-                },
-                cookies=[
-                    ("JSESSIONID", "session-id"),
-                ],
-            )
-
-        # POST /api/v1/measurements/live
-        if method == "POST" and endpoint == "measurements/live":
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Content-Type"] == "application/json"
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # check payload
-            assert data is not None
-            assert data == [
-                {
-                    "componentId": "inv0",
-                    "channelId": "chastt",
-                },
-            ]
-
-            # return mock response
-            did_get_measurement = True
-            return ClientResponseMock(
+    # mock responses needed for live measurements
+    mock.add_responses(
+        [
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
                 data=[
                     {
                         "channelId": "chastt",
                         "componentId": "inv0",
                         "values": [{"time": "2024-02-01T11:30:00Z", "value": 10}],
                     },
-                ]
-            )
-
-        raise Exception(f"unexpected endpoint: {endpoint}")
-
-    # create the client
-    sma = SMAApiClient(
-        host="sma.local",
-        username="test",
-        password="test123",
-        session=mock.MagicMock(),
-        use_ssl=False,
+                ],
+            ),
+        ]
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    mock.clear_requests()
 
-        # get live measurement
-        measurements = await sma.get_live_measurements(
-            [
-                LiveMeasurementQueryItem(
-                    component_id="inv0",
-                    channel_id="chastt",
-                )
-            ]
-        )
-        assert did_get_measurement is True
+    # get live measurement, then check if the data is present correctly
+    measurements = await sma.get_live_measurements(
+        [
+            LiveMeasurementQueryItem(
+                component_id="inv0",
+                channel_id="chastt",
+            )
+        ]
+    )
+    assert len(measurements) == 1
 
-        assert len(measurements) == 1
+    # inv0
+    assert measurements[0].component_id == "inv0"
+    assert measurements[0].channel_id == "chastt"
+    assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[0].values[0].value == 10
 
-        # inv0
-        assert measurements[0].component_id == "inv0"
-        assert measurements[0].channel_id == "chastt"
-        assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[0].values[0].value == 10
+    # ensure the right requests were made
+    # live measurements request
+    request = mock.get_request(method="POST", endpoint="measurements/live")
+    assert request is not None
+
+    assert request.data == [
+        {"componentId": "inv0", "channelId": "chastt"},
+    ]
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Cookie": "JSESSIONID=mock-session-id",
+        "Authorization": "Bearer mock-access-token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    assert request.is_json is True
+    assert request.was_handled
 
 
 @pytest.mark.asyncio
@@ -696,65 +628,44 @@ async def test_client_get_live_measurements_array():
 
     the client treats array channels as multiple channels with the index added to the channel id.
     """
+    mock = AioHttpMock("http://sma.local/api/v1")
 
-    # mock for make_request
-    did_get_measurement = False
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        logger=LOGGER,
+    )
 
-    async def make_request_mock(
-        method: str,
-        endpoint: str,
-        data: dict | None = None,
-        headers: dict | None = None,
-        as_json: bool = True,
-    ):
-        """Mock for make_request."""
-        nonlocal did_get_measurement
+    # need to login first
+    mock.add_response(
+        ResponseEntry(
+            repeat=True,
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        # required for login
-        if method == "POST" and endpoint == "token":
-            return ClientResponseMock(
-                data={
-                    "access_token": "acc-token-1",
-                    "refresh_token": "ref-token-1",
-                    "token_type": "Bearer",
-                    "expires_in": 30,  # ultra short-lived to test token refresh
-                },
-                cookies=[
-                    ("JSESSIONID", "session-id"),
-                ],
-            )
-
-        # POST /api/v1/measurements/live
-        if method == "POST" and endpoint == "measurements/live":
-            # check common headers
-            assert headers is not None
-
-            # origin headers
-            assert headers["Origin"] == "http://sma.local/api/v1"
-            assert headers["Host"] == "sma.local"
-            # session cookie
-            assert headers["Cookie"] == "JSESSIONID=session-id"
-            # auth header
-            assert headers["Authorization"] == "Bearer acc-token-1"
-            # content type headers
-            assert headers["Content-Type"] == "application/json"
-            assert headers["Accept"] == "application/json"
-
-            # body is json
-            assert as_json is True
-
-            # check payload
-            assert data is not None
-            assert data == [
-                {
-                    "componentId": "inv0",
-                    "channelId": "arrtst[]",
-                },
-            ]
-
-            # return mock response
-            did_get_measurement = True
-            return ClientResponseMock(
+    # mock responses needed for live measurements
+    mock.add_responses(
+        [
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
                 data=[
                     {
                         "channelId": "arrtst[]",
@@ -769,45 +680,255 @@ async def test_client_get_live_measurements_array():
                             }
                         ],
                     },
-                ]
-            )
+                ],
+            ),
+        ]
+    )
 
-        raise Exception(f"unexpected endpoint: {endpoint}")
+    mock.clear_requests()
+
+    # get live measurement, then check if the data is present correctly
+    measurements = await sma.get_live_measurements(
+        [
+            LiveMeasurementQueryItem(
+                component_id="inv0",
+                channel_id="arrtst[]",
+            )
+        ]
+    )
+    assert len(measurements) == 2
+
+    # inv0 - arrtst entry 0
+    assert measurements[0].component_id == "inv0"
+    assert measurements[0].channel_id == "arrtst[0]"
+    assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[0].values[0].value == 10
+
+    # inv0 - arrtst entry 1
+    assert measurements[1].component_id == "inv0"
+    assert measurements[1].channel_id == "arrtst[1]"
+    assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
+    assert measurements[1].values[0].value == 20
+
+    # ensure the right requests were made
+    # live measurements request
+    request = mock.get_request(method="POST", endpoint="measurements/live")
+    assert request is not None
+
+    assert request.data == [
+        {"componentId": "inv0", "channelId": "arrtst[]"},
+    ]
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Cookie": "JSESSIONID=mock-session-id",
+        "Authorization": "Bearer mock-access-token",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    assert request.is_json is True
+    assert request.was_handled
+
+
+@pytest.mark.asyncio
+async def test_client_with_intermitten_api_failures():
+    """Test the clients handles intermitten api failures correctly.
+
+    Note this test only utilizes the login method.
+    Since all methods in the client share the same network handling code, and
+    thus the same retry logic, this test should be sufficient to verify the
+    behavior of the retry logic.
+
+    If this assumption ever changes, this test should be expanded to cover
+    all the different ways the api may be called.
+    """
+    mock = AioHttpMock("http://sma.local/api/v1")
 
     # create the client
     sma = SMAApiClient(
         host="sma.local",
         username="test",
         password="test123",
-        session=mock.MagicMock(),
+        session=mock.session,
         use_ssl=False,
+        request_retries=3,
+        request_timeout=1,  # low timeout to speed up tests
+        logger=LOGGER,
     )
 
-    # patch make_request
-    with mock.patch.object(sma, "_make_request", wraps=make_request_mock):
-        assert (await sma.login()) == LOGIN_RESULT_NEW_TOKEN
+    mock.clear_requests()
+    mock.add_responses(
+        [
+            # fails to login because of timeout,
+            # client should retry
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                delay=2,  # > request_timeout
+            ),
+            # fails to login with 500 internal server error,
+            # client should retry
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=500,
+            ),
+            # successful login
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=200,
+                data={
+                    "access_token": "mock-access-token",
+                    "refresh_token": "mock-refresh-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                cookies={
+                    "JSESSIONID": "mock-session-id",
+                },
+            ),
+        ]
+    )
 
-        # get live measurement
-        measurements = await sma.get_live_measurements(
-            [
-                LiveMeasurementQueryItem(
-                    component_id="inv0",
-                    channel_id="arrtst[]",
-                )
-            ]
-        )
-        assert did_get_measurement is True
+    # login should get a new token
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
 
-        assert len(measurements) == 2
+    assert mock.response_count == 0  # all were consumed
+    assert mock.request_count == 3
 
-        # inv0 - arrtst entry 0
-        assert measurements[0].component_id == "inv0"
-        assert measurements[0].channel_id == "arrtst[0]"
-        assert measurements[0].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[0].values[0].value == 10
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
 
-        # inv0 - arrtst entry 1
-        assert measurements[1].component_id == "inv0"
-        assert measurements[1].channel_id == "arrtst[1]"
-        assert measurements[1].values[0].time == "2024-02-01T11:30:00Z"
-        assert measurements[1].values[0].value == 20
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.data == {
+        "grant_type": "password",
+        "username": "test",
+        "password": "test123",
+    }
+    assert request.headers == {
+        "Origin": "http://sma.local/api/v1",
+        "Host": "sma.local",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Accept": "application/json",
+    }
+    assert request.is_json is False
+    assert request.was_handled
+
+
+@pytest.mark.asyncio
+async def test_client_reauth():
+    """Test the client correctly re-authenticates when the token expires."""
+    mock = AioHttpMock("http://sma.local/api/v1")
+
+    # create the client
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        logger=LOGGER,
+    )
+
+    # initial login
+
+    mock.clear_requests()
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        ),
+    )
+
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
+
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled
+
+    # reject token, should trigger re-authentication
+    mock.clear_requests()
+    mock.clear_responses()
+    mock.add_responses(
+        [
+            # get live measurements fails with 401 unauthorized
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=401,
+            ),
+            # re-authenticate: first logout
+            ResponseEntry(
+                method="DELETE",
+                endpoint="refreshtoken?refreshToken=mock-refresh-token",
+                status_code=200,
+            ),
+            # re-authenticate: then login
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=200,
+                data={
+                    "access_token": "mock-access-token",
+                    "refresh_token": "mock-refresh-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                cookies={
+                    "JSESSIONID": "mock-session-id",
+                },
+            ),
+            # retry live measurements, this time it should succeed
+            ResponseEntry(
+                method="POST",
+                endpoint="measurements/live",
+                status_code=200,
+                data=[
+                    {
+                        "channelId": "chastt",
+                        "componentId": "inv0",
+                        "values": [{"time": "2024-02-01T11:30:00Z", "value": 10}],
+                    },
+                ],
+            ),
+        ]
+    )
+
+    measurements = await sma.get_live_measurements(
+        [
+            LiveMeasurementQueryItem(
+                component_id="inv0",
+                channel_id="chastt",
+            )
+        ]
+    )
+    assert len(measurements) == 1
+
+    # did logout?
+    request = mock.get_request(
+        method="DELETE", endpoint="refreshtoken?refreshToken=mock-refresh-token"
+    )
+    assert request is not None
+    assert request.was_handled
+
+    # did re-login?
+    request = mock.get_request(method="POST", endpoint="token")
+    assert request is not None
+    assert request.was_handled

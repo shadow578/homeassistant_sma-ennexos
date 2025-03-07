@@ -166,7 +166,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
             use_ssl=use_ssl,
             request_timeout=DEFAULT_REQUEST_TIMEOUT,
             request_retries=DEFAULT_REQUEST_RETIRES,
-            logger=LOGGER,
+            logger=LOGGER.getChild("config_sma_api"),
         )
 
         await sma.login()
@@ -276,3 +276,60 @@ class SMAOptionsFlow(OptionsFlow):
                 }
             ),
         )
+
+    async def __fetch_available_channels(
+        self,
+    ) -> list[OptionsFlowAvailableChannels]:
+        """Get a list of all available channels and their ids."""
+        host = self.config_entry.data[CONF_HOST]
+        LOGGER.debug("attempting to fetch available channels for host=%s", host)
+        sma = SMAApiClient(
+            host=host,
+            username=self.config_entry.data[CONF_USERNAME],
+            password=self.config_entry.data[CONF_PASSWORD],
+            session=async_create_clientsession(
+                hass=self.hass,
+                verify_ssl=self.config_entry.data[CONF_VERIFY_SSL],
+            ),
+            use_ssl=self.config_entry.data[CONF_USE_SSL],
+            request_timeout=self.config_entry.options.get(
+                OPT_REQUEST_TIMEOUT, DEFAULT_REQUEST_TIMEOUT
+            ),
+            request_retries=self.config_entry.options.get(
+                OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES
+            ),
+            logger=LOGGER.getChild("options_sma_api"),
+        )
+
+        await sma.login()
+
+        # get components
+        all_components = await sma.get_all_components()
+
+        # fetch live data for all components
+        all_live_data = await sma.get_all_live_measurements(
+            component_ids=[component.component_id for component in all_components]
+        )
+        await sma.logout()
+
+        # return a dict for each live measurement
+        LOGGER.debug("found %s available channels before filtering", len(all_live_data))
+        result = [
+            OptionsFlowAvailableChannels(
+                component_name=next(
+                    (
+                        component.name
+                        for component in all_components
+                        if component.component_id == ld.component_id
+                    ),
+                    None,
+                ),
+                component_id=ld.component_id,
+                channel_id=ld.channel_id,
+            )
+            for ld in all_live_data
+            # ignore all entries that have no value in the latest measurement
+            if ld.latest_value.value is not None
+        ]
+        LOGGER.debug("found %s available channels after filtering", len(result))
+        return result
