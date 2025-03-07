@@ -132,7 +132,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
                     ): BooleanSelector(),
                     # verify ssl?
                     vol.Required(
-                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, True)
+                        CONF_VERIFY_SSL, default=user_input.get(CONF_VERIFY_SSL, False)
                     ): BooleanSelector(),
                 }
             ),
