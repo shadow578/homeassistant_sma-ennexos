@@ -57,7 +57,7 @@ class SMAApiClient:
             base_url=f"{'https' if use_ssl else 'http'}://{host}/api/v1",
             timeout=request_timeout,
             retries=request_retries,
-            logger=logger,
+            logger=logger.getChild("session") if logger else None,
         )
 
         async def reauth_hook(endpoint: str) -> None:

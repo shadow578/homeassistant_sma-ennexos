@@ -169,7 +169,7 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
             use_ssl=use_ssl,
             request_timeout=DEFAULT_REQUEST_TIMEOUT,
             request_retries=DEFAULT_REQUEST_RETIRES,
-            logger=LOGGER,
+            logger=LOGGER.getChild("config_sma_api"),
         )
 
         await sma.login()
@@ -328,7 +328,7 @@ class SMAOptionsFlow(OptionsFlow):
             request_retries=self.config_entry.options.get(
                 OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES
             ),
-            logger=LOGGER,
+            logger=LOGGER.getChild("options_sma_api"),
         )
 
         await sma.login()

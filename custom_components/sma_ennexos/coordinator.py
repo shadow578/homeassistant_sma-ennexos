@@ -75,7 +75,7 @@ class SMADataCoordinator(DataUpdateCoordinator):
             request_retries=int(
                 config_entry.options.get(OPT_REQUEST_RETIRES, DEFAULT_REQUEST_RETIRES)
             ),
-            logger=LOGGER,
+            logger=LOGGER.getChild("sma_api"),
         )
 
         return SMADataCoordinator(
