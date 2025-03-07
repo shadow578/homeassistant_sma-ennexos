@@ -28,9 +28,16 @@ jobs:
           run: python3 -m pip install -r requirements.txt
 
         - name: "Run"
-          run: python3 -m pytest --cov=./ --cov-report=xml --cov-fail-under=80 -v
+          run: python3 -m pytest --cov=./ --cov-report=xml --cov-fail-under=80 --junitxml=junit.xml -o junit_family=legacy -v
 
         - name: Upload coverage reports to Codecov
           uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574 # 5.4.0
           with:
             token: ${{ secrets.CODECOV_TOKEN }}
+
+        - name: Upload test results to Codecov
+          if: ${{ always() }}
+          uses: codecov/test-results-action@v1
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+
