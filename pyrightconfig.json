@@ -9,6 +9,8 @@
     "reportUnusedImport": true,
     "reportUnusedVariable": true,
     "reportGeneralTypeIssues": true,
+    "reportUnusedClass": true,
+    "reportUnusedFunction": true,
     "pythonVersion": "3.12",
     "typeCheckingMode": "basic",
 }
