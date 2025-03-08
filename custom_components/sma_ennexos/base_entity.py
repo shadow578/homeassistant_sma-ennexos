@@ -16,7 +16,7 @@ from .coordinator import SMADataCoordinator
 from .sma.model import ComponentInfo
 
 
-class SMAEntity(CoordinatorEntity):
+class SMAEntity(CoordinatorEntity[SMADataCoordinator]):
     """base SMA entity class."""
 
     def __init__(

@@ -115,6 +115,11 @@ class SMASensor(SMAEntity, SensorEntity):
         )
         self.__set_description()
 
+    @property
+    def available(self) -> bool:  # pyright: ignore[reportIncompatibleVariableOverride] -- FIXME Entity.available and CoordinatorEntity.available are defined incompatible
+        """Return if entity is available."""
+        return SMAEntity.available.__get__(self)
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
