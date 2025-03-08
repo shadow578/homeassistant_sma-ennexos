@@ -405,6 +405,22 @@
                     "waiting_for_dc_start_condition": "Warte auf DC-Startbedingung",
                     "waiting_for_grid_voltage": "Warte auf Netzspannung"
                 }
+            },
+            "measurement_portal_ennexos_connstt": {
+                "name": "Verbindungsstatus zum ennexOS Portal",
+                "state": {
+                    "communication_error": "Kommunikationsfehler",
+                    "ok": "OK",
+                    "warning": "Warnung"
+                }
+            },
+            "measurement_webconn_stt": {
+                "name": "Webverbindungsstatus",
+                "state": {
+                    "communication_error": "Kommunikationsfehler",
+                    "ok": "OK",
+                    "warning": "Warnung"
+                }
             }
         }
     }

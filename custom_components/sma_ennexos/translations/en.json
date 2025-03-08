@@ -405,6 +405,22 @@
                     "waiting_for_dc_start_condition": "Waiting for DC Start Condition",
                     "waiting_for_grid_voltage": "Waiting for Grid Voltage"
                 }
+            },
+            "measurement_portal_ennexos_connstt": {
+                "name": "ennexOS Portal Connection Status",
+                "state": {
+                    "communication_error": "Communication Error",
+                    "ok": "OK",
+                    "warning": "Warning"
+                }
+            },
+            "measurement_webconn_stt": {
+                "name": "Web Connection Status",
+                "state": {
+                    "communication_error": "Communication Error",
+                    "ok": "OK",
+                    "warning": "Warning"
+                }
             }
         }
     }

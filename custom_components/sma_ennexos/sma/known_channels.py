@@ -61,13 +61,18 @@ class SMAChannelCategory(str, Enum):
     DIAGNOSTIC = "DIAGNOSTIC"
 
 
-__COMMON_ENUM_VALUES = {
+__CONNECTION_STATUS_ENUM_VALUES = {
     55: "communication_error",
+    307: "ok",
+    455: "warning",
+}
+
+__COMMON_ENUM_VALUES = {
+    **__CONNECTION_STATUS_ENUM_VALUES,
     303: "off",
     304: "island_operation",
     305: "island_operation",
     306: "island_operation",
-    307: "ok",
     308: "on",
     309: "operating",
     311: "open",
@@ -79,7 +84,6 @@ __COMMON_ENUM_VALUES = {
     318: "overload",
     319: "overtemperature",
     454: "calibration",
-    455: "warning",  #
     456: "waiting_for_dc_start_condition",
     457: "waiting_for_grid_voltage",
 }
@@ -454,6 +458,11 @@ __KNOWN_CHANNELS: dict[
         unit=SMAUnit.CELSIUS,
         category=SMAChannelCategory.DIAGNOSTIC,
     ),
+    "Measurement.Coolsys.Inverter.TmpVal[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+    ),
     "Measurement.Coolsys.Tr.TmpVal": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.CELSIUS,
@@ -578,6 +587,18 @@ __KNOWN_CHANNELS: dict[
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.ENUM,
         enum_values=__COMMON_ENUM_VALUES,  # TODO: Measurement.MltFncSw.SttMstr enum_values may be partially incorrect, only [303] are validated
+    ),
+    "Measurement.Portal.EnnexOS.ConnStt": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.ENUM,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        enum_values=__CONNECTION_STATUS_ENUM_VALUES,  # TODO: Measurement.Portal.EnnexOS.ConnStt enum_values may be partially incorrect, only [307] are validated
+    ),
+    "Measurement.WebConn.Stt": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.ENUM,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        enum_values=__CONNECTION_STATUS_ENUM_VALUES,  # TODO: Measurement.WebConn.Stt enum_values may be partially incorrect, only [307] are validated
     ),
 }
 
