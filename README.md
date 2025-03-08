@@ -1,7 +1,7 @@
 # SMA ennexOS for Homeassistant
 
 [![GitHub Release][releases-shield]][releases]
-[![codecov](https://codecov.io/github/shadow578/homeassistant_xmltv-epg/graph/badge.svg?token=HGS6DNA4LE)](https://codecov.io/github/shadow578/homeassistant_xmltv-epg)
+[![codecov](https://codecov.io/github/shadow578/homeassistant_sma-ennexos/graph/badge.svg?token=HGS6DNA4LE)](https://codecov.io/github/shadow578/homeassistant_sma-ennexos)
 [![License][license-shield]](LICENSE)
 ![Project Maintenance][maintenance-shield]
 
