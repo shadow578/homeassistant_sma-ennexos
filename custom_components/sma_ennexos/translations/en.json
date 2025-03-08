@@ -410,6 +410,7 @@
                 "name": "ennexOS Portal Connection Status",
                 "state": {
                     "communication_error": "Communication Error",
+                    "off": "Disabled",
                     "ok": "OK",
                     "warning": "Warning"
                 }
@@ -418,6 +419,7 @@
                 "name": "Web Connection Status",
                 "state": {
                     "communication_error": "Communication Error",
+                    "off": "Disabled",
                     "ok": "OK",
                     "warning": "Warning"
                 }

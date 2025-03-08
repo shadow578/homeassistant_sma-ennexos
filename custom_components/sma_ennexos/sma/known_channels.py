@@ -63,13 +63,13 @@ class SMAChannelCategory(str, Enum):
 
 __CONNECTION_STATUS_ENUM_VALUES = {
     55: "communication_error",
+    303: "off",
     307: "ok",
     455: "warning",
 }
 
 __COMMON_ENUM_VALUES = {
     **__CONNECTION_STATUS_ENUM_VALUES,
-    303: "off",
     304: "island_operation",
     305: "island_operation",
     306: "island_operation",
