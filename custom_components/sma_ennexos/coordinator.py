@@ -41,11 +41,10 @@ from .sma.model import (
 
 
 # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities
-class SMADataCoordinator(DataUpdateCoordinator):
+class SMADataCoordinator(DataUpdateCoordinator[list[ChannelValues]]):
     """data coordinator for SMA client."""
 
     config_entry: ConfigEntry
-    data: list[ChannelValues]
 
     __client: SMAApiClient
     __all_components: list[ComponentInfo]
