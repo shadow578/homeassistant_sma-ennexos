@@ -51,13 +51,28 @@ class SMACumulativeMode(str, Enum):
     MAXIMUM = "MAXIMUM"
 
 
-__COMMON_ENUM_VALUES = {
+class SMAChannelCategory(str, Enum):
+    """SMA known channel categories."""
+
+    # a operational value, e.g. inverter power
+    OPERATIONAL = "OPERATIONAL"
+
+    # a diagnostic value, e.g. temperature, status or error count
+    DIAGNOSTIC = "DIAGNOSTIC"
+
+
+__CONNECTION_STATUS_ENUM_VALUES = {
     55: "communication_error",
+    307: "ok",
+    455: "warning",
+}
+
+__COMMON_ENUM_VALUES = {
+    **__CONNECTION_STATUS_ENUM_VALUES,
     303: "off",
     304: "island_operation",
     305: "island_operation",
     306: "island_operation",
-    307: "ok",
     308: "on",
     309: "operating",
     311: "open",
@@ -69,7 +84,6 @@ __COMMON_ENUM_VALUES = {
     318: "overload",
     319: "overtemperature",
     454: "calibration",
-    455: "warning",  #
     456: "waiting_for_dc_start_condition",
     457: "waiting_for_grid_voltage",
 }
@@ -87,6 +101,9 @@ class KnownChannelEntry:
 
     # optional cumulative mode
     cumulative_mode: SMACumulativeMode | None = None
+
+    # optional category of the channel
+    category: SMAChannelCategory = SMAChannelCategory.OPERATIONAL
 
     # optional list of enum values, only with unit=SMAUnit.ENUM
     enum_values: dict[int, str] | None = None
@@ -225,6 +242,7 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Operation.CurAvailPlnt": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.PERCENT,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Operation.CurAvailVArOvExt": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
@@ -245,6 +263,7 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Operation.Health": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.ENUM,
+        category=SMAChannelCategory.DIAGNOSTIC,
         enum_values=__COMMON_ENUM_VALUES,  # TODO: Measurement.Operation.Health enum_values may be partially incorrect, only [55, 307, 455] are validated
     ),
     "Measurement.Operation.WMaxInLimNom": KnownChannelEntry(
@@ -356,66 +375,80 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Bat.Diag.ActlCapacNom": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PERCENT,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Diag.CapacThrpCnt": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PLAIN_NUMBER,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Diag.ChaAMax": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.AMPERE,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Diag.CntErrOvV": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PLAIN_NUMBER,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.COUNTER,
     ),
     "Measurement.Bat.Diag.CntWrnOvV": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PLAIN_NUMBER,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.COUNTER,
     ),
     "Measurement.Bat.Diag.CntWrnSOCLo": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PLAIN_NUMBER,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.COUNTER,
     ),
     "Measurement.Bat.Diag.DschAMax": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.AMPERE,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Diag.StatTm": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.SECONDS,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Diag.TmpValMax": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.MAXIMUM,
     ),
     "Measurement.Bat.Diag.TmpValMin": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.MINIMUM,
     ),
     "Measurement.Bat.Diag.TotAhIn": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.AMPERE,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.TOTAL,
     ),
     "Measurement.Bat.Diag.TotAhOut": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.AMPERE,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.TOTAL,
     ),
     "Measurement.Bat.Diag.VolMax": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.VOLT,
+        category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.MAXIMUM,
     ),
     "Measurement.Bat.TmpVal": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Vol": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
@@ -423,10 +456,17 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Coolsys.Inverter.TmpVal": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+    ),
+    "Measurement.Coolsys.Inverter.TmpVal[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Coolsys.Tr.TmpVal": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.ExtGridMs.A.phsA": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
@@ -547,6 +587,18 @@ __KNOWN_CHANNELS: dict[
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.ENUM,
         enum_values=__COMMON_ENUM_VALUES,  # TODO: Measurement.MltFncSw.SttMstr enum_values may be partially incorrect, only [303] are validated
+    ),
+    "Measurement.Portal.EnnexOS.ConnStt": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.ENUM,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        enum_values=__CONNECTION_STATUS_ENUM_VALUES,  # TODO: Measurement.Portal.EnnexOS.ConnStt enum_values may be partially incorrect, only [307] are validated
+    ),
+    "Measurement.WebConn.Stt": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.ENUM,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        enum_values=__CONNECTION_STATUS_ENUM_VALUES,  # TODO: Measurement.WebConn.Stt enum_values may be partially incorrect, only [307] are validated
     ),
 }
 
