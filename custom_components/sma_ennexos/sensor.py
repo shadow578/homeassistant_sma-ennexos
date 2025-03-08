@@ -13,6 +13,7 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
+    EntityCategory,
     UnitOfElectricCurrent,
     UnitOfElectricPotential,
     UnitOfEnergy,
@@ -29,6 +30,7 @@ from .base_entity import SMAEntity
 from .const import DOMAIN, LOGGER
 from .coordinator import SMADataCoordinator
 from .sma.known_channels import (
+    SMAChannelCategory,
     SMACumulativeMode,
     SMADeviceKind,
     SMAUnit,
@@ -172,6 +174,7 @@ class SMASensor(SMAEntity, SensorEntity):
         device_class = None
         unit_of_measurement = None
         state_class = SensorStateClass.MEASUREMENT
+        entity_category = None
         suggested_display_precision = None
         if known_channel is not None:
             icon = self.__device_kind_to_icon(known_channel.device_kind)
@@ -188,6 +191,12 @@ class SMASensor(SMAEntity, SensorEntity):
 
             suggested_display_precision = self.__unit_to_display_precision(
                 known_channel.unit
+            )
+
+            entity_category = (
+                EntityCategory.DIAGNOSTIC
+                if known_channel.category == SMAChannelCategory.DIAGNOSTIC
+                else None
             )
 
             # set enum_values if known channel is UNIT_ENUM
@@ -209,13 +218,14 @@ class SMASensor(SMAEntity, SensorEntity):
 
             LOGGER.debug(
                 "configuring %s@%s using known channel:"
-                "icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, suggested_display_precision=%s",
+                "icon=%s, device_class=%s, unit_of_measurement=%s, state_class=%s, entity_category=%s, suggested_display_precision=%s",
                 self.component_id,
                 self.channel_id,
                 icon,
                 device_class,
                 unit_of_measurement,
                 state_class,
+                entity_category,
                 suggested_display_precision,
             )
         else:
@@ -242,6 +252,7 @@ class SMASensor(SMAEntity, SensorEntity):
             state_class=state_class,
             suggested_display_precision=suggested_display_precision,
             entity_registry_enabled_default=is_known_channel,
+            entity_category=entity_category,
         )
 
         # required for using translation_key
