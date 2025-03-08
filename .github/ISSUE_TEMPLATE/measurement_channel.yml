@@ -1,0 +1,43 @@
+---
+name: "Missing Measurement Channel"
+description: "Request a new measurement channel to be added to the integration"
+labels: "Measurement+Channel"
+body:
+- type: markdown
+  attributes:
+    value: Before you request new measurement channels to be added, search through the existing issues to see if others have had the same idea.
+- type: checkboxes
+  attributes:
+    label: Checklist
+    options:
+      - label: I have filled out the template to the best of my ability.
+        required: true
+      - label: This issue is not a duplicate of [previous requests](https://github.com/shadow578/homeassistant_sma-ennexos/issues?q=is%3Aissue+label%3A%22Feature+Request%22+).
+        required: true
+
+- type: textarea
+  attributes:
+    label: "Provide the details of the measurement channels you would like to see added"
+    description: "For each measurement channel, provide the measurement name as shown in Homeassistant (or the ennexOS web portal) and a short description of what the measurement represents. Include the unit of measurement if possible. For enum values, so values that show a text instead of a numeric value, provide the possible values and string resource id."
+    placeholder: |
+      - 'Measurement.GridMs.Hz' measures the grid frequency in Hz.
+      - 'Measurement.Portal.EnnexOS.ConnStt' shows the connection status of the ennexOS portal. Possible values are 'Communication Error' (55), 'Disabled' (303), 'OK' (307) and 'Warning' (455).
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Device information"
+    description: "Provide information about the devices you're seeing the missing measurement channels on. Include the details shown on the device entry in Homeassistant. Supplement this information with data from the ennexOS web portal if some information is missing. DO NOT include your serial number or other sensitive information."
+    placeholder: |
+      - Device: SMA Sunny Tripower 10.0 (https://www.sma.de/en/products/hybrid-inverters/sunny-tripower-smart-energy)
+      - Firmware version: 1.2.3
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: "Additional context"
+    description: "Add any other context or screenshots about the feature request here."
+  validations:
+    required: true

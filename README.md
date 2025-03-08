@@ -41,13 +41,22 @@ These devices are known to be compatible.
 
 Configuration is done using the UI.
 You'll be prompted to enter the IP and credentials to the SMA ennexOS Device.
-After the initial setup, you'll have to configure the channels you want to use in the integration options.
-To find available channels, refer to the "Instantaneous Values" menu of the ennexOS web interface.
+After the initial setup, all detected devices will be added to Home Assistant.
 
 
 > [!TIP]
 > To Improve reliability, using the installer password is recommended.
 > Using the login to the ennexOS Portal works too, but may be less stable as it requires the ennexOS device to maintain a cloud connection.
+
+
+For most devices, there will be unknown sensors named something like `Measurement.***`, which are disabled by default.
+Those sensors display measurements that are not yet known to the integration, but can be enabled if you know what they are.
+Refer to the "Instantaneous Values" section of the ennexOS web portal to find out what they are.
+
+Additionally, feel free to open an issue or PR with the information so it can be added to the integration.
+That way, the values are displayed more nicely, include a unit.
+Also, everyone can benefit from new measurement channels being added.
+
 
 # Contributions are welcome!
 
