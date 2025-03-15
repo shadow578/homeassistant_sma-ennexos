@@ -66,20 +66,30 @@ async def async_setup_entry(
         len(all_measurements),
         len(all_components),
     )
-    async_add_entities(
-        [
+    entities = []
+    for channel_value in all_measurements:
+        component_info = next(
+            (
+                comp
+                for comp in all_components
+                if comp.component_id == channel_value.component_id
+            ),
+            None,
+        )
+        if component_info is None:
+            LOGGER.warning(
+                "no component info found for channel %s", channel_value.channel_id
+            )
+            continue
+
+        entities.append(
             SMASensor(
                 coordinator=coordinator,
                 channel_id=channel_value.channel_id,
-                component_info=next(
-                    comp
-                    for comp in all_components
-                    if comp.component_id == channel_value.component_id
-                ),
+                component_info=component_info,
             )
-            for channel_value in all_measurements
-        ]
-    )
+        )
+    async_add_entities(entities)
 
 
 class SMASensor(SMAEntity, SensorEntity):
@@ -129,14 +139,19 @@ class SMASensor(SMAEntity, SensorEntity):
 
         # find the ChannelValues of this sensor
         channel_values = next(
-            ch_val
-            for ch_val in data
-            if ch_val.component_id == self.component_id
-            and ch_val.channel_id == self.channel_id
+            (
+                ch_val
+                for ch_val in data
+                if ch_val.component_id == self.component_id
+                and ch_val.channel_id == self.channel_id
+            ),
+            None,
         )
 
         # get latest value
-        value = channel_values.latest_value.value
+        value = (
+            channel_values.latest_value.value if channel_values is not None else None
+        )
 
         # check for fallback value in known_channels for None
         if value is None:
