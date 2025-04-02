@@ -2,7 +2,7 @@
 
 import asyncio
 from collections.abc import Callable
-from typing import Any
+from typing import Any, TypeVar
 from unittest.mock import MagicMock
 
 from aiohttp import ClientError, ClientSession
@@ -25,7 +25,9 @@ class CookieJarMock:
         """Initialize mock cookie jar."""
         self._cookies = cookies
 
-    def get(self, name: str, default) -> CookieMock:
+    TCookieDefault = TypeVar("TCookieDefault")
+
+    def get(self, name: str, default: TCookieDefault) -> CookieMock | TCookieDefault:
         """Get cookie by name."""
         return self._cookies.get(name, default)
 
