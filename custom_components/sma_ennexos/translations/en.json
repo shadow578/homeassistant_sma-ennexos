@@ -54,7 +54,7 @@
                 "name": "Available Inverter Power"
             },
             "measurement_metering_gridms_totwin_bat": {
-                "name": "Battery feed-in power"
+                "name": "Battery charging power"
             },
             "measurement_metering_gridms_totwout_bat": {
                 "name": "Power fed into Battery"
