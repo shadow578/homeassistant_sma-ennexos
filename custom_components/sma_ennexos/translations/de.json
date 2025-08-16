@@ -54,10 +54,10 @@
                 "name": "Verfügbare Wechselrichterleistung"
             },
             "measurement_metering_gridms_totwin_bat": {
-                "name": "Batterie Einspeiseleistung"
+                "name": "Batterie Ladeleistung"
             },
             "measurement_metering_gridms_totwout_bat": {
-                "name": "Batterie Ladeleistung"
+                "name": "Batterie Einspeiseleistung"
             },
             "measurement_metering_gridms_totwhin_bat": {
                 "name": "Gesamte Ladeenergie der Batterie"
