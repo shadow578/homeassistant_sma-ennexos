@@ -2,7 +2,7 @@
     "name": "SMA ennexOS",
     "filename": "sma_ennexos.zip",
     "hide_default_branch": true,
-    "homeassistant": "2025.1.3",
+    "homeassistant": "2025.4.0",
     "render_readme": true,
     "zip_release": true
 }
