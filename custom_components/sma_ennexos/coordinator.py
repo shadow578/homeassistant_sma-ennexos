@@ -175,3 +175,8 @@ class SMADataCoordinator(DataUpdateCoordinator[list[ChannelValues]]):
         )
 
         return query
+
+    @property
+    def client(self) -> SMAApiClient:
+        """Get the SMA API client. Mainly for diagnostics."""
+        return self.__client

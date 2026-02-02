@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import asdict
 
 from homeassistant.components.diagnostics import async_redact_data
@@ -51,8 +52,21 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
         ]
         api_raw_data = {"components": components, "measurements": measurements}
 
+    # get localization data
+    localizations = []
+    try:
+        locs = await coordinator.client.get_localizations()
+        for filename, lang_data in locs:
+            redacted_lang_data = async_redact_data(lang_data, TO_REDACT)
+            localizations.append(
+                {"filename": filename, "lang_data": redacted_lang_data}
+            )
+    except Exception as e:
+        localizations.append({"error": f"Failed to get localizations: {e}"})
+
     return {
         "config_entry": config_entry,
         "entities": entity_states,
         "raw_data": api_raw_data,
+        "localizations": localizations,
     }
