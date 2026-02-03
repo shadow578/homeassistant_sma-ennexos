@@ -159,23 +159,27 @@ class SMASensor(SMAEntity, SensorEntity):
             if known_channel is not None:
                 value = known_channel.value_when_none
 
-        # handle enum value translation to string
+        # handle enum value
         if self.enum_values is not None:
+            # write raw enum value to state attributes
+            self._attr_extra_state_attributes = {"enum_value": value}
+
             # enum values are always ints
             # fallback to raw value if no enum value found or invalid
             if isinstance(value, int):
-                value = self.enum_values.get(value, f"[{value}]")
+                value = self.enum_values.get(value, None)
             else:
                 LOGGER.warning(
                     "enum_values set, but value is not an int: %s (%s)",
                     value,
                     type(value),
                 )
-                value = f"[{value}]"
+                value = None
 
         # apply new value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
         self._attr_native_value = value
+        self._attr_available = value is not None
 
         super()._handle_coordinator_update()
 
