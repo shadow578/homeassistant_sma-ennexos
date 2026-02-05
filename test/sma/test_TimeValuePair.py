@@ -33,6 +33,22 @@ def test_from_dict_valid_no_value():
     assert time_value_pair.value is None
 
 
+def test_from_dict_valid_nan_value():
+    """Test that TimeValuePair.from_dict() parses a valid dict correctly even if the value is NaN. Value should be treated as None."""
+
+    # call from_dict()
+    time_value_pair = TimeValuePair.from_dict(
+        {
+            "time": "2024-02-01T11:25:46Z",
+            "value": "NaN",
+        }
+    )
+
+    # check result
+    assert time_value_pair.time == "2024-02-01T11:25:46Z"
+    assert time_value_pair.value is None
+
+
 def test_from_dict_invalid_dict():
     """Test that TimeValuePair.from_dict() raises an exception if the dict is invalid."""
 

@@ -240,6 +240,69 @@ async def test_sensor_known_channel_enum(
     assert state.attributes["options"] == ["mock-enum-0", "mock-enum-10"]
 
 
+async def test_sensor_known_channel_enum_unknown_value(
+    anyio_backend,
+    hass,
+    mock_sma_client,
+    mock_known_channels,
+):
+    """Test enum sensors set state and attributes correctly, even when the value is not a known enum value."""
+    get_known_channel_fn, known_channels = mock_known_channels
+
+    mock_sma_client.components = [
+        ComponentInfo(
+            component_id="mock_inverter",
+            component_type="Inverter",
+            name="Mock Inverter",
+        )
+    ]
+
+    mock_sma_client.measurements = [
+        ChannelValues(
+            component_id="mock_inverter",
+            channel_id="Mock.Measurement.Operation.Health",
+            values=[
+                TimeValuePair(
+                    time="2024-02-01T11:25:46Z",
+                    value=99,
+                )
+            ],
+        )
+    ]
+
+    known_channels["Mock.Measurement.Operation.Health"] = KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.ENUM,
+        enum_values={
+            0: "mock-enum-0",
+            10: "mock-enum-10",
+        },
+    )
+
+    config_entry = MockConfigEntry(
+        domain=DOMAIN,
+        entry_id="MOCK",
+        data={
+            CONF_HOST: "sma.local",
+            CONF_USERNAME: "user",
+            CONF_PASSWORD: "password",
+            CONF_USE_SSL: False,
+            CONF_VERIFY_SSL: True,
+        },
+    )
+    config_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(config_entry.entry_id)
+    await hass.async_block_till_done()
+
+    # sensour should have attemptet to figure out a known channel
+    assert get_known_channel_fn.called
+
+    # the sensor created should report state 'unknown'
+    state = hass.states.get("sensor.mock_inverter_mock_measurement_operation_health")
+    assert state
+    assert state.state == "unknown"
+
+
 async def test_sensor_none_value_fallback(
     anyio_backend,
     hass,
