@@ -172,7 +172,16 @@ class SMASensor(SMAEntity, SensorEntity):
                     type(value),
                 )
                 value = f"[{value}]"
-
+                
+        # Check for NaN-numbar and "nan" text
+        if value is not None:
+            # compare
+            str_val = str(value).lower()
+            if str_val == "nan":
+                value = None
+            # Fix if nan is float
+            elif isinstance(value, float) and value != value:
+                value = None
         # apply new value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
         self._attr_native_value = value
