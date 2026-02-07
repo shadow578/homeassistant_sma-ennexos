@@ -231,6 +231,8 @@ async def test_sensor_known_channel_enum(
     assert state
     assert state.state == "mock-enum-10"
 
+    assert state.attributes["enum_value"] == 10
+
     # enum sensors have no state class and no unit
     assert state.attributes.get("state_class") is None
     assert state.attributes.get("unit_of_measurement") is None
@@ -294,13 +296,15 @@ async def test_sensor_known_channel_enum_unknown_value(
     await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
 
-    # sensour should have attemptet to figure out a known channel
+    # sensor should have attempted to figure out a known channel
     assert get_known_channel_fn.called
 
     # the sensor created should report state 'unknown'
     state = hass.states.get("sensor.mock_inverter_mock_measurement_operation_health")
     assert state
     assert state.state == "unknown"
+
+    assert state.attributes["enum_value"] == 99
 
 
 async def test_sensor_none_value_fallback(

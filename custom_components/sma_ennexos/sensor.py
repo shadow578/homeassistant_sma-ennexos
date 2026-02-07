@@ -179,7 +179,6 @@ class SMASensor(SMAEntity, SensorEntity):
         # apply new value
         LOGGER.debug("updated %s = %s (%s)", self.entity_id, value, type(value))
         self._attr_native_value = value
-        self._attr_available = value is not None
 
         super()._handle_coordinator_update()
 

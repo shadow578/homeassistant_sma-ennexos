@@ -1,5 +1,6 @@
 """SMA Time/Value Pair."""
 
+import math
 from dataclasses import dataclass
 
 from .errors import SMAApiParsingError
@@ -39,7 +40,7 @@ class TimeValuePair:
         # we treat "NaN" as None
         if isinstance(value, str) and value.lower() == "nan":
             value = None
-        if isinstance(value, float) and value != value:
+        if isinstance(value, float) and math.isnan(value):
             value = None
 
         return cls(time=data["time"], value=value)
