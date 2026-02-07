@@ -54,6 +54,7 @@ class MockSmaClientHandle:
     cnt_get_all_components: int = 0
     cnt_get_all_live_measurements: int = 0
     cnt_get_live_measurements: int = 0
+    cnt_get_localizations: int = 0
 
     def reset_counts(self):
         """Reset all call counts to zero."""
@@ -62,12 +63,16 @@ class MockSmaClientHandle:
         self.cnt_get_all_components = 0
         self.cnt_get_all_live_measurements = 0
         self.cnt_get_live_measurements = 0
+        self.cnt_get_localizations = 0
 
     # return value for get_all_components
     components: list[ComponentInfo] = []
 
     # return value for get_all_live_measurements and get_live_measurements
     measurements: list[ChannelValues] = []
+
+    # return value for get_localizations
+    localizations: list[tuple[str, dict]] = []
 
     # additional hooks
     on_login: Callable | None = None
@@ -77,6 +82,7 @@ class MockSmaClientHandle:
     on_get_live_measurements: (
         Callable[[list[LiveMeasurementQueryItem]], None] | None
     ) = None
+    on_get_localizations: Callable | None = None
 
 
 @pytest.fixture()
@@ -119,6 +125,13 @@ def mock_sma_client():
         hnd.cnt_get_live_measurements += 1
         return hnd.measurements
 
+    async def get_localizations():
+        nonlocal hnd
+        if hnd.on_get_localizations:
+            hnd.on_get_localizations()
+        hnd.cnt_get_localizations += 1
+        return hnd.localizations
+
     with (
         mock.patch(
             "custom_components.sma_ennexos.sma.client.SMAApiClient.login", wraps=login
@@ -137,6 +150,10 @@ def mock_sma_client():
         mock.patch(
             "custom_components.sma_ennexos.sma.client.SMAApiClient.get_live_measurements",
             wraps=get_live_measurements,
+        ),
+        mock.patch(
+            "custom_components.sma_ennexos.sma.client.SMAApiClient.get_localizations",
+            wraps=get_localizations,
         ),
     ):
         yield hnd

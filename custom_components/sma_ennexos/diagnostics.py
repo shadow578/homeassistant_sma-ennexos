@@ -49,7 +49,23 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, entry: ConfigE
             async_redact_data(asdict(measurement), TO_REDACT)
             for measurement in coordinator.all_measurements
         ]
-        api_raw_data = {"components": components, "measurements": measurements}
+
+        localizations = []
+        try:
+            locs = await coordinator.client.get_localizations()
+            for filename, lang_data in locs:
+                redacted_lang_data = async_redact_data(lang_data, TO_REDACT)
+                localizations.append(
+                    {"filename": filename, "lang_data": redacted_lang_data}
+                )
+        except Exception as e:
+            localizations.append({"error": f"Failed to get localizations: {e}"})
+
+        api_raw_data = {
+            "components": components,
+            "measurements": measurements,
+            "localizations": localizations,
+        }
 
     return {
         "config_entry": config_entry,

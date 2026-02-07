@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import contextlib
+import json
+import re
 from datetime import timedelta
 from enum import Enum
 from itertools import chain
@@ -33,8 +35,11 @@ class LoginResult(str, Enum):
 class SMAApiClient:
     """API Client for SMA ennexOS devices."""
 
+    __raw_session: aiohttp.ClientSession
     __session: SMAClientSession
     __logger: Logger | None
+
+    __host_base_url: str
 
     __username: str | None
     __password: str | None
@@ -51,10 +56,13 @@ class SMAApiClient:
         logger: Logger | None = None,
     ) -> None:
         """SMA ennexOS API Client."""
+        self.__raw_session = session
+        self.__host_base_url = f"{'https' if use_ssl else 'http'}://{host}"
+
         self.__session = SMAClientSession(
             session=session,
             host=host,
-            base_url=f"{'https' if use_ssl else 'http'}://{host}/api/v1",
+            base_url=f"{self.__host_base_url}/api/v1",
             timeout=request_timeout,
             retries=request_retries,
             logger=logger.getChild("session") if logger else None,
@@ -349,3 +357,65 @@ class SMAApiClient:
 
         # flatten list of lists
         return list(chain.from_iterable(cvs))
+
+    async def get_localizations(self) -> list[tuple[str, dict]]:
+        """Retrieve all available localizations from the device.
+
+        Returns a list of localizations dictionaries.
+        Each dictionary maps a message id to its localized string.
+        A way to identify the language of each mapping is not provided.
+        """
+        # get landing page HTML
+        async with self.__raw_session.get(self.__host_base_url) as response:
+            response.raise_for_status()
+            html = await response.text()
+
+        # extract runtime.js script url
+        pattern = r'<script src="(runtime\.[\w]+\.js)"(?: type="module")?></script>'
+        match = re.search(pattern, html)
+        if not match:
+            raise SMAApiClientError("runtime.js module not found")
+
+        runtime_js_url = f"{self.__host_base_url}/webui/{match.group(1)}"
+
+        # get runtime.js
+        async with self.__raw_session.get(runtime_js_url) as response:
+            response.raise_for_status()
+            runtime_js = await response.text()
+
+        # extract mapping table for js files
+        pattern = r'"\."\+{((?:[a-z0-9]+:\"[a-z0-9]+\",?)+)}\[[a-z]\]\+".js"'
+        match = re.search(pattern, runtime_js)
+        if not match:
+            raise SMAApiClientError("JS file mapping table not found")
+
+        mapping_table = match.group(1)
+
+        # convert from js literal object to json
+        pattern = r"([a-z0-9]+):\"([a-z0-9]+)\",?"
+        replace_pattern = r'"\1":"\2",'
+        mapping_table = json.loads(
+            "{" + re.sub(pattern, replace_pattern, mapping_table).rstrip(",") + "}"
+        )
+
+        # load all js files and check them for localization data
+        localizations = []
+        for chunk_id, chunk_hash in mapping_table.items():
+            with contextlib.suppress(Exception):
+                async with self.__raw_session.get(
+                    f"{self.__host_base_url}/webui/{chunk_id}.{chunk_hash}.js"
+                ) as response:
+                    response.raise_for_status()
+                    js_content = await response.text()
+
+                pattern = r"\.exports=JSON\.parse\('(\{\"META\":.+)'\)"
+                match = re.search(pattern, js_content)
+                if not match:
+                    continue
+
+                lang_data = match.group(1).encode().decode("unicode_escape")
+                lang_data = json.loads(lang_data)
+
+                localizations.append((f"{chunk_id}.{chunk_hash}.js", lang_data))
+
+        return localizations
