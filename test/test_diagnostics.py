@@ -75,6 +75,11 @@ async def test_diagnostics(
         ),
     ]
 
+    mock_sma_client.localizations = [
+        ("en.json", {"greeting": "Hello"}),
+        ("de.json", {"greeting": "Hallo"}),
+    ]
+
     known_channels["channel1"] = known_channels["channel2"] = KnownChannelEntry(
         device_kind=SMADeviceKind.PV,
         unit=SMAUnit.WATT,
@@ -155,4 +160,9 @@ async def test_diagnostics(
             "component_id": "component2",
             "values": [{"time": "2024-02-01T11:25:46Z", "value": 400.0}],
         },
+    ]
+
+    assert raw_data["localizations"] == [
+        {"filename": "en.json", "lang_data": {"greeting": "Hello"}},
+        {"filename": "de.json", "lang_data": {"greeting": "Hallo"}},
     ]
