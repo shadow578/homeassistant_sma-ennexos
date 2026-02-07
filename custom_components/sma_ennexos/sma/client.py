@@ -366,10 +366,9 @@ class SMAApiClient:
         A way to identify the language of each mapping is not provided.
         """
         # get landing page HTML
-        response = await self.__raw_session.get(self.__host_base_url)
-        response.raise_for_status()
-
-        html = await response.text()
+        async with self.__raw_session.get(self.__host_base_url) as response:
+            response.raise_for_status()
+            html = await response.text()
 
         # extract runtime.js script url
         pattern = r'<script src="(runtime\.[\w]+\.js)"(?: type="module")?></script>'
@@ -380,10 +379,9 @@ class SMAApiClient:
         runtime_js_url = f"{self.__host_base_url}/webui/{match.group(1)}"
 
         # get runtime.js
-        response = await self.__raw_session.get(runtime_js_url)
-        response.raise_for_status()
-
-        runtime_js = await response.text()
+        async with self.__raw_session.get(runtime_js_url) as response:
+            response.raise_for_status()
+            runtime_js = await response.text()
 
         # extract mapping table for js files
         pattern = r'"\."\+{((?:[a-z0-9]+:\"[a-z0-9]+\",?)+)}\[[a-z]\]\+".js"'
@@ -402,13 +400,13 @@ class SMAApiClient:
 
         # load all js files and check them for localization data
         localizations = []
-        for id, hash in mapping_table.items():
+        for chunk_id, chunk_hash in mapping_table.items():
             with contextlib.suppress(Exception):
-                response = await self.__raw_session.get(
-                    f"{self.__host_base_url}/webui/{id}.{hash}.js"
-                )
-                response.raise_for_status()
-                js_content = await response.text()
+                async with self.__raw_session.get(
+                    f"{self.__host_base_url}/webui/{chunk_id}.{chunk_hash}.js"
+                ) as response:
+                    response.raise_for_status()
+                    js_content = await response.text()
 
                 pattern = r"\.exports=JSON\.parse\('(\{\"META\":.+)'\)"
                 match = re.search(pattern, js_content)
@@ -418,6 +416,6 @@ class SMAApiClient:
                 lang_data = match.group(1).encode().decode("unicode_escape")
                 lang_data = json.loads(lang_data)
 
-                localizations.append((f"{id}.{hash}.js", lang_data))
+                localizations.append((f"{chunk_id}.{chunk_hash}.js", lang_data))
 
         return localizations
