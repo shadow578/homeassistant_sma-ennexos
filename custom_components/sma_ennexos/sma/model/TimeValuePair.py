@@ -1,5 +1,6 @@
 """SMA Time/Value Pair."""
 
+import math
 from dataclasses import dataclass
 
 from .errors import SMAApiParsingError
@@ -27,12 +28,19 @@ class TimeValuePair:
             raise SMAApiParsingError("field 'time' in time value pair is not a string")
 
         # value is optional
+        value = None
         if "value" in data:
-            if not isinstance(data["value"], SMAValue):
+            if isinstance(data["value"], SMAValue):
+                value = data["value"]
+            else:
                 raise SMAApiParsingError(
                     "field 'value' in time value pair is not a SMAValue"
                 )
-        else:
-            data["value"] = None
+        # newer firmware started returning "NaN" as value instead of null
+        # we treat "NaN" as None
+        if isinstance(value, str) and value.lower() == "nan":
+            value = None
+        if isinstance(value, float) and math.isnan(value):
+            value = None
 
-        return cls(time=data["time"], value=data["value"])
+        return cls(time=data["time"], value=value)
