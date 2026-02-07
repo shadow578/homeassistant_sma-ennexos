@@ -39,5 +39,7 @@ class TimeValuePair:
         # we treat "NaN" as None
         if isinstance(value, str) and value.lower() == "nan":
             value = None
+        if isinstance(value, float) and value != value:
+            value = None
 
         return cls(time=data["time"], value=value)
