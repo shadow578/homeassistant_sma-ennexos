@@ -823,6 +823,43 @@ async def test_client_with_intermitten_api_failures():
 
 
 @pytest.mark.asyncio
+async def test_client_allows_zero_retries():
+    """Test that zero retries still performs the initial request once."""
+    mock = AioHttpMock("http://sma.local/api/v1")
+
+    sma = SMAApiClient(
+        host="sma.local",
+        username="test",
+        password="test123",
+        session=mock.session,
+        use_ssl=False,
+        request_retries=0,
+        request_timeout=1,
+        logger=LOGGER,
+    )
+
+    mock.add_response(
+        ResponseEntry(
+            method="POST",
+            endpoint="token",
+            status_code=200,
+            data={
+                "access_token": "mock-access-token",
+                "refresh_token": "mock-refresh-token",
+                "token_type": "Bearer",
+                "expires_in": 3600,
+            },
+            cookies={
+                "JSESSIONID": "mock-session-id",
+            },
+        )
+    )
+
+    assert (await sma.login()) == LoginResult.NEW_TOKEN
+    assert mock.request_count == 1
+
+
+@pytest.mark.asyncio
 async def test_client_reauth():
     """Test the client correctly re-authenticates when the token expires."""
     mock = AioHttpMock("http://sma.local/api/v1")
