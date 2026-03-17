@@ -479,7 +479,7 @@ async def test_device_entries(
     assert device.model == "Model Name"
     assert device.serial_number == "123456"
     assert device.sw_version == "1.2.3"
-    assert device.configuration_url == "https://127.0.0.2/"
+    assert device.configuration_url == "http://127.0.0.2/"
 
 
 async def test_sensor_disabled_entities_are_not_fetched(
