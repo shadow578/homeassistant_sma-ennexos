@@ -1,6 +1,6 @@
 """SMA Auth token."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from .errors import SMAApiParsingError
@@ -15,7 +15,7 @@ class AuthToken:
     token_type: str
     expires_in: int
 
-    granted_at: datetime = datetime.now()
+    granted_at: datetime = field(default_factory=datetime.now)
 
     @property
     def time_until_expiration(self) -> timedelta:
