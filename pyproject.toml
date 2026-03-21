@@ -15,7 +15,7 @@ dependencies = [
 where = ["custom_components"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["test"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 
