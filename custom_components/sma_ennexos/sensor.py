@@ -336,7 +336,7 @@ class SMASensor(SMAEntity, SensorEntity):
 
     def __cumulative_mode_to_state_class(
         self, cumulative_mode: SMACumulativeMode | None
-    ) -> str:
+    ) -> SensorStateClass:
         """SMACumulativeMode to SensorStateClass."""
         # counters only ever increase
         if cumulative_mode == SMACumulativeMode.COUNTER:
