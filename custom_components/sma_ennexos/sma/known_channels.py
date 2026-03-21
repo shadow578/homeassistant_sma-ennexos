@@ -604,11 +604,11 @@ __KNOWN_CHANNELS: dict[
 
 
 def get_known_channel(channel_id: str) -> KnownChannelEntry | None:
-    """Get known channel by channel_id.
+    """
+    Get known channel by channel_id.
 
     this function handles array channels with arbitrary index automatically.
     """
-
     # replace array index brackets with empty brackets
     if channel_id.endswith("]"):
         bracket_start = channel_id.rfind("[")

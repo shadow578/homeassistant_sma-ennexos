@@ -26,7 +26,8 @@ class SMAEntity(CoordinatorEntity[SMADataCoordinator]):
         channel_id: str,
         component_info: ComponentInfo,
     ) -> None:
-        """Initialize common entity attributes.
+        """
+        Initialize common entity attributes.
 
         base entity handles device and entity id generation and device info.
         """

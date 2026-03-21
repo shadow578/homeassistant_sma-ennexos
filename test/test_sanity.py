@@ -19,7 +19,6 @@ from custom_components.sma_ennexos.sma.model import (
 @pytest.mark.asyncio
 async def test_sma_client_mock_fixture_counters_and_data(mock_sma_client):
     """Quick sanity-check the mock_sma_client fixture works as expected."""
-
     sma = SMAApiClient(
         host="sma.local",
         username="user",
@@ -96,7 +95,6 @@ async def test_sma_client_mock_fixture_counters_and_data(mock_sma_client):
 @pytest.mark.asyncio
 async def test_sma_client_mock_fixture_hooks(mock_sma_client):
     """Quick sanity-check the mock_sma_client fixture works as expected."""
-
     sma = SMAApiClient(
         host="sma.local",
         username="user",

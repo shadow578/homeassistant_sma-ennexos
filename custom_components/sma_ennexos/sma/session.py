@@ -110,7 +110,6 @@ class SMAClientSession:
         auth: Literal["none", "session", "full"] = "none",
     ) -> aiohttp.ClientResponse:
         """Make a request to a api endpoint."""
-
         # can only have either data or json
         if data is not None and json is not None:
             raise ValueError("data and json can not be used together")

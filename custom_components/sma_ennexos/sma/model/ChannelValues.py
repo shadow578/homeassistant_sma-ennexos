@@ -25,7 +25,8 @@ class ChannelValues:
 
     @classmethod
     def __parse_dict(cls, data: dict) -> tuple[str, str, list[dict]]:
-        """Parse channel info and values from dict.
+        """
+        Parse channel info and values from dict.
 
         :returns: tuple of (channel_id, component_id, values)
         """
@@ -61,7 +62,6 @@ class ChannelValues:
     @classmethod
     def from_dict(cls, data: dict) -> list["ChannelValues"]:
         """Create from dict, verify required fields and their types."""
-
         # parse channel info and values from dict
         channelId, componentId, values = cls.__parse_dict(data)
 

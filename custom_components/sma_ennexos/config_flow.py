@@ -188,7 +188,6 @@ class SMAConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def __extract_host(self, url_or_host: str) -> str:
         """Extract the host from a input string which is either a url or just a host."""
-
         # if the input doesn't contain a scheme, add one
         if not url_or_host.startswith(("http://", "https://")):
             url_or_host = "http://" + url_or_host

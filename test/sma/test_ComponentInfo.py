@@ -7,7 +7,6 @@ from custom_components.sma_ennexos.sma.model import ComponentInfo, SMAApiParsing
 
 def test_from_dict_valid_dict():
     """Test that ComponentInfo.from_dict() parses a valid dict correctly."""
-
     # prepare dict
     component_info_dict = {
         "componentId": "The:Component-Id",
@@ -30,14 +29,12 @@ def test_from_dict_valid_dict():
 
 def test_from_dict_invalid_dict():
     """Test that ComponentInfo.from_dict() raises an exception if the dict is invalid."""
-
     with pytest.raises(SMAApiParsingError):
         ComponentInfo.from_dict({})
 
 
 def test_add_extra_from_widget():
     """Test that ComponentInfo.add_extra() adds the extra info from widget response correctly."""
-
     # prepare component info object
     component_info = ComponentInfo.from_dict(
         {
@@ -69,7 +66,6 @@ def test_add_extra_from_widget():
 
 def test_add_extra_from_info():
     """Test that ComponentInfo.add_extra() adds the extra info from device info response correctly."""
-
     # prepare component info object
     component_info = ComponentInfo.from_dict(
         {

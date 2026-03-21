@@ -25,15 +25,6 @@ def hass(hass, enable_custom_integrations):
 
 
 @pytest.fixture()
-def anyio_backend():
-    """Define the 'anyio_backend' fixture for asyncio.
-
-    see https://anyio.readthedocs.io/en/stable/testing.html
-    """
-    return "asyncio"
-
-
-@pytest.fixture()
 def bypass_integration_setup():
     """Fixture to replace 'async_setup_entry' with a mock."""
     with (
@@ -88,7 +79,6 @@ class MockSmaClientHandle:
 @pytest.fixture()
 def mock_sma_client():
     """Fixture to mock SMA ennexOS api client function calls."""
-
     hnd = MockSmaClientHandle()
 
     async def login():
@@ -162,7 +152,6 @@ def mock_sma_client():
 @pytest.fixture()
 def mock_known_channels():
     """Fixture to mock known_channels in sensor platform."""
-
     known_channels: dict[str, KnownChannelEntry] = {}
 
     def get_known_channel(channel_id: str) -> KnownChannelEntry | None:

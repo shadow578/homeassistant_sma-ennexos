@@ -7,7 +7,6 @@ from custom_components.sma_ennexos.sma.model import ChannelValues, SMAApiParsing
 
 def test_from_dict_valid_dict():
     """Test that ChannelValues.from_dict() parses a valid dict correctly."""
-
     # prepare dict
     channel_values_dict = {
         "channelId": "TheChannelId",
@@ -39,7 +38,6 @@ def test_from_dict_valid_dict():
 
 def test_from_dict_valid_dict_no_values():
     """Test that ChannelValues.from_dict() parses a valid dict correctly even if there are no values."""
-
     # prepare dict
     channel_values_dict = {
         "channelId": "TheChannelId",
@@ -90,6 +88,5 @@ def test_from_dict_valid_dict_array_channel():
 
 def test_from_dict_invalid_dict():
     """Test that ChannelValues.from_dict() raises an exception if the dict is invalid."""
-
     with pytest.raises(SMAApiParsingError):
         ChannelValues.from_dict({})

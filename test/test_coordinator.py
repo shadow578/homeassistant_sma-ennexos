@@ -10,13 +10,11 @@ from custom_components.sma_ennexos.sma.client import SMAApiClient
 
 
 async def test_coordinator_basic(
-    anyio_backend,
     hass,
     bypass_integration_setup,
     mock_sma_client,
 ):
     """Test the basic functionality of the coordinator."""
-
     entry = MockConfigEntry(
         domain=DOMAIN,
         entry_id="test",
