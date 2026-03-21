@@ -14,6 +14,10 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["custom_components"]
 
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [tool.pytest.ini_options]
 testpaths = ["test"]
 asyncio_mode = "auto"
@@ -49,9 +53,7 @@ ignore = [
 [tool.ruff.lint.per-file-ignores]
 "test/*" = [
   "S101",    # Allow assert statements
-  "PT018",  # Allow complex assert statements
-  "ANN001", # Allow untyped function parameters (e.g. fixtures)
-  "PLR2004", # Allow magic values
+  "ANN001",  # Allow untyped function parameters (e.g. fixtures)
   "S105", "S106", # allow hardcoded passwords (dummy used in tests!)
 ]
 
