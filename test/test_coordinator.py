@@ -15,7 +15,6 @@ async def test_coordinator_basic(
     mock_sma_client,
 ):
     """Test the basic functionality of the coordinator."""
-
     entry = MockConfigEntry(
         domain=DOMAIN,
         entry_id="test",

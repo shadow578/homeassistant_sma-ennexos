@@ -9,7 +9,6 @@ from custom_components.sma_ennexos.sma.model import AuthToken, SMAApiParsingErro
 
 def test_from_dict_valid_dict():
     """Test that AuthToken.from_dict() parses a valid dict correctly."""
-
     # prepare dict
     token_dict = {
         "access_token": "abc",
@@ -39,14 +38,12 @@ def test_from_dict_valid_dict():
 
 def test_from_dict_invalid_dict():
     """Test that AuthToken.from_dict() raises an exception if the dict is invalid."""
-
     with pytest.raises(SMAApiParsingError):
         AuthToken.from_dict({})
 
 
 def test_new_instances_get_fresh_granted_at():
     """Test that each token instance gets its own grant timestamp."""
-
     first = AuthToken(
         access_token="abc",
         refresh_token="def",

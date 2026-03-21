@@ -28,8 +28,8 @@ class LoginResult(str, Enum):
     """Result of a login attempt."""
 
     ALREADY_LOGGED_IN = "already_logged_in"
-    TOKEN_REFRESHED = "token_refreshed"
-    NEW_TOKEN = "new_token"
+    TOKEN_REFRESHED = "token_refreshed"  # noqa: S105
+    NEW_TOKEN = "new_token"  # noqa: S105
 
 
 class SMAApiClient:
@@ -90,11 +90,11 @@ class SMAApiClient:
         return self.__session.host
 
     async def login(self) -> LoginResult:
-        """Login to the api.
+        """
+        Login to the api.
 
         :returns: login result, one of LOGIN_RESULT_* constants
         """
-
         # if already logged in and token is still valid for at least 5 minutes, do nothing
         token = self.__session.token
         if token is not None and token.time_until_expiration > timedelta(minutes=5):
@@ -359,7 +359,8 @@ class SMAApiClient:
         return list(chain.from_iterable(cvs))
 
     async def get_localizations(self) -> list[tuple[str, dict]]:
-        """Retrieve all available localizations from the device.
+        """
+        Retrieve all available localizations from the device.
 
         Returns a list of localizations dictionaries.
         Each dictionary maps a message id to its localized string.

@@ -27,7 +27,6 @@ async def test_config_flow_user_step_ok(
     hass, bypass_integration_setup, mock_sma_client
 ):
     """Test that the 'user' config step correctly creates an configuration entry."""
-
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={"source": config_entries.SOURCE_USER},
@@ -88,7 +87,6 @@ async def test_config_flow_user_step_handles_invalid_auth(
     hass, bypass_integration_setup, mock_sma_client
 ):
     """Test that the 'user' config step correctly handles auth errors when verifying the connection."""
-
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={"source": config_entries.SOURCE_USER},
@@ -132,7 +130,6 @@ async def test_config_flow_user_step_handles_no_plant(
     hass, bypass_integration_setup, mock_sma_client
 ):
     """Test that the 'user' config step correctly handles no plant returned by the API."""
-
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={"source": config_entries.SOURCE_USER},
@@ -167,7 +164,6 @@ async def test_config_flow_user_step_handles_no_plant(
 
 async def test_options_flow_init_step_ok(hass, bypass_integration_setup):
     """Test that the 'init' options step correctly creates an options entry."""
-
     # create a config entry to bypass the config flow
     entry = MockConfigEntry(
         domain=DOMAIN,

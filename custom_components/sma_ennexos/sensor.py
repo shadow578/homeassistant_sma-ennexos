@@ -291,7 +291,8 @@ class SMASensor(SMAEntity, SensorEntity):
     def __channel_to_device_class_and_unit(
         self, channel_id: str, channel_unit: SMAUnit
     ) -> tuple[SensorDeviceClass | None, str | None]:
-        """SMAUnit to device_class and unit_of_measurement.
+        """
+        SMAUnit to device_class and unit_of_measurement.
 
         :return: (device_class, unit_of_measurement):
             device_class is None for where no device_class is available
@@ -337,7 +338,6 @@ class SMASensor(SMAEntity, SensorEntity):
         self, cumulative_mode: SMACumulativeMode | None
     ) -> str:
         """SMACumulativeMode to SensorStateClass."""
-
         # counters only ever increase
         if cumulative_mode == SMACumulativeMode.COUNTER:
             return SensorStateClass.TOTAL_INCREASING
@@ -356,7 +356,6 @@ class SMASensor(SMAEntity, SensorEntity):
 
     def __unit_to_display_precision(self, unit: SMAUnit) -> int | None:
         """SMAUnit to display precision."""
-
         if (
             unit == SMAUnit.VOLT
             or unit == SMAUnit.AMPERE

@@ -622,7 +622,8 @@ async def test_client_get_live_measurements():
 
 @pytest.mark.asyncio
 async def test_client_get_live_measurements_array():
-    """Test SMAApiClient.get_live_measurements with array channels.
+    """
+    Test SMAApiClient.get_live_measurements with array channels.
 
     array channels are channels that contain multiple values in a single measurement.
     they are used by, among others, the "Measurement.DcMs.Vol[]" channels (see https://github.com/shadow578/homeassistant_sma_data_manager/issues/20).
@@ -733,7 +734,8 @@ async def test_client_get_live_measurements_array():
 
 @pytest.mark.asyncio
 async def test_client_with_intermitten_api_failures():
-    """Test the clients handles intermitten api failures correctly.
+    """
+    Test the clients handles intermitten api failures correctly.
 
     Note this test only utilizes the login method.
     Since all methods in the client share the same network handling code, and

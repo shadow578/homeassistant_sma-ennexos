@@ -79,7 +79,6 @@ class MockSmaClientHandle:
 @pytest.fixture()
 def mock_sma_client():
     """Fixture to mock SMA ennexOS api client function calls."""
-
     hnd = MockSmaClientHandle()
 
     async def login():
@@ -153,7 +152,6 @@ def mock_sma_client():
 @pytest.fixture()
 def mock_known_channels():
     """Fixture to mock known_channels in sensor platform."""
-
     known_channels: dict[str, KnownChannelEntry] = {}
 
     def get_known_channel(channel_id: str) -> KnownChannelEntry | None:

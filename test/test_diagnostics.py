@@ -24,7 +24,7 @@ from custom_components.sma_ennexos.sma.model import (
 
 
 async def test_diagnostics(
-    ass,
+    hass,
     mock_sma_client,
     mock_known_channels,
 ):

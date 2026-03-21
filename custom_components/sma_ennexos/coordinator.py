@@ -112,7 +112,6 @@ class SMADataCoordinator(DataUpdateCoordinator[list[ChannelValues]]):
 
     async def _async_update_data(self) -> list[ChannelValues]:
         """Update data."""
-
         try:
             LOGGER.debug("updating data for %s", self.__client.host)
 
@@ -146,7 +145,6 @@ class SMADataCoordinator(DataUpdateCoordinator[list[ChannelValues]]):
     @property
     def __query(self) -> list[LiveMeasurementQueryItem]:
         """Generate measurements query for currently active listeners."""
-
         # all coordinator sensors set their coordinator context to a
         # tuple (component_id, channel_id) so we can dynamically build
         # the query based on the active listeners only.

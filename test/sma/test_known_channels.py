@@ -8,11 +8,11 @@ from custom_components.sma_ennexos.sma.known_channels import (
 
 
 def test_known_channel_normal():
-    """Test if a 'normal' (non-array) known channel is returned correctly.
+    """
+    Test if a 'normal' (non-array) known channel is returned correctly.
 
     for 'normal' channels, this is a simple lookup in the known_channels dict
     """
-
     ch = get_known_channel("Measurement.GridMs.TotW")
 
     assert ch is not None
@@ -21,12 +21,12 @@ def test_known_channel_normal():
 
 
 def test_known_channel_array():
-    """Test if a array known channel is returned correctly.
+    """
+    Test if a array known channel is returned correctly.
 
     for array channels, the index brackets are removed and replaced by empty brackets.
     then, the resulting string is used as key in the known_channels dict
     """
-
     # single-digit index
     ch0 = get_known_channel("Measurement.DcMs.Vol[0]")
 
