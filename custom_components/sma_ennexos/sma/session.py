@@ -47,7 +47,7 @@ class SMAClientSession:
         self.__host = host
         self.__base_url = base_url
         self.__timeout = timeout
-        self.__retries = retries or 1
+        self.__retries = retries if retries is not None else 0
         self.__logger = logger
 
     @property
