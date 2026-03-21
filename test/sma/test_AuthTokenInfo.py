@@ -1,5 +1,7 @@
 """unit tests for model.AuthToken."""
 
+import time
+
 import pytest
 
 from custom_components.sma_ennexos.sma.model import AuthToken, SMAApiParsingError
@@ -40,3 +42,23 @@ def test_from_dict_invalid_dict():
 
     with pytest.raises(SMAApiParsingError):
         AuthToken.from_dict({})
+
+
+def test_new_instances_get_fresh_granted_at():
+    """Test that each token instance gets its own grant timestamp."""
+
+    first = AuthToken(
+        access_token="abc",
+        refresh_token="def",
+        token_type="Bearer",
+        expires_in=3600,
+    )
+    time.sleep(0.01)
+    second = AuthToken(
+        access_token="ghi",
+        refresh_token="jkl",
+        token_type="Bearer",
+        expires_in=3600,
+    )
+
+    assert second.granted_at > first.granted_at
