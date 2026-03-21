@@ -17,7 +17,7 @@ from custom_components.sma_ennexos.const import (
 from custom_components.sma_ennexos.coordinator import SMADataCoordinator
 
 
-async def test_setup_unload_and_reload_entry(anyio_backend, hass, mock_sma_client):
+async def test_setup_unload_and_reload_entry(hass, mock_sma_client):
     """Test entry setup, unload and reload."""
     # create a mock config entry to bypass the config flow
     config_entry = MockConfigEntry(

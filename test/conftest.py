@@ -25,15 +25,6 @@ def hass(hass, enable_custom_integrations):
 
 
 @pytest.fixture()
-def anyio_backend():
-    """Define the 'anyio_backend' fixture for asyncio.
-
-    see https://anyio.readthedocs.io/en/stable/testing.html
-    """
-    return "asyncio"
-
-
-@pytest.fixture()
 def bypass_integration_setup():
     """Fixture to replace 'async_setup_entry' with a mock."""
     with (

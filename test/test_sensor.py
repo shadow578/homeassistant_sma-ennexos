@@ -28,7 +28,6 @@ from custom_components.sma_ennexos.sma.model import (
 
 
 async def test_sensor_basic(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -103,7 +102,6 @@ async def test_sensor_basic(
 
 
 async def test_sensor_known_channel_attributes(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -170,7 +168,6 @@ async def test_sensor_known_channel_attributes(
 
 
 async def test_sensor_known_channel_enum(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -243,7 +240,6 @@ async def test_sensor_known_channel_enum(
 
 
 async def test_sensor_known_channel_enum_unknown_value(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -308,7 +304,6 @@ async def test_sensor_known_channel_enum_unknown_value(
 
 
 async def test_sensor_none_value_fallback(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -375,7 +370,6 @@ async def test_sensor_none_value_fallback(
 
 
 async def test_device_entries(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -483,7 +477,6 @@ async def test_device_entries(
 
 
 async def test_sensor_disabled_entities_are_not_fetched(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -608,7 +601,6 @@ async def test_sensor_disabled_entities_are_not_fetched(
 
 
 async def test_sensor_known_channel_enabled_by_default(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,
@@ -671,7 +663,6 @@ async def test_sensor_known_channel_enabled_by_default(
 
 
 async def test_sensor_unknown_channels_disabled_by_default(
-    anyio_backend,
     hass,
     mock_sma_client,
     mock_known_channels,

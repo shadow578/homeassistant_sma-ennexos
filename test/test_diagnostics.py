@@ -24,8 +24,7 @@ from custom_components.sma_ennexos.sma.model import (
 
 
 async def test_diagnostics(
-    anyio_backend,
-    hass,
+    ass,
     mock_sma_client,
     mock_known_channels,
 ):

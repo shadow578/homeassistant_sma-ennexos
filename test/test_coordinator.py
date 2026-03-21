@@ -10,7 +10,6 @@ from custom_components.sma_ennexos.sma.client import SMAApiClient
 
 
 async def test_coordinator_basic(
-    anyio_backend,
     hass,
     bypass_integration_setup,
     mock_sma_client,
