@@ -21,11 +21,11 @@ jobs:
         - name: "Set up Python"
           uses: actions/setup-python@v6.2.0
           with:
-            python-version: "3.13"
+            python-version: "3.14"
             cache: "pip"
 
         - name: "Install requirements"
-          run: python3 -m pip install -r requirements.txt
+          run: python3 -m pip install .
 
         - name: "Run Format"
           run: python3 -m ruff format --check .
@@ -45,11 +45,11 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v6.2.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
           cache: "pip"
 
       - name: "Install requirements"
-        run: python3 -m pip install -r requirements.txt
+        run: python3 -m pip install .
 
       - name: "Run Pyright"
         run: python3 -m pyright --warnings
