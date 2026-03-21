@@ -9,6 +9,7 @@ from custom_components.sma_ennexos.sma.client import (
     SMAApiClient,
 )
 from custom_components.sma_ennexos.sma.model import LiveMeasurementQueryItem
+from custom_components.sma_ennexos.sma.model.errors import SMAApiClientError
 from test.sma.aiohttp_mock import AioHttpMock, ResponseEntry
 
 LOGGER = Logger(__name__)
@@ -751,7 +752,7 @@ async def test_client_with_intermitten_api_failures():
         password="test123",
         session=mock.session,
         use_ssl=False,
-        request_retries=3,
+        request_retries=2,
         request_timeout=1,  # low timeout to speed up tests
         logger=LOGGER,
     )
@@ -759,6 +760,7 @@ async def test_client_with_intermitten_api_failures():
     mock.clear_requests()
     mock.add_responses(
         [
+            # initial request:
             # fails to login because of timeout,
             # client should retry
             ResponseEntry(
@@ -766,6 +768,7 @@ async def test_client_with_intermitten_api_failures():
                 endpoint="token",
                 delay=2,  # > request_timeout
             ),
+            # 1st retry:
             # fails to login with 500 internal server error,
             # client should retry
             ResponseEntry(
@@ -773,6 +776,7 @@ async def test_client_with_intermitten_api_failures():
                 endpoint="token",
                 status_code=500,
             ),
+            # 2nd retry:
             # successful login
             ResponseEntry(
                 method="POST",
@@ -838,24 +842,38 @@ async def test_client_allows_zero_retries():
         logger=LOGGER,
     )
 
-    mock.add_response(
-        ResponseEntry(
-            method="POST",
-            endpoint="token",
-            status_code=200,
-            data={
-                "access_token": "mock-access-token",
-                "refresh_token": "mock-refresh-token",
-                "token_type": "Bearer",
-                "expires_in": 3600,
-            },
-            cookies={
-                "JSESSIONID": "mock-session-id",
-            },
-        )
+    mock.add_responses(
+        [
+            # fails to login with 500 internal server error,
+            # client should retry
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=500,
+            ),
+            # successful login
+            ResponseEntry(
+                method="POST",
+                endpoint="token",
+                status_code=200,
+                data={
+                    "access_token": "mock-access-token",
+                    "refresh_token": "mock-refresh-token",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                },
+                cookies={
+                    "JSESSIONID": "mock-session-id",
+                },
+            ),
+        ]
     )
 
-    assert (await sma.login()) == LoginResult.NEW_TOKEN
+    # login fails:
+    # request is only tried once (retries=0), and only on the
+    # second request login would succeed
+    with pytest.raises(SMAApiClientError):
+        await sma.login()
     assert mock.request_count == 1
 
 
