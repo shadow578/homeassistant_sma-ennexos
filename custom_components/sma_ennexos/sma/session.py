@@ -47,7 +47,7 @@ class SMAClientSession:
         self.__host = host
         self.__base_url = base_url
         self.__timeout = timeout
-        self.__retries = retries or 1
+        self.__retries = retries if retries is not None else 0
         self.__logger = logger
 
     @property
@@ -115,14 +115,14 @@ class SMAClientSession:
         if data is not None and json is not None:
             raise ValueError("data and json can not be used together")
 
-        # must have at least one retry
-        if self.__retries < 1:
-            raise ValueError("retries must be at least 1")
+        # retries counts additional attempts after the initial request
+        if self.__retries < 0:
+            raise ValueError("retries must be at least 0")
 
         url = f"{self.__base_url}/{endpoint}"
 
         last_error = SMAApiClientError("Unknown error")  # should not happen
-        for _ in range(self.__retries):
+        for _ in range(self.__retries + 1):
             try:
                 async with async_timeout.timeout(self.__timeout):
                     # process auth headers on every retry, as they might have changed
