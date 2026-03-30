@@ -137,6 +137,10 @@ class SMASensor(SMAEntity, SensorEntity):
         """Handle updated data from the coordinator."""
         data = self.coordinator.data
 
+        # coordinator data may not be available yet on first call
+        if data is None:
+            return
+
         # find the ChannelValues of this sensor
         channel_values = next(
             (
