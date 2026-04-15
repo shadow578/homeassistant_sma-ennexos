@@ -3,7 +3,7 @@ name = "homeassistant_sma_ennexos"
 version = "0.0.0"
 dependencies = [
   "homeassistant==2026.3.3",
-  "pytest-homeassistant-custom-component>=0.13.319",
+  "pytest-homeassistant-custom-component>=0.13.323",
   "colorlog>=6.10.1",
   "ruff>=0.15.10",
   "pytest>=9.0.0",
