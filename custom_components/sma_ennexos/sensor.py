@@ -374,10 +374,7 @@ class SMASensor(SMAEntity, SensorEntity):
             # display one decimal place
             return 1
 
-        if (
-            unit == SMAUnit.PERCENT
-            or unit == SMAUnit.POWER_FACTOR
-        ):
+        if unit == SMAUnit.PERCENT or unit == SMAUnit.POWER_FACTOR:
             # display two decimal places
             return 2
 
