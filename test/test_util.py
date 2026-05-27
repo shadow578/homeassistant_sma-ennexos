@@ -47,6 +47,12 @@ def test_channel_parts_to_entity_id_umlauts():
         == "sensor.test_aeoeuess_ch_aeoeuess"
     )
 
+    # eastern arabic numerals and other weirdness should be dropped
+    assert (
+        channel_parts_to_entity_id("Test ١٨زب", "ch.a", "sensor")
+        == "sensor.test_ch_a"
+    )
+
     # if you do this, i hate you
     assert channel_parts_to_entity_id("Test ☀️☀️", "test", "sensor") == "sensor.test_test"
 

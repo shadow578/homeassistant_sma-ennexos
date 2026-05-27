@@ -41,9 +41,13 @@ def __normalize_for_id(s: str) -> str:
 
     # filter to only allow allowed characters (a-z, 0-9, and underscore)
     def is_allowed_char(c: str) -> bool:
-        return c.isnumeric() or (c.isalpha() and c >= "a" and c <= "z") or c == "_"
+        return ("0" <= c <= "9") or ("a" <= c <= "z") or c == "_"
 
     s = "".join(c if is_allowed_char(c) else "" for c in s)
+
+    # remove all occurrences of multiple underscores
+    while "__" in s:
+        s = s.replace("__", "_")
 
     return s
 
@@ -60,8 +64,8 @@ def channel_parts_to_entity_id(
     :param component_name: The name or id of the component.
     :param channel_id: The channel_id of the channel.
     :param kind: The kind of entity. e.g. sensor, binary_sensor, etc.
-    :param normalization: The normalization method to use. "old" matches sma-ennexos behavior up to 2.1.4, while full handles umlauts correctly.
-    this option was added *ONLY* to be used in sensor uid generation. any other caller should use the default "full" version!
+    :param normalization: The normalization method to use. "old" matches sma-ennexos behavior up to 2.1.4, while "default" handles umlauts correctly.
+    this option was added *ONLY* to be used in sensor uid generation. any other caller should use the default "default" version!
     :return: entity id
     """
     # transform array index to be just a suffix
