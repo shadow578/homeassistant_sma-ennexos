@@ -375,6 +375,12 @@
             "measurement_gridms_phv_phsc": {
                 "name": "Voltage L3"
             },
+            "measurement_gridms_totpfprc": {
+                "name": "Displacement Factor"
+            },
+            "measurement_gridms_totpfeei": {
+                "name": "EEI Displacement Power Factor"
+            },
             "measurement_dcms_vol": {
                 "name": "DC Voltage"
             },
