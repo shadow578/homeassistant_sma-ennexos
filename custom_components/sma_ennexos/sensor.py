@@ -112,6 +112,10 @@ class SMASensor(SMAEntity, SensorEntity):
         self.channel_id = channel_id
 
         # create entity id from device id and channel id
+        # NOTE: we do this even tho homeassistant doesn't really recommends it, because
+        # we want to persist the channel id (e.g. "Measurement.GridMs.Hz") in the entity id,
+        # and automatic id generation will not do that
+        # (instead deriving it from the display name, which becomes unhelpful fast)...
         self.entity_id = channel_parts_to_entity_id(
             component_info.name if component_info is not None else self.component_id,
             channel_id,
