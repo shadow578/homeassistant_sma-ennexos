@@ -21,6 +21,7 @@ class SMAUnit(str, Enum):
     VOLT_AMPERE_REACTIVE = "volt_ampere_reactive"
     SECONDS = "seconds"
     PERCENT = "percent"
+    POWER_FACTOR = "power_factor"
 
     # SMA enum, value keys defined in KnownChannel enum_values dict
     ENUM = "enum"
@@ -183,7 +184,7 @@ __KNOWN_CHANNELS: dict[
     ),
     "Measurement.Metering.PCCMs.PlntPF": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
-        unit=SMAUnit.PERCENT,  # TODO Measurement.Metering.PCCMs.PlntPF unit is not validated
+        unit=SMAUnit.POWER_FACTOR,
     ),
     "Measurement.Metering.PCCMs.PlntPhV.phsA": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
@@ -302,7 +303,7 @@ __KNOWN_CHANNELS: dict[
     ),
     "Measurement.Metering.GridMs.TotPF": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
-        unit=SMAUnit.PERCENT,  # TODO Measurement.Metering.GridMs.TotPF unit is not validated
+        unit=SMAUnit.POWER_FACTOR,
     ),
     "Measurement.Metering.GridMs.TotVA": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
@@ -573,6 +574,14 @@ __KNOWN_CHANNELS: dict[
     ),
     "Measurement.GridMs.PhV.phsC": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID, unit=SMAUnit.VOLT
+    ),
+    "Measurement.GridMs.TotPFPrc": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID,
+        unit=SMAUnit.POWER_FACTOR,
+    ),
+    "Measurement.GridMs.TotPFEEI": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID,
+        unit=SMAUnit.POWER_FACTOR,
     ),
     "Measurement.DcMs.Vol[]": KnownChannelEntry(
         device_kind=SMADeviceKind.PV, unit=SMAUnit.VOLT

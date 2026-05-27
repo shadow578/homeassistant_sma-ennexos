@@ -375,6 +375,12 @@
             "measurement_gridms_phv_phsc": {
                 "name": "Spannung L3"
             },
+            "measurement_gridms_totpfprc": {
+                "name": "Verschiebungsfaktor"
+            },
+            "measurement_gridms_totpfeei": {
+                "name": "EEI-Verschiebungsfaktor"
+            },
             "measurement_dcms_vol": {
                 "name": "Spannung DC-Seite"
             },
