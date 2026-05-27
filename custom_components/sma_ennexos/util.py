@@ -10,8 +10,21 @@ def __normalize_for_id(s: str) -> str:
     for c in " -.:":
         s = s.replace(c, "_")
 
-    # remove all non-alphanumeric characters except underscores
-    s = "".join(c if c.isalnum() or c == "_" else "" for c in s)
+    # replace umlauts with ascii equivalents
+    UMLAUT_REPLACEMENTS = {
+        "ä": "ae",
+        "ö": "oe",
+        "ü": "ue",
+        "ß": "ss",
+    }
+    for umlaut, replacement in UMLAUT_REPLACEMENTS.items():
+        s = s.replace(umlaut, replacement)
+
+    # filter to only allow allowed characters (a-z, 0-9, and underscore)
+    def is_allowed_char(c: str) -> bool:
+        return c.isnumeric() or (c.isalpha() and c >= "a" and c <= "z") or c == "_"
+
+    s = "".join(c if is_allowed_char(c) else "" for c in s)
 
     # trim underscores from start and end
     s = s.strip("_")
