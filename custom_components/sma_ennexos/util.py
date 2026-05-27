@@ -1,7 +1,9 @@
 """integration utilities."""
 
+from typing import Literal
 
-def __normalize_for_id(s: str) -> str:
+
+def __normalize_for_id_old(s: str) -> str:
     """Normalize a string for use in an entity id or translation key."""
     # lower case
     s = s.lower()
@@ -23,13 +25,47 @@ def __normalize_for_id(s: str) -> str:
     return s
 
 
-def channel_parts_to_entity_id(component_name: str, channel_id: str, kind: str) -> str:
+def __normalize_for_id(s: str) -> str:
+    """Normalize a string for use in an entity id or translation key."""
+    s = __normalize_for_id_old(s)
+
+    # replace umlauts with ascii equivalents
+    UMLAUT_REPLACEMENTS = {
+        "ä": "ae",
+        "ö": "oe",
+        "ü": "ue",
+        "ß": "ss",
+    }
+    for umlaut, replacement in UMLAUT_REPLACEMENTS.items():
+        s = s.replace(umlaut, replacement)
+
+    # filter to only allow allowed characters (a-z, 0-9, and underscore)
+    def is_allowed_char(c: str) -> bool:
+        return ("0" <= c <= "9") or ("a" <= c <= "z") or c == "_"
+
+    s = "".join(c if is_allowed_char(c) else "" for c in s)
+
+    # remove all occurrences of multiple underscores
+    while "__" in s:
+        s = s.replace("__", "_")
+
+    return s
+
+
+def channel_parts_to_entity_id(
+    component_name: str,
+    channel_id: str,
+    kind: str,
+    normalization: Literal["old"] | Literal["default"] = "default",
+) -> str:
     """
     Convert a channel_id and component_id to an entity id.
 
     :param component_name: The name or id of the component.
     :param channel_id: The channel_id of the channel.
     :param kind: The kind of entity. e.g. sensor, binary_sensor, etc.
+    :param normalization: The normalization method to use. "old" matches sma-ennexos behavior up to 2.1.4, while "default" handles umlauts correctly.
+    this option was added *ONLY* to be used in sensor uid generation. any other caller should use the default "default" version!
     :return: entity id
     """
     # transform array index to be just a suffix
@@ -39,7 +75,11 @@ def channel_parts_to_entity_id(component_name: str, channel_id: str, kind: str) 
     # concat component and channel id
     s = f"{component_name}_{channel_id}"
 
-    s = __normalize_for_id(s)
+    if normalization == "old":
+        s = __normalize_for_id_old(s)
+    else:
+        s = __normalize_for_id(s)
+
     return f"{kind}.{s}"
 
 

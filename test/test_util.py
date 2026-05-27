@@ -30,6 +30,52 @@ def test_channel_parts_to_entity_id():
     )
 
 
+def test_channel_parts_to_entity_id_umlauts():
+    """
+    Test entity ids are created as expected when umlauts and other special characters are involved.
+
+    SMA device names support umlauts (in fact, german installations [by lazy electricians] default their name to "Mein Gerät"),
+    but homeassistant entity ids only support ascii characters (a-z, 0-9, and underscores).
+    until now, homeassistant would automatically fix the ids for us, but starting in 2027.2.0, this is deprecated.
+    """
+    assert (
+        channel_parts_to_entity_id("Mein Gerät", "Measurement.GridMs.Hz", "sensor")
+        == "sensor.mein_geraet_measurement_gridms_hz"
+    )
+    assert (
+        channel_parts_to_entity_id("Test äöüß!", "ch.äöüß", "sensor")
+        == "sensor.test_aeoeuess_ch_aeoeuess"
+    )
+
+    # eastern arabic numerals and other weirdness should be dropped
+    assert (
+        channel_parts_to_entity_id("Test ١٨زب", "ch.a", "sensor") == "sensor.test_ch_a"
+    )
+
+    # if you do this, i hate you
+    assert channel_parts_to_entity_id("Test ☀️☀️", "test", "sensor") == "sensor.test_test"
+
+
+def test_channel_parts_to_entity_id_umlauts_old():
+    """
+    Test entity ids are created as expected when umlauts and other special characters are involved, using the old normalization method.
+
+    This is to verify that, with the update, existing sensors are not broken.
+    """
+    assert (
+        channel_parts_to_entity_id(
+            "Mein Gerät", "Measurement.GridMs.Hz", "sensor", normalization="old"
+        )
+        == "sensor.mein_gerät_measurement_gridms_hz"
+    )
+    assert (
+        channel_parts_to_entity_id(
+            "Test äöüß!", "ch.äöüß", "sensor", normalization="old"
+        )
+        == "sensor.test_äöüß_ch_äöüß"
+    )
+
+
 def test_channel_id_to_translation_key():
     """Test channel_ids are converted to translation keys as expected."""
     assert (
