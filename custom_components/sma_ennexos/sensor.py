@@ -328,6 +328,8 @@ class SMASensor(SMAEntity, SensorEntity):
             return (None, UnitOfTime.SECONDS)
         if channel_unit == SMAUnit.PERCENT:
             return (None, PERCENTAGE)
+        if channel_unit == SMAUnit.POWER_FACTOR:
+            return (SensorDeviceClass.POWER_FACTOR, None)
         if channel_unit == SMAUnit.ENUM:
             return (SensorDeviceClass.ENUM, None)
 
@@ -372,7 +374,10 @@ class SMASensor(SMAEntity, SensorEntity):
             # display one decimal place
             return 1
 
-        if unit == SMAUnit.PERCENT:
+        if (
+            unit == SMAUnit.PERCENT
+            or unit == SMAUnit.POWER_FACTOR
+        ):
             # display two decimal places
             return 2
 
