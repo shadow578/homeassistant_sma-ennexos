@@ -49,8 +49,7 @@ def test_channel_parts_to_entity_id_umlauts():
 
     # eastern arabic numerals and other weirdness should be dropped
     assert (
-        channel_parts_to_entity_id("Test ١٨زب", "ch.a", "sensor")
-        == "sensor.test_ch_a"
+        channel_parts_to_entity_id("Test ١٨زب", "ch.a", "sensor") == "sensor.test_ch_a"
     )
 
     # if you do this, i hate you
@@ -64,11 +63,15 @@ def test_channel_parts_to_entity_id_umlauts_old():
     This is to verify that, with the update, existing sensors are not broken.
     """
     assert (
-        channel_parts_to_entity_id("Mein Gerät", "Measurement.GridMs.Hz", "sensor", normalization="old")
+        channel_parts_to_entity_id(
+            "Mein Gerät", "Measurement.GridMs.Hz", "sensor", normalization="old"
+        )
         == "sensor.mein_gerät_measurement_gridms_hz"
     )
     assert (
-        channel_parts_to_entity_id("Test äöüß!", "ch.äöüß", "sensor", normalization="old")
+        channel_parts_to_entity_id(
+            "Test äöüß!", "ch.äöüß", "sensor", normalization="old"
+        )
         == "sensor.test_äöüß_ch_äöüß"
     )
 
