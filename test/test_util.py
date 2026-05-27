@@ -51,6 +51,22 @@ def test_channel_parts_to_entity_id_umlauts():
     assert channel_parts_to_entity_id("Test ☀️☀️", "test", "sensor") == "sensor.test_test"
 
 
+def test_channel_parts_to_entity_id_umlauts_old():
+    """
+    Test entity ids are created as expected when umlauts and other special characters are involved, using the old normalization method.
+
+    This is to verify that, with the update, existing sensors are not broken.
+    """
+    assert (
+        channel_parts_to_entity_id("Mein Gerät", "Measurement.GridMs.Hz", "sensor", normalization="old")
+        == "sensor.mein_gerät_measurement_gridms_hz"
+    )
+    assert (
+        channel_parts_to_entity_id("Test äöüß!", "ch.äöüß", "sensor", normalization="old")
+        == "sensor.test_äöüß_ch_äöüß"
+    )
+
+
 def test_channel_id_to_translation_key():
     """Test channel_ids are converted to translation keys as expected."""
     assert (
