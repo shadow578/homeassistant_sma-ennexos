@@ -11,7 +11,7 @@ build/*
 .vscode
 coverage.xml
 junit.xml
-
+.devcontainer-lock.json
 
 # Home Assistant configuration
 config/*

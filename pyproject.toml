@@ -2,20 +2,20 @@
 name = "homeassistant_sma_ennexos"
 version = "0.0.0"
 dependencies = [
-  "homeassistant==2026.3.3",
-  "pytest-homeassistant-custom-component==0.13.319",
-  "pytest==9.0.0",
-  "colorlog>=6.10.1",
-  "ruff>=0.15.22",
-  "anyio>=4.14.2",
-  "pyright>=1.1.411"
+  "homeassistant==2026.8.3",
+  "pytest-homeassistant-custom-component==0.13.357",
+  "pytest==9.0.3",
+  "colorlog>=6.12.0",
+  "ruff>=0.17.1",
+  "anyio>=4.15.1",
+  "pyright>=1.1.414"
 ]
 
 [tool.setuptools.packages.find]
 where = ["custom_components"]
 
 [build-system]
-requires = ["setuptools>=83.0.0", "wheel"]
+requires = ["setuptools>=84.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
