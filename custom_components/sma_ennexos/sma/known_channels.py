@@ -240,6 +240,28 @@ __KNOWN_CHANNELS: dict[
         unit=SMAUnit.WATT_HOUR,
         cumulative_mode=SMACumulativeMode.TOTAL,
     ),
+    "Measurement.Metering.TotFeedTms": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.SECONDS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.Metering.TotOpTms": KnownChannelEntry(
+        device_kind=SMADeviceKind.OTHER,
+        unit=SMAUnit.SECONDS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.Metering.TotWhIn": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.Metering.TotWhOut": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
     "Measurement.Operation.CurAvailPlnt": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.PERCENT,
@@ -369,9 +391,36 @@ __KNOWN_CHANNELS: dict[
     "Measurement.Bat.Amp": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.AMPERE
     ),
+    "Measurement.Bat.Amp[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.AMPERE
+    ),
+    "Measurement.Bat.AvailBatChrgWh": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT_HOUR
+    ),
+    "Measurement.Bat.AvailBatDschWh": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT_HOUR
+    ),
+    "Measurement.Bat.CelVolMax[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.Bat.CelVolMin[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.Bat.CelVolSum[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.Bat.ChaAmpSptDmd[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.AMPERE
+    ),
     "Measurement.Bat.ChaStt": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.PERCENT,
+    ),
+    "Measurement.Bat.ChaSttArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.PERCENT
+    ),
+    "Measurement.Bat.ChaVolSptDmd[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
     ),
     "Measurement.Bat.Diag.ActlCapacNom": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
@@ -446,13 +495,95 @@ __KNOWN_CHANNELS: dict[
         category=SMAChannelCategory.DIAGNOSTIC,
         cumulative_mode=SMACumulativeMode.MAXIMUM,
     ),
+    "Measurement.Bat.Diag.VolMax[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.VOLT,
+        category=SMAChannelCategory.DIAGNOSTIC,
+        cumulative_mode=SMACumulativeMode.MAXIMUM,
+    ),
+    "Measurement.Bat.DschAmpSptDmd[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.AMPERE
+    ),
+    "Measurement.Bat.DschVolSptDmd[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.Bat.OpStt[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.ENUM,
+        enum_values=__COMMON_ENUM_VALUES,
+    ),
+    "Measurement.Bat.OpTms[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.SECONDS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+    ),
     "Measurement.Bat.TmpVal": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.CELSIUS,
+        category=SMAChannelCategory.DIAGNOSTIC,
+    ),
+    "Measurement.Bat.TmpVal[]": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY,
         unit=SMAUnit.CELSIUS,
         category=SMAChannelCategory.DIAGNOSTIC,
     ),
     "Measurement.Bat.Vol": KnownChannelEntry(
         device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.Bat.Vol[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.VOLT
+    ),
+    "Measurement.BatChrg.ActBatChrg": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatChrg.ActBatChrgArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatChrg.BatChrg": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatChrg.BatChrgArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatChrg.CurBatCha": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT
+    ),
+    "Measurement.BatChrg.CurBatChaArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT
+    ),
+    "Measurement.BatDsch.ActBatDsch": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatDsch.ActBatDschArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatDsch.BatDsch": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatDsch.BatDschArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
+    "Measurement.BatDsch.CurBatDsch": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT
+    ),
+    "Measurement.BatDsch.CurBatDschArr[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.BATTERY, unit=SMAUnit.WATT
     ),
     "Measurement.Coolsys.Inverter.TmpVal": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
@@ -468,6 +599,15 @@ __KNOWN_CHANNELS: dict[
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.CELSIUS,
         category=SMAChannelCategory.DIAGNOSTIC,
+    ),
+    "Measurement.EpsMs.Amp": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID, unit=SMAUnit.AMPERE
+    ),
+    "Measurement.EpsMs.Vol": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID, unit=SMAUnit.VOLT
+    ),
+    "Measurement.EpsMs.Watt": KnownChannelEntry(
+        device_kind=SMADeviceKind.GRID, unit=SMAUnit.WATT
     ),
     "Measurement.ExtGridMs.A.phsA": KnownChannelEntry(
         device_kind=SMADeviceKind.GRID,
@@ -592,10 +732,23 @@ __KNOWN_CHANNELS: dict[
     "Measurement.DcMs.Watt[]": KnownChannelEntry(
         device_kind=SMADeviceKind.PV, unit=SMAUnit.WATT
     ),
+    "Measurement.DcMs.TotDcEnCntWh[]": KnownChannelEntry(
+        device_kind=SMADeviceKind.PV,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
+    ),
     "Measurement.MltFncSw.SttMstr": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,
         unit=SMAUnit.ENUM,
         enum_values=__COMMON_ENUM_VALUES,  # TODO: Measurement.MltFncSw.SttMstr enum_values may be partially incorrect, only [303] are validated
+    ),
+    "Measurement.PvGen.PvW": KnownChannelEntry(
+        device_kind=SMADeviceKind.PV, unit=SMAUnit.WATT
+    ),
+    "Measurement.PvGen.PvWh": KnownChannelEntry(
+        device_kind=SMADeviceKind.PV,
+        unit=SMAUnit.WATT_HOUR,
+        cumulative_mode=SMACumulativeMode.TOTAL,
     ),
     "Measurement.Portal.EnnexOS.ConnStt": KnownChannelEntry(
         device_kind=SMADeviceKind.OTHER,

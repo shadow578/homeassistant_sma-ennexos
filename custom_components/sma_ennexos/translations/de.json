@@ -390,6 +390,108 @@
             "measurement_dcms_watt": {
                 "name": "Leistung DC-Seite"
             },
+            "measurement_dcms_totdcencntwh": {
+                "name": "Abgegebene Energie String"
+            },
+            "measurement_bat_availbatchrgwh": {
+                "name": "Verfügbare Ladeenergie der Batterie"
+            },
+            "measurement_bat_availbatdschwh": {
+                "name": "Verfügbare Entladeenergie der Batterie"
+            },
+            "measurement_bat_celvolmax": {
+                "name": "Maximale Zellspannung"
+            },
+            "measurement_bat_celvolmin": {
+                "name": "Minimale Zellspannung"
+            },
+            "measurement_bat_celvolsum": {
+                "name": "Summe der Zellspannungen"
+            },
+            "measurement_bat_chaampsptdmd": {
+                "name": "Maximaler Ladestrom"
+            },
+            "measurement_bat_chasttarr": {
+                "name": "Batterie Ladestand"
+            },
+            "measurement_bat_chavolsptdmd": {
+                "name": "Ladeschlussspannung"
+            },
+            "measurement_bat_dschampsptdmd": {
+                "name": "Maximaler Entladestrom"
+            },
+            "measurement_bat_dschvolsptdmd": {
+                "name": "Entladeschlussspannung"
+            },
+            "measurement_bat_opstt": {
+                "name": "Betriebsstatus der Batterie"
+            },
+            "measurement_bat_optms": {
+                "name": "Gesamte Betriebszeit der Batterie"
+            },
+            "measurement_batchrg_actbatchrg": {
+                "name": "Ladung der aktuellen Batterie"
+            },
+            "measurement_batchrg_actbatchrgarr": {
+                "name": "Ladung der aktuellen Batterie"
+            },
+            "measurement_batchrg_batchrg": {
+                "name": "Batterieladung"
+            },
+            "measurement_batchrg_batchrgarr": {
+                "name": "Batterieladung"
+            },
+            "measurement_batchrg_curbatcha": {
+                "name": "Momentane Batterieladung"
+            },
+            "measurement_batchrg_curbatchaarr": {
+                "name": "Momentane Batterieladung"
+            },
+            "measurement_batdsch_actbatdsch": {
+                "name": "Batterieentladung der aktuellen Batterie"
+            },
+            "measurement_batdsch_actbatdscharr": {
+                "name": "Batterieentladung der aktuellen Batterie"
+            },
+            "measurement_batdsch_batdsch": {
+                "name": "Batterieentladung"
+            },
+            "measurement_batdsch_batdscharr": {
+                "name": "Batterieentladung"
+            },
+            "measurement_batdsch_curbatdsch": {
+                "name": "Momentane Batterieentladung"
+            },
+            "measurement_batdsch_curbatdscharr": {
+                "name": "Momentane Batterieentladung"
+            },
+            "measurement_epsms_amp": {
+                "name": "Strom EPS"
+            },
+            "measurement_epsms_vol": {
+                "name": "Spannung EPS"
+            },
+            "measurement_epsms_watt": {
+                "name": "Leistung EPS"
+            },
+            "measurement_metering_totfeedtms": {
+                "name": "Einspeisezeit"
+            },
+            "measurement_metering_totoptms": {
+                "name": "Betriebszeit"
+            },
+            "measurement_metering_totwhin": {
+                "name": "Gesamtenergie Bezug"
+            },
+            "measurement_metering_totwhout": {
+                "name": "Gesamtenergie Einspeisung"
+            },
+            "measurement_pvgen_pvw": {
+                "name": "Leistung PV-Erzeugung"
+            },
+            "measurement_pvgen_pvwh": {
+                "name": "Zählerstand PV-Erzeugungszähler"
+            },
             "measurement_mltfncsw_sttmstr": {
                 "name": "Status des Multifunktionsrelais",
                 "state": {
