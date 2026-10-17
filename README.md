@@ -16,6 +16,8 @@ These devices are known to be compatible.
 
 - [SMA Data Manager M][sma_data_manager_m]
 - [SMA Sunny Tripower X15 and X25](sma_sunny_tripower_x)
+- [SMA Sunny Tripower X60](sma_sunny_tripower_x60) (not yet tested)
+- [SMA Sunny Tripower Hybrid X Series](sma_sunny_tripower_hybrid_x)
 
 
 ## Installation
@@ -73,8 +75,10 @@ The SMA, SMA ennexOS, SMA Data Manager and SMA Sunny Tripower X names and logos 
 ***
 
 [sma_ennexos]: https://www.sma.de/produkte/apps-software/ennexos
-[sma_data_manager_m]: https://www.sma.de/en/products/monitoring-control/data-manager-m
-[sma_sunny_tripower_x]: https://www.sma.de/en/products/solarinverters/sunny-tripower-x
+[sma_data_manager_m]: https://www.sma.de/en/products/energy-management/sma-data-manager-m-20
+[sma_sunny_tripower_x]: https://www.sma.de/en/products/solarinverters/sunny-tripower-x-25
+[sma_sunny_tripower_x60]: https://www.sma.de/produkte/solar-wechselrichter/sunny-tripower-x-60
+[sma_sunny_tripower_hybrid_x]: https://www.sma.de/en/products/hybrid-inverters/sunny-tripower-hybrid-x-5-6-8-10-12-15
 [commits-shield]: https://img.shields.io/github/commit-activity/y/shadow578/homeassistant_sma_data_manager.svg?style=for-the-badge
 [commits]: https://github.com/shadow578/homeassistant_sma_data_manager/commits/main
 [hacs]: https://github.com/hacs/integration
