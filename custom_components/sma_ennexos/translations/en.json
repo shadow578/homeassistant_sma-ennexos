@@ -390,6 +390,108 @@
             "measurement_dcms_watt": {
                 "name": "DC Power"
             },
+            "measurement_dcms_totdcencntwh": {
+                "name": "Energy released by string"
+            },
+            "measurement_bat_availbatchrgwh": {
+                "name": "Remaining available charging energy of the battery"
+            },
+            "measurement_bat_availbatdschwh": {
+                "name": "Remaining available discharge energy of the battery"
+            },
+            "measurement_bat_celvolmax": {
+                "name": "Highest measured cell voltage"
+            },
+            "measurement_bat_celvolmin": {
+                "name": "Lowest measured cell voltage"
+            },
+            "measurement_bat_celvolsum": {
+                "name": "Sum of cell voltages"
+            },
+            "measurement_bat_chaampsptdmd": {
+                "name": "Maximum charging current"
+            },
+            "measurement_bat_chasttarr": {
+                "name": "Current battery state of charge"
+            },
+            "measurement_bat_chavolsptdmd": {
+                "name": "End-of-charge voltage"
+            },
+            "measurement_bat_dschampsptdmd": {
+                "name": "Maximum discharging current"
+            },
+            "measurement_bat_dschvolsptdmd": {
+                "name": "End-of-discharge voltage"
+            },
+            "measurement_bat_opstt": {
+                "name": "Battery operating status"
+            },
+            "measurement_bat_optms": {
+                "name": "Total battery runtime"
+            },
+            "measurement_batchrg_actbatchrg": {
+                "name": "Charge of current battery"
+            },
+            "measurement_batchrg_actbatchrgarr": {
+                "name": "Charge of current battery"
+            },
+            "measurement_batchrg_batchrg": {
+                "name": "Battery charge"
+            },
+            "measurement_batchrg_batchrgarr": {
+                "name": "Battery charge"
+            },
+            "measurement_batchrg_curbatcha": {
+                "name": "Present battery charge"
+            },
+            "measurement_batchrg_curbatchaarr": {
+                "name": "Present battery charge"
+            },
+            "measurement_batdsch_actbatdsch": {
+                "name": "Battery discharge of current battery"
+            },
+            "measurement_batdsch_actbatdscharr": {
+                "name": "Battery discharge of current battery"
+            },
+            "measurement_batdsch_batdsch": {
+                "name": "Battery discharge"
+            },
+            "measurement_batdsch_batdscharr": {
+                "name": "Battery discharge"
+            },
+            "measurement_batdsch_curbatdsch": {
+                "name": "Present battery discharge"
+            },
+            "measurement_batdsch_curbatdscharr": {
+                "name": "Present battery discharge"
+            },
+            "measurement_epsms_amp": {
+                "name": "Current EPS (Emergency Power Supply)"
+            },
+            "measurement_epsms_vol": {
+                "name": "AC voltage EPS (Emergency Power Supply)"
+            },
+            "measurement_epsms_watt": {
+                "name": "Power EPS (Emergency Power Supply)"
+            },
+            "measurement_metering_totfeedtms": {
+                "name": "Feed-in time"
+            },
+            "measurement_metering_totoptms": {
+                "name": "Operating time"
+            },
+            "measurement_metering_totwhin": {
+                "name": "Absorbed energy"
+            },
+            "measurement_metering_totwhout": {
+                "name": "Total yield"
+            },
+            "measurement_pvgen_pvw": {
+                "name": "PV generation power"
+            },
+            "measurement_pvgen_pvwh": {
+                "name": "Meter count and PV gen. meter"
+            },
             "measurement_mltfncsw_sttmstr": {
                 "name": "Multi-function Relay Status",
                 "state": {
