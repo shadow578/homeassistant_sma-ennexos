@@ -8,7 +8,6 @@ from logging import Logger
 from typing import Any, Literal
 
 import aiohttp
-import async_timeout
 
 from custom_components.sma_ennexos.sma.model import AuthToken
 from custom_components.sma_ennexos.sma.model.errors import (
@@ -123,7 +122,7 @@ class SMAClientSession:
         last_error = SMAApiClientError("Unknown error")  # should not happen
         for _ in range(self.__retries + 1):
             try:
-                async with async_timeout.timeout(self.__timeout):
+                async with asyncio.timeout(self.__timeout):
                     # process auth headers on every retry, as they might have changed
                     # due to re-auth
                     auth_headers = {}
